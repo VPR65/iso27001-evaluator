@@ -77,7 +77,10 @@ def list_evaluations(request: Request):
 def new_evaluation_form(request: Request):
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
-    require_no_vista_solo(user)
+    if not user:
+        return RedirectResponse(url="/login")
+    if user.role == UserRole.VISTA_SOLO:
+        return RedirectResponse(url="/dashboard")
     with Session(engine) as session:
         if user.role == UserRole.SUPERADMIN:
             clients = session.exec(select(Client)).all()

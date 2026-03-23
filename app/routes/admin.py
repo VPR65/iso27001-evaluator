@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Form, HTTPException
+from fastapi import APIRouter, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from app.models import User, UserRole
 from app.auth import get_current_user, require_role, hash_password
@@ -14,7 +14,10 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 def all_users(request: Request):
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
-    require_role(user, [UserRole.SUPERADMIN])
+    if not user:
+        return RedirectResponse(url="/login")
+    if user.role != UserRole.SUPERADMIN:
+        return RedirectResponse(url="/dashboard")
 
     with Session(engine) as session:
         from app.models import Client
@@ -40,7 +43,7 @@ async def create_admin_user(request: Request):
     form_data = await request.form()
     csrf_token = form_data.get("csrf_token")
     if not csrf_token or not verify_csrf_token(csrf_token):
-        raise HTTPException(status_code=403, detail="Token CSRF invalido")
+        return RedirectResponse(url="/admin/all-users", status_code=302)
 
     email = form_data.get("email")
     name = form_data.get("name")
