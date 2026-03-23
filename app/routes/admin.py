@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Request, Form
-from fastapi.responses import HTMLResponse, RedirectResponse, Response
+from fastapi import APIRouter, Request
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from app.models import User, UserRole
-from app.auth import get_current_user, require_role, hash_password
+from app.auth import get_current_user, hash_password
 from app.database import engine
 from app.templates_core import render
 from app.security import verify_csrf_token
@@ -38,21 +38,36 @@ def all_users(request: Request):
 async def create_admin_user(request: Request):
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
-    require_role(user, [UserRole.SUPERADMIN])
+    if not user or user.role != UserRole.SUPERADMIN:
+        return JSONResponse(
+            status_code=401,
+            content={"success": False, "error": "No tienes permisos de superadmin"},
+        )
 
     form_data = await request.form()
     csrf_token = form_data.get("csrf_token")
     if not csrf_token or not verify_csrf_token(csrf_token):
-        return RedirectResponse(url="/admin/all-users", status_code=302)
+        return JSONResponse(
+            status_code=403, content={"success": False, "error": "Token CSRF invalido"}
+        )
 
     email = form_data.get("email")
     name = form_data.get("name")
     password = form_data.get("password")
 
+    if not email or not name or not password:
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "error": "Faltan campos obligatorios"},
+        )
+
     with Session(engine) as session:
         existing = session.exec(select(User).where(User.email == email)).first()
         if existing:
-            return RedirectResponse(url="/admin/all-users", status_code=302)
+            return JSONResponse(
+                status_code=409,
+                content={"success": False, "error": "El usuario ya existe"},
+            )
         new_user = User(
             email=email,
             name=name,
@@ -62,4 +77,28 @@ async def create_admin_user(request: Request):
         session.add(new_user)
         session.commit()
 
-    return RedirectResponse(url="/admin/all-users", status_code=302)
+    return JSONResponse(
+        status_code=200,
+        content={"success": True, "message": f"Usuario {email} creado exitosamente"},
+    )
+
+
+@router.get("/debug/users")
+def debug_users(request: Request):
+    session_id = request.cookies.get("session_id")
+    user = get_current_user(session_id)
+    if not user or user.role != UserRole.SUPERADMIN:
+        return JSONResponse(status_code=401, content={"error": "No autorizado"})
+
+    with Session(engine) as session:
+        users = session.exec(select(User)).all()
+        return JSONResponse(
+            status_code=200,
+            content={
+                "total": len(users),
+                "users": [
+                    {"id": u.id, "email": u.email, "name": u.name, "role": u.role.value}
+                    for u in users
+                ],
+            },
+        )
