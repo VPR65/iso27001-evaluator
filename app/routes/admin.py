@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, Form, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from app.models import User, UserRole
 from app.auth import get_current_user, require_role, hash_password
 from app.database import engine
@@ -24,7 +24,11 @@ def all_users(request: Request):
         clients_map = {c.id: c for c in clients}
         user_list = [{"u": u, "client": clients_map.get(u.client_id)} for u in users]
 
-    return render(request, "admin/users.html", users=user_list)
+    resp = render(request, "admin/users.html", users=user_list)
+    resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    resp.headers["Pragma"] = "no-cache"
+    resp.headers["Expires"] = "0"
+    return resp
 
 
 @router.post("/all-users")
