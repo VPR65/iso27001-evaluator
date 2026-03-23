@@ -7,11 +7,18 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 
 ## [v1.1.2] - 2026-03-23
 
+### Despliegue
+- **Deploy en Render QA** - https://iso27001-qa.onrender.com funcionando
+- **Deploy en Render Prod** - https://iso27001-prod.onrender.com funcionando
+- **Dockerfile fix** - Permisos correctos para usuario appuser en /app
+- **Requirements fix** - Anadidos jinja2 y bcrypt==4.2.1 faltantes
+- **Render deploy** - Funciona con Docker en plan gratuito
+
 ### Seguridad
 - **CSRF en 31 formularios** - Tokens CSRF en todos los formularios HTML (logout, login, clients, evaluations, evaluate, documents, rfcs, sprints, users, admin, import)
 - **CSRF verification en 18 handlers POST** - Todos los endpoints POST verifican token CSRF con `verify_csrf_token()`
-- **CSRF global en Jinja2** - `csrf_token` disponible en todas las plantillas via `templates.env.globals`
-- **Import fix** - Removido import no utilizado `HTTPBase` de `fastapi.security`
+- **Render helper** - Nueva funcion `render()` que auto-inyecta csrf_token y user en todas las plantillas
+- **Template engine fix** - Reemplazado Jinja2Templates por jinja2.Environment directo para evitar bug de cache en Render
 
 ---
 

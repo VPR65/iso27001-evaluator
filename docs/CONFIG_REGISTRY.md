@@ -86,8 +86,8 @@ git status
 
 | Entorno | URL | Estado | Rama Git | Notas |
 |---------|-----|--------|----------|-------|
-| Produccion | `https://iso27001-prod.onrender.com` | Por crear | `main` | |
-| QA/Pruebas | `https://iso27001-qa.onrender.com` | Por crear | `main` | Mismo que prod inicialmente |
+| Produccion | `https://iso27001-prod.onrender.com` | Activo | `main` | |
+| QA/Pruebas | `https://iso27001-qa.onrender.com` | Activo | `main` | |
 | Desarrollo local | `http://localhost:8000` | Activo | - | Tu PC |
 
 ---
@@ -194,8 +194,8 @@ python scripts/rollback.py v1.0.0
 
 | Version | Fecha | Cambios | Quien |
 |---------|-------|----------|-------|
-| 1.0.0 | 2026-03-23 | Creacion inicial del sistema + documentacion | Equipo desarrollo |
-| | | | |
+| 1.0.0 | 2026-03-22 | Creacion inicial del sistema + documentacion | Equipo desarrollo |
+| 1.1.2 | 2026-03-23 | CSRF completo, deploy en Render QA + Prod, fixes Docker | Equipo desarrollo |
 
 ---
 
@@ -203,8 +203,9 @@ python scripts/rollback.py v1.0.0
 
 - El plan gratuito de Render permite 750 horas/mes (suficiente para 1 app)
 - La app "duerme" despues de 15 min de inactividad en Render
-- GitHub Actions no configurado todavia (despliegue manual desde Render)
+- GitHub Actions no configurado todavia (despliegue desde Render via GitHub push)
 - Backup de la DB se debe hacer manualmente en desarrollo
+- Render QA + Produccion desplegados y funcionando (v1.1.2)
 
 ---
 
