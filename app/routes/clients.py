@@ -4,7 +4,7 @@ from sqlmodel import Session, select, func
 from app.models import Client, User, UserRole, AuditLog
 from app.auth import get_current_user, require_role
 from app.database import engine
-from app.templates_core import templates
+from app.templates_core import templates, render
 from app.security import verify_csrf_token
 
 router = APIRouter(prefix="/clients", tags=["clients"])
@@ -25,10 +25,7 @@ def list_clients(request: Request):
             ).one()
             counts[c.id] = cnt
 
-    return templates.TemplateResponse(
-        "clients/list.html",
-        {"request": request, "user": user, "clients": clients, "counts": counts},
-    )
+    return render(request, "clients/list.html", clients=clients, counts=counts)
 
 
 @router.get("/new", response_class=HTMLResponse)
@@ -36,10 +33,7 @@ def new_client_form(request: Request):
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
     require_role(user, [UserRole.SUPERADMIN])
-    return templates.TemplateResponse(
-        "clients/form.html",
-        {"request": request, "user": user, "client": None, "errors": None},
-    )
+    return render(request, "clients/form.html", client=None, errors=None)
 
 
 @router.post("/new")

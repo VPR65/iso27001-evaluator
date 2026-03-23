@@ -15,7 +15,7 @@ from app.models import (
 )
 from app.auth import get_current_user, require_no_vista_solo
 from app.database import engine
-from app.templates_core import templates
+from app.templates_core import templates, render
 from app.security import verify_csrf_token
 import json
 
@@ -56,9 +56,7 @@ def list_rfcs(request: Request):
             client = session.get(Client, r.client_id) if r.client_id else None
             rfc_data.append({"rfc": r, "client": client})
 
-    return templates.TemplateResponse(
-        "rfcs/list.html", {"request": request, "user": user, "rfcs": rfc_data}
-    )
+    return render(request, "rfcs/list.html", rfcs=rfc_data)
 
 
 @router.get("/new", response_class=HTMLResponse)
@@ -71,16 +69,7 @@ def new_rfc_form(request: Request):
             clients = session.exec(select(Client)).all()
         else:
             clients = [session.get(Client, user.client_id)] if user.client_id else []
-    return templates.TemplateResponse(
-        "rfcs/form.html",
-        {
-            "request": request,
-            "user": user,
-            "clients": clients,
-            "rfc": None,
-            "errors": None,
-        },
-    )
+    return render(request, "rfcs/form.html", clients=clients, rfc=None, errors=None)
 
 
 @router.post("/new")
@@ -161,16 +150,13 @@ def view_rfc(request: Request, rfc_id: str):
         linked_controls = json.loads(rfc.linked_controls) if rfc.linked_controls else []
         linked_docs = json.loads(rfc.linked_documents) if rfc.linked_documents else []
 
-    return templates.TemplateResponse(
+    return render(
+        request,
         "rfcs/detail.html",
-        {
-            "request": request,
-            "user": user,
-            "rfc": rfc,
-            "client": client,
-            "linked_controls": linked_controls,
-            "linked_docs": linked_docs,
-        },
+        rfc=rfc,
+        client=client,
+        linked_controls=linked_controls,
+        linked_docs=linked_docs,
     )
 
 

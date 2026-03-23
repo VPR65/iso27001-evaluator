@@ -14,7 +14,7 @@ from app.models import (
 )
 from app.auth import get_current_user, SESSION_COOKIE_NAME
 from app.database import engine
-from app.templates_core import templates
+from app.templates_core import templates, render
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
@@ -79,15 +79,15 @@ def dashboard(request: Request):
 
         return templates.TemplateResponse(
             "dashboard/index.html",
-            {
-                "request": request,
-                "user": user,
-                "total_clients": total_clients,
-                "total_evals": total_evals,
-                "total_rfcs": total_rfcs,
-                "active_sprints": active_sprints,
-                "recent_evals": recent_evals,
-                "score": round(score, 2) if score else None,
-                "clients": clients,
-            },
+            make_context(
+                request,
+                user,
+                total_clients=total_clients,
+                total_evals=total_evals,
+                total_rfcs=total_rfcs,
+                active_sprints=active_sprints,
+                recent_evals=recent_evals,
+                score=round(score, 2) if score else None,
+                clients=clients,
+            ),
         )

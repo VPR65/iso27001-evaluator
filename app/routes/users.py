@@ -4,7 +4,7 @@ from sqlmodel import Session, select
 from app.models import User, Client, UserRole, AuditLog
 from app.auth import get_current_user, require_role, hash_password
 from app.database import engine
-from app.templates_core import templates
+from app.templates_core import templates, render
 from app.security import verify_csrf_token
 
 
@@ -37,10 +37,7 @@ def list_users(request: Request, client_id: str):
             raise HTTPException(status_code=404)
         users = session.exec(select(User).where(User.client_id == client_id)).all()
 
-    return templates.TemplateResponse(
-        "users/list.html",
-        {"request": request, "user": user, "client": client, "users": users},
-    )
+    return render(request, "users/list.html", client=client, users=users)
 
 
 @router.get("/new", response_class=HTMLResponse)
@@ -48,16 +45,13 @@ def new_user_form(request: Request, client_id: str):
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
     require_role(user, [UserRole.SUPERADMIN, UserRole.ADMIN_CLIENTE])
-    return templates.TemplateResponse(
+    return render(
+        request,
         "users/form.html",
-        {
-            "request": request,
-            "user": user,
-            "client_id": client_id,
-            "edit_user": None,
-            "roles": [r.value for r in UserRole if r != UserRole.SUPERADMIN],
-            "errors": None,
-        },
+        client_id=client_id,
+        edit_user=None,
+        roles=[r.value for r in UserRole if r != UserRole.SUPERADMIN],
+        errors=None,
     )
 
 
@@ -88,30 +82,24 @@ async def create_user(request: Request, client_id: str):
                 "USER_CREATE_FAILED",
                 f"Cliente {client_id} no existe",
             )
-            return templates.TemplateResponse(
+            return render(
+                request,
                 "users/form.html",
-                {
-                    "request": request,
-                    "user": user,
-                    "client_id": client_id,
-                    "edit_user": None,
-                    "roles": [r.value for r in UserRole if r != UserRole.SUPERADMIN],
-                    "errors": {"client": "El cliente no existe. Crealo primero."},
-                },
+                client_id=client_id,
+                edit_user=None,
+                roles=[r.value for r in UserRole if r != UserRole.SUPERADMIN],
+                errors={"client": "El cliente no existe. Crealo primero."},
             )
         existing = session.exec(select(User).where(User.email == email)).first()
         if existing:
             _log(session, user.id, "USER_CREATE_FAILED", f"Email {email} ya existe")
-            return templates.TemplateResponse(
+            return render(
+                request,
                 "users/form.html",
-                {
-                    "request": request,
-                    "user": user,
-                    "client_id": client_id,
-                    "edit_user": None,
-                    "roles": [r.value for r in UserRole if r != UserRole.SUPERADMIN],
-                    "errors": {"email": "El email ya esta registrado"},
-                },
+                client_id=client_id,
+                edit_user=None,
+                roles=[r.value for r in UserRole if r != UserRole.SUPERADMIN],
+                errors={"email": "El email ya esta registrado"},
             )
         new_user = User(
             email=email,

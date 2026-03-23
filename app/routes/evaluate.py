@@ -33,7 +33,7 @@ MATURITY_LEVELS = {
 
 @router.get("/control/{control_id}", response_class=HTMLResponse)
 def evaluate_control(request: Request, evaluation_id: str, control_id: str):
-    from app.templates_core import templates
+    from app.templates_core import templates, render
 
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
@@ -71,21 +71,18 @@ def evaluate_control(request: Request, evaluation_id: str, control_id: str):
             ctrl_ids[current_idx + 1] if current_idx < len(ctrl_ids) - 1 else None
         )
 
-        return templates.TemplateResponse(
+        return render(
+            request,
             "evaluate/control.html",
-            {
-                "request": request,
-                "user": user,
-                "evaluation": evaluation,
-                "ctrl": ctrl,
-                "response": resp,
-                "files": files,
-                "maturity_levels": MATURITY_LEVELS,
-                "prev_ctrl": prev_ctrl,
-                "next_ctrl": next_ctrl,
-                "current_idx": current_idx + 1,
-                "total": len(ctrl_ids),
-            },
+            evaluation=evaluation,
+            ctrl=ctrl,
+            response=resp,
+            files=files,
+            maturity_levels=MATURITY_LEVELS,
+            prev_ctrl=prev_ctrl,
+            next_ctrl=next_ctrl,
+            current_idx=current_idx + 1,
+            total=len(ctrl_ids),
         )
 
 

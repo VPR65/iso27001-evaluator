@@ -4,7 +4,7 @@ from sqlmodel import Session, select, func
 from app.models import Evaluation, ControlResponse, ControlDefinition, User, UserRole
 from app.auth import get_current_user
 from app.database import engine
-from app.templates_core import templates
+from app.templates_core import templates, render
 
 router = APIRouter(prefix="/stats", tags=["stats"])
 
@@ -89,20 +89,17 @@ def stats_page(request: Request, evaluation_id: str):
         ]
         critical_controls = [c for c in critical_controls if c["ctrl"]]
 
-        return templates.TemplateResponse(
+        return render(
+            request,
             "stats/report.html",
-            {
-                "request": request,
-                "user": user,
-                "evaluation": evaluation,
-                "domain_data": domain_data,
-                "score": score,
-                "answered": len(responses),
-                "total": len(all_controls),
-                "critical": critical,
-                "radar": radar,
-                "critical_controls": critical_controls,
-            },
+            evaluation=evaluation,
+            domain_data=domain_data,
+            score=score,
+            answered=len(responses),
+            total=len(all_controls),
+            critical=critical,
+            radar=radar,
+            critical_controls=critical_controls,
         )
 
 

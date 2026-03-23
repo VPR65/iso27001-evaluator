@@ -10,7 +10,7 @@ from app.auth import (
     SESSION_EXPIRE_HOURS,
     verify_password,
 )
-from app.templates_core import templates
+from app.templates_core import templates, render
 from app.security import (
     check_rate_limit,
     record_failed_attempt,
@@ -68,13 +68,10 @@ async def login(
     # Verificar rate limiting antes de procesar
     can_login, wait_time = check_rate_limit(email)
     if not can_login:
-        return templates.TemplateResponse(
+        return render(
+            request,
             "login.html",
-            {
-                "request": request,
-                "error": f"Demasiados intentos. Espera {wait_time} segundos antes de intentar de nuevo.",
-                "csrf_token": get_csrf_token(),
-            },
+            error=f"Demasiados intentos. Espera {wait_time} segundos antes de intentar de nuevo.",
         )
 
     with SqlSession(engine) as session:
@@ -94,23 +91,17 @@ async def login(
                 )
             )
             session.commit()
-            return templates.TemplateResponse(
+            return render(
+                request,
                 "login.html",
-                {
-                    "request": request,
-                    "error": "Email o contrasena incorrectos",
-                    "csrf_token": get_csrf_token(),
-                },
+                error="Email o contrasena incorrectos",
             )
 
         if not user.is_active:
-            return templates.TemplateResponse(
+            return render(
+                request,
                 "login.html",
-                {
-                    "request": request,
-                    "error": "Usuario desactivado",
-                    "csrf_token": get_csrf_token(),
-                },
+                error="Usuario desactivado",
             )
 
         # Login exitoso - resetear rate limit

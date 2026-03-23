@@ -5,7 +5,7 @@ from sqlalchemy import desc
 from app.models import Document, DocumentVersion, Client, User, UserRole, DocumentState
 from app.auth import get_current_user, require_no_vista_solo, require_role
 from app.database import engine
-from app.templates_core import templates
+from app.templates_core import templates, render
 from app.security import verify_csrf_token
 import hashlib
 import difflib
@@ -49,10 +49,7 @@ def list_documents(request: Request):
                 {"doc": d, "latest": latest, "version_count": version_count}
             )
 
-    return templates.TemplateResponse(
-        "documents/list.html",
-        {"request": request, "user": user, "documents": docs_data},
-    )
+    return render(request, "documents/list.html", documents=docs_data)
 
 
 @router.get("/new", response_class=HTMLResponse)
@@ -65,15 +62,8 @@ def new_document_form(request: Request):
             clients = session.exec(select(Client)).all()
         else:
             clients = [session.get(Client, user.client_id)] if user.client_id else []
-    return templates.TemplateResponse(
-        "documents/form.html",
-        {
-            "request": request,
-            "user": user,
-            "clients": clients,
-            "doc": None,
-            "errors": None,
-        },
+    return render(
+        request, "documents/form.html", clients=clients, doc=None, errors=None
     )
 
 
@@ -140,10 +130,7 @@ def view_document(request: Request, doc_id: str):
             .where(DocumentVersion.document_id == doc_id)
             .order_by(DocumentVersion.created_at.desc())
         ).all()
-    return templates.TemplateResponse(
-        "documents/detail.html",
-        {"request": request, "user": user, "doc": doc, "versions": versions},
-    )
+    return render(request, "documents/detail.html", doc=doc, versions=versions)
 
 
 @router.get("/{doc_id}/version/{version_id}", response_class=HTMLResponse)
@@ -181,16 +168,13 @@ def view_version(request: Request, doc_id: str, version_id: str):
             )
             diff_text = "\n".join(d)
 
-    return templates.TemplateResponse(
+    return render(
+        request,
         "documents/version.html",
-        {
-            "request": request,
-            "user": user,
-            "doc": doc,
-            "version": version,
-            "diff": diff_text,
-            "prev_version": prev_version,
-        },
+        doc=doc,
+        version=version,
+        diff=diff_text,
+        prev_version=prev_version,
     )
 
 

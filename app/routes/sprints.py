@@ -14,7 +14,7 @@ from app.models import (
 )
 from app.auth import get_current_user, require_no_vista_solo
 from app.database import engine
-from app.templates_core import templates
+from app.templates_core import templates, render
 from app.security import verify_csrf_token
 
 router = APIRouter(prefix="/sprints", tags=["sprints"])
@@ -50,9 +50,7 @@ def list_sprints(request: Request):
                 {"sprint": s, "total_items": len(items), "done_items": done}
             )
 
-    return templates.TemplateResponse(
-        "sprints/list.html", {"request": request, "user": user, "sprints": sprint_data}
-    )
+    return render(request, "sprints/list.html", sprints=sprint_data)
 
 
 @router.get("/new", response_class=HTMLResponse)
@@ -65,10 +63,7 @@ def new_sprint_form(request: Request):
             clients = session.exec(select(Client)).all()
         else:
             clients = [session.get(Client, user.client_id)] if user.client_id else []
-    return templates.TemplateResponse(
-        "sprints/form.html",
-        {"request": request, "user": user, "clients": clients, "sprint": None},
-    )
+    return render(request, "sprints/form.html", clients=clients, sprint=None)
 
 
 @router.post("/new")
@@ -137,10 +132,7 @@ def view_sprint(request: Request, sprint_id: str):
             ).all()
             backlog_items.append({"item": item, "tasks": tasks})
 
-    return templates.TemplateResponse(
-        "sprints/detail.html",
-        {"request": request, "user": user, "sprint": sprint, "items": backlog_items},
-    )
+    return render(request, "sprints/detail.html", sprint=sprint, items=backlog_items)
 
 
 @router.post("/{sprint_id}/add-item")

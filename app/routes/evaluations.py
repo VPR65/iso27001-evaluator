@@ -14,7 +14,7 @@ from app.models import (
 )
 from app.auth import get_current_user, require_no_vista_solo
 from app.database import engine
-from app.templates_core import templates
+from app.templates_core import templates, render
 from app.security import verify_csrf_token
 
 router = APIRouter(prefix="/evaluations", tags=["evaluations"])
@@ -70,9 +70,7 @@ def list_evaluations(request: Request):
                 }
             )
 
-    return templates.TemplateResponse(
-        "evaluations/list.html", {"request": request, "user": user, "evaluations": data}
-    )
+    return render(request, "evaluations/list.html", evaluations=data)
 
 
 @router.get("/new", response_class=HTMLResponse)
@@ -85,15 +83,8 @@ def new_evaluation_form(request: Request):
             clients = session.exec(select(Client)).all()
         else:
             clients = [session.get(Client, user.client_id)] if user.client_id else []
-    return templates.TemplateResponse(
-        "evaluations/form.html",
-        {
-            "request": request,
-            "user": user,
-            "clients": clients,
-            "evaluation": None,
-            "errors": None,
-        },
+    return render(
+        request, "evaluations/form.html", clients=clients, evaluation=None, errors=None
     )
 
 
@@ -202,19 +193,16 @@ def view_evaluation(request: Request, evaluation_id: str):
         )
         progress = round(answered / total * 100, 1) if total else 0
 
-        return templates.TemplateResponse(
+        return render(
+            request,
             "evaluations/detail.html",
-            {
-                "request": request,
-                "user": user,
-                "evaluation": evaluation,
-                "client": client,
-                "domains": domains,
-                "total": total,
-                "answered": answered,
-                "score": score,
-                "progress": progress,
-            },
+            evaluation=evaluation,
+            client=client,
+            domains=domains,
+            total=total,
+            answered=answered,
+            score=score,
+            progress=progress,
         )
 
 

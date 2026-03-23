@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from app.models import User, UserRole
 from app.auth import get_current_user, require_role, hash_password
 from app.database import engine
-from app.templates_core import templates
+from app.templates_core import templates, render
 from app.security import verify_csrf_token
 from sqlmodel import Session, select
 
@@ -24,9 +24,7 @@ def all_users(request: Request):
         clients_map = {c.id: c for c in clients}
         user_list = [{"u": u, "client": clients_map.get(u.client_id)} for u in users]
 
-    return templates.TemplateResponse(
-        "admin/users.html", {"request": request, "user": user, "users": user_list}
-    )
+    return render(request, "admin/users.html", users=user_list)
 
 
 @router.post("/all-users")

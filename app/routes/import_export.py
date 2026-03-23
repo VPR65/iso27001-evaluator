@@ -86,12 +86,9 @@ def import_page(request: Request):
             clients = session.exec(select(Client)).all()
         else:
             clients = [session.get(Client, user.client_id)] if user.client_id else []
-    from app.templates_core import templates
+    from app.templates_core import templates, render
 
-    return templates.TemplateResponse(
-        "import_export/import.html",
-        {"request": request, "user": user, "clients": clients},
-    )
+    return render(request, "import_export/import.html", clients=clients)
 
 
 @router.post("/import")
