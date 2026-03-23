@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}RFCs{% endblock %}
+{% block page_title %}<i class="fa-solid fa-code-branch"></i> Solicitudes de Cambio (RFCs){% endblock %}
+
+{% block content %}
+<div class="section-card">
+    <div class="section-header">
+        <h3><i class="fa-solid fa-list"></i> Listado de RFCs</h3>
+        <a href="/rfcs/new" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Nuevo RFC</a>
+    </div>
+    <div class="section-body">
+        {% if rfcs %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Titulo</th>
+                    {% if user.role.value == 'superadmin' %}<th>Cliente</th>{% endif %}
+                    <th>Prioridad</th>
+                    <th>Riesgo</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in rfcs %}
+                <tr>
+                    <td>
+                        <strong>{{ item.rfc.title }}</strong>
+                    </td>
+                    {% if user.role.value == 'superadmin' %}
+                    <td>
+                        <i class="fa-solid fa-building" style="color:var(--text-secondary)"></i>
+                        {{ item.client.name if item.client else '-' }}
+                    </td>
+                    {% endif %}
+                    <td>
+                        <span class="badge priority-{{ item.rfc.priority.value }}">
+                            {{ item.rfc.priority.value }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge risk-{{ item.rfc.risk_level.value }}">
+                            <i class="fa-solid fa-triangle-exclamation"></i> {{ item.rfc.risk_level.value }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge {{ item.rfc.status.value }}">
+                            {{ item.rfc.status.value|replace('_',' ') }}
+                        </span>
+                    </td>
+                    <td>
+                        <i class="fa-regular fa-calendar" style="color:var(--text-secondary)"></i>
+                        {{ item.rfc.created_at.strftime('%d/%m/%Y') }}
+                    </td>
+                    <td>
+                        <a href="/rfcs/{{ item.rfc.id }}" class="btn btn-secondary btn-sm">
+                            <i class="fa-solid fa-eye"></i> Ver
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="fa-solid fa-code-branch"></i>
+            <p>No hay RFCs registrados.</p>
+            <a href="/rfcs/new" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Crear el primer RFC</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

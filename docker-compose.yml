@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./iso27001.db:/app/iso27001.db
+      - ./uploads:/app/uploads
+      - ./backups:/app/backups
+    environment:
+      - SECRET_KEY=change-this-in-production
+      - DATABASE_URL=sqlite:///./iso27001.db
+    restart: unless-stopped
+
+  backup:
+    image: python:3.12-slim
+    volumes:
+      - ./backups:/app/backups
+      - ./iso27001.db:/app/iso27001.db
+      - ./uploads:/app/uploads
+    working_dir: /app
+    entrypoint: ["python", "scripts/backup.py"]
+    command: ["auto"]
+    depends_on:
+      - app

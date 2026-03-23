@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ doc.title }} v{{ version.version }}{% endblock %}
+
+{% block content %}
+<div class="version-header">
+    <h1>{{ doc.title }} <span class="version-tag">v{{ version.version }}</span></h1>
+    <span class="badge {{ version.state.value }}">{{ version.state.value }}</span>
+</div>
+
+<div class="version-meta">
+    <p><strong>Fecha:</strong> {{ version.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+    <p><strong>Hash:</strong> <code>{{ version.content_hash[:16] }}...</code></p>
+    <p><strong>Cambios:</strong> {{ version.change_summary }}</p>
+</div>
+
+<div class="version-actions">
+    <form method="post" action="/documents/{{ doc.id }}/version/{{ version.id }}/rollback" style="display:inline">
+        <button type="submit" class="outline contrast" onclick="return confirm('Restaurar esta version como nueva version?')">Restaurar esta Version</button>
+    </form>
+    {% if version.state.value == 'draft' %}
+    <form method="post" action="/documents/{{ doc.id }}/version/{{ version.id }}/approve" style="display:inline">
+        <button type="submit" class="outline primary">Aprobar</button>
+    </form>
+    {% endif %}
+    {% if version.state.value == 'approved' %}
+    <form method="post" action="/documents/{{ doc.id }}/version/{{ version.id }}/publish" style="display:inline">
+        <button type="submit" class="primary">Publicar</button>
+    </form>
+    {% endif %}
+</div>
+
+<h3>Contenido</h3>
+<pre class="doc-content">{{ version.content or '(Sin contenido)' }}</pre>
+
+{% if diff %}
+<h3>Diff vs v{{ prev_version.version if prev_version else 'anterior' }}</h3>
+<pre class="diff-content">{{ diff }}</pre>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Evaluaciones{% endblock %}
+{% block page_title %}<i class="fa-solid fa-clipboard-check"></i> Evaluaciones{% endblock %}
+
+{% block content %}
+<div class="section-card">
+    <div class="section-header">
+        <h3><i class="fa-solid fa-list"></i> Evaluaciones ISO 27001</h3>
+        <div style="display:flex;gap:0.5rem;">
+            <a href="/import-export/import" class="btn btn-outline btn-sm"><i class="fa-solid fa-file-import"></i> Importar</a>
+            <a href="/evaluations/new" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Nueva</a>
+        </div>
+    </div>
+    <div class="section-body">
+        {% if evaluations %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    {% if user.role.value == 'superadmin' %}<th>Cliente</th>{% endif %}
+                    <th>Estado</th>
+                    <th>Score</th>
+                    <th>Progreso</th>
+                    <th>Fecha</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in evaluations %}
+                <tr>
+                    <td><strong>{{ item.eval.name }}</strong></td>
+                    {% if user.role.value == 'superadmin' %}
+                    <td><i class="fa-solid fa-building" style="color:var(--text-secondary)"></i> {{ item.client.name if item.client else '-' }}</td>
+                    {% endif %}
+                    <td><span class="badge {{ item.eval.status.value }}">{{ item.eval.status.value|replace('_',' ') }}</span></td>
+                    <td>
+                        <strong>{{ item.score if item.score else '-' }}</strong>
+                    </td>
+                    <td style="min-width:120px">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {{ item.progress }}%"></div>
+                        </div>
+                        <span style="font-size:0.75rem;color:var(--text-secondary)">{{ item.progress }}%</span>
+                    </td>
+                    <td><i class="fa-regular fa-calendar" style="color:var(--text-secondary)"></i> {{ item.eval.created_at.strftime('%d/%m/%Y') }}</td>
+                    <td>
+                        <a href="/evaluations/{{ item.eval.id }}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-eye"></i></a>
+                        <a href="/stats/{{ item.eval.id }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-chart-pie"></i></a>
+                        <a href="/import-export/export/{{ item.eval.id }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-download"></i></a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="fa-solid fa-clipboard-check"></i>
+            <p>No hay evaluaciones registradas.</p>
+            <a href="/evaluations/new" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Crear primera evaluacion</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

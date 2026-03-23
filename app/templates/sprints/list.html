@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Sprints{% endblock %}
+{% block page_title %}<i class="fa-solid fa-layer-group"></i> Sprints Agiles{% endblock %}
+
+{% block content %}
+<div class="section-card">
+    <div class="section-header">
+        <h3><i class="fa-solid fa-layer-group"></i> Sprints</h3>
+        <a href="/sprints/new" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Nuevo Sprint</a>
+    </div>
+    <div class="section-body">
+        {% if sprints %}
+        <table>
+            <thead>
+                <tr><th>Nombre</th><th>Objetivo</th><th>Estado</th><th>Items</th><th>Completados</th><th>Fecha</th><th>Acciones</th></tr>
+            </thead>
+            <tbody>
+                {% for item in sprints %}
+                <tr>
+                    <td><strong>{{ item.sprint.name }}</strong></td>
+                    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ item.sprint.goal or '-' }}</td>
+                    <td><span class="badge {{ item.sprint.status.value }}">{{ item.sprint.status.value|replace('_',' ') }}</span></td>
+                    <td>{{ item.total_items }}</td>
+                    <td>
+                        {% if item.total_items > 0 %}
+                        <span style="color:var(--success);font-weight:600">{{ item.done_items }}</span>
+                        {% else %}
+                        {{ item.done_items }}
+                        {% endif %}
+                    </td>
+                    <td><i class="fa-regular fa-calendar" style="color:var(--text-secondary)"></i> {{ item.sprint.created_at.strftime('%d/%m/%Y') }}</td>
+                    <td><a href="/sprints/{{ item.sprint.id }}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-eye"></i> Ver</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="fa-solid fa-layer-group"></i>
+            <p>No hay sprints creados.</p>
+            <a href="/sprints/new" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Crear primer sprint</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

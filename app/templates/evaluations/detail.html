@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}{{ evaluation.name }}{% endblock %}
+
+{% block content %}
+<div class="eval-header">
+    <h1>{{ evaluation.name }}</h1>
+    <div class="eval-meta">
+        <span class="badge {{ evaluation.status.value }}">{{ evaluation.status.value }}</span>
+        {% if evaluation.description %}<p>{{ evaluation.description }}</p>{% endif %}
+    </div>
+</div>
+
+<div class="eval-stats">
+    <div class="stat-card">
+        <div class="stat-value">{{ answered }}</div>
+        <div class="stat-label">Respondidos</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ total }}</div>
+        <div class="stat-label">Total Controles</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:{% if score >= 4 %}green{% elif score >= 2.5 %}orange{% else %}red{% endif %}">{{ score }}</div>
+        <div class="stat-label">Score Madurez</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ progress }}%</div>
+        <div class="stat-label">Completado</div>
+    </div>
+</div>
+
+<div class="eval-actions">
+    {% if evaluation.status.value == 'draft' %}
+    <form method="post" action="/evaluations/{{ evaluation.id }}/start" style="display:inline">
+        <button type="submit" class="primary">Iniciar Evaluacion</button>
+    </form>
+    {% endif %}
+    {% if evaluation.status.value == 'in_progress' %}
+    <form method="post" action="/evaluations/{{ evaluation.id }}/complete" style="display:inline">
+        <button type="submit" class="primary">Completar Evaluacion</button>
+    </form>
+    {% endif %}
+    <a href="/stats/{{ evaluation.id }}" class="button">Ver Estadisticas</a>
+    <a href="/import-export/export/{{ evaluation.id }}" class="button outline">Exportar Excel</a>
+</div>
+
+<div class="domains-section">
+    {% for domain, info in domains.items() %}
+    <details class="domain-block">
+        <summary>
+            <span class="domain-name">{{ domain }}</span>
+            <span class="domain-stats">
+                Avg: {{ info.avg }} |
+                {{ info.answered }}/{{ info.total }} ({{ info.pct }}%)
+            </span>
+        </summary>
+        <table>
+            <thead>
+                <tr>
+                    <th>Codigo</th>
+                    <th>Control</th>
+                    <th>Madurez</th>
+                    <th>Accion</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in info.controls %}
+                <tr class="{% if item.response and item.response.maturity == 0 %}unanswered{% elif item.response and item.response.maturity < 2 %}critical{% endif %}">
+                    <td><strong>{{ item.ctrl.code }}</strong></td>
+                    <td>{{ item.ctrl.title }}</td>
+                    <td>
+                        {% if item.response %}
+                        <span class="maturity-badge level-{{ item.response.maturity }}">{{ item.response.maturity }}</span>
+                        {% else %}-{% endif %}
+                    </td>
+                    <td>
+                        <a href="/evaluate/{{ evaluation.id }}/control/{{ item.ctrl.id }}" class="button outline small">
+                            {{ 'Editar' if item.response and item.response.maturity > 0 else 'Evaluar' }}
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </details>
+    {% endfor %}
+</div>
+{% endblock %}

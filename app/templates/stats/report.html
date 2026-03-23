@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}{{ evaluation.name }} - Estadisticas{% endblock %}
+{% block page_title %}<i class="fa-solid fa-chart-pie"></i> Reporte: {{ evaluation.name }}{% endblock %}
+
+{% block content %}
+<div class="eval-stats" style="margin-bottom:1.5rem">
+    <div class="stat-card" style="text-align:center">
+        <div class="stat-value" style="font-size:2.5em;color:{% if score >= 4 %}#10b981{% elif score >= 2.5 %}#f59e0b{% else %}#ef4444{% endif %}">{{ score }}</div>
+        <div class="stat-label">Score de Madurez</div>
+        <div style="font-size:0.7rem;color:var(--text-secondary)">/ 5.0</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:var(--primary)">{{ answered }}/{{ total }}</div>
+        <div class="stat-label">Controles Respondidos</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color:#ef4444">{{ critical }}</div>
+        <div class="stat-label">Controles Criticos (&lt; 2)</div>
+    </div>
+</div>
+
+{% if radar %}
+<div class="charts-grid">
+    <div class="chart-card">
+        <h3 style="margin:0 0 1rem"><i class="fa-solid fa-chart-bar" style="color:var(--primary);margin-right:0.5rem"></i> Score por Dominio</h3>
+        <canvas id="barChart"></canvas>
+    </div>
+    <div class="chart-card">
+        <h3 style="margin:0 0 1rem"><i class="fa-solid fa-chart-polar" style="color:var(--primary);margin-right:0.5rem"></i> Perfil de Madurez</h3>
+        <canvas id="radarChart"></canvas>
+    </div>
+</div>
+{% endif %}
+
+<div class="section-card">
+    <div class="section-header">
+        <h3><i class="fa-solid fa-triangle-exclamation" style="color:#ef4444"></i> Controles Criticos (Nivel &lt; 2)</h3>
+    </div>
+    <div class="section-body">
+        {% if critical_controls %}
+        <table>
+            <thead>
+                <tr><th>Codigo</th><th>Control</th><th>Dominio</th><th>Nivel</th><th>Accion</th></tr>
+            </thead>
+            <tbody>
+                {% for item in critical_controls %}
+                <tr class="critical">
+                    <td><span class="ctrl-code">{{ item.ctrl.code }}</span></td>
+                    <td>{{ item.ctrl.title }}</td>
+                    <td>{{ item.ctrl.domain }}</td>
+                    <td><span class="badge level-{{ item.maturity }}">{{ item.maturity }}</span></td>
+                    <td><a href="/evaluate/{{ evaluation.id }}/control/{{ item.ctrl.id }}" class="btn btn-primary btn-sm"><i class="fa-solid fa-pen"></i> Evaluar</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="fa-solid fa-check-circle" style="color:#10b981"></i>
+            <p>No hay controles criticos. Excelente trabajo!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="section-card">
+    <div class="section-header">
+        <h3><i class="fa-solid fa-table-list" style="color:var(--primary)"></i> Detalle por Dominio</h3>
+    </div>
+    <div class="section-body">
+        <table>
+            <thead>
+                <tr><th>Dominio</th><th>Controles</th><th>Score Promedio</th><th>Criticos</th></tr>
+            </thead>
+            <tbody>
+                {% for d in domain_data %}
+                <tr class="{% if d.avg < 2 %}row-critical{% elif d.avg < 3 %}row-warning{% endif %}">
+                    <td><strong>{{ d.name }}</strong></td>
+                    <td>{{ d.count }}</td>
+                    <td><strong style="color:{% if d.avg >= 4 %}#10b981{% elif d.avg >= 2.5 %}#f59e0b{% else %}#ef4444{% endif %}">{{ d.avg }}</strong></td>
+                    <td>{% if d.critical > 0 %}<span class="badge priority-P1">{{ d.critical }}</span>{% else %}<span style="color:#10b981">0</span>{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+(function() {
+    const radarData = {{ radar | tojson | safe }};
+    if (!radarData || radarData.length === 0) return;
+
+    const barLabels = radarData.map(d => {
+        const parts = d.domain.split(' ');
+        return parts[0] + ' ' + parts[1];
+    });
+    const barValues = radarData.map(d => d.avg);
+    const barColors = barValues.map(v => v >= 4 ? '#10b981' : v >= 2.5 ? '#f59e0b' : '#ef4444');
+
+    const barEl = document.getElementById('barChart');
+    if (barEl) {
+        new Chart(barEl, {
+            type: 'bar',
+            data: {
+                labels: barLabels,
+                datasets: [{
+                    label: 'Score Promedio',
+                    data: barValues,
+                    backgroundColor: barColors,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                maintainAspectRatio: true,
+                responsive: true,
+                plugins: { legend: { display: false }, title: { display: false } },
+                scales: {
+                    x: { max: 5, grid: { color: '#e2e8f0' }, ticks: { stepSize: 1 } },
+                    y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+                }
+            }
+        });
+    }
+
+    const radarEl = document.getElementById('radarChart');
+    if (radarEl) {
+        new Chart(radarEl, {
+            type: 'radar',
+            data: {
+                labels: barLabels,
+                datasets: [{
+                    label: 'Score',
+                    data: barValues,
+                    backgroundColor: 'rgba(79,70,229,0.18)',
+                    borderColor: 'rgba(79,70,229,0.9)',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#4f46e5',
+                    pointRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    r: {
+                        max: 5,
+                        ticks: { stepSize: 1, backdropColor: 'transparent' },
+                        grid: { color: '#e2e8f0' },
+                        pointLabels: { font: { size: 10 }, color: '#64748b' },
+                        angleLines: { color: '#e2e8f0' }
+                    }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+})();
+</script>
+{% endblock %}

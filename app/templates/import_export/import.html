@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Importar Excel{% endblock %}
+
+{% block content %}
+<h1>Importar desde Excel</h1>
+
+<h3>Importar a Evaluacion Existente</h3>
+<form method="post" action="/import-export/import" enctype="multipart/form-data">
+    <input type="hidden" name="name" value="">
+    <input type="hidden" name="client_id" value="">
+    <input type="hidden" name="evaluation_id" value="">
+    <label for="file">Archivo Excel *</label>
+    <input type="file" id="file" name="file" accept=".xlsx,.xls" required>
+    <p class="help-text">El archivo debe tener columnas: Codigo, Madurez, Notas</p>
+    <button type="submit" class="primary">Importar</button>
+</form>
+
+{% if clients %}
+<h3>Crear Nueva Evaluacion desde Excel</h3>
+<form method="post" action="/import-export/import" enctype="multipart/form-data">
+    <label for="name">Nombre de Evaluacion *</label>
+    <input type="text" name="name" required>
+    {% if user.role.value == 'superadmin' %}
+    <label for="client_id">Cliente *</label>
+    <select name="client_id" required>
+        <option value="">Seleccionar</option>
+        {% for c in clients %}
+        <option value="{{ c.id }}">{{ c.name }}</option>
+        {% endfor %}
+    </select>
+    {% else %}
+    <input type="hidden" name="client_id" value="{{ user.client_id }}">
+    {% endif %}
+    <input type="hidden" name="evaluation_id" value="">
+    <label for="file2">Archivo Excel *</label>
+    <input type="file" id="file2" name="file" accept=".xlsx,.xls" required>
+    <button type="submit" class="primary">Importar y Crear</button>
+</form>
+{% endif %}
+{% endblock %}

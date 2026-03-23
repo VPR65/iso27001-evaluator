@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Documentos{% endblock %}
+{% block page_title %}<i class="fa-solid fa-file-lines"></i> Gestion de Documentos{% endblock %}
+
+{% block content %}
+<div class="section-card">
+    <div class="section-header">
+        <h3><i class="fa-solid fa-folder-open"></i> Documentos</h3>
+        <a href="/documents/new" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Nuevo</a>
+    </div>
+    <div class="section-body">
+        {% if documents %}
+        <table>
+            <thead>
+                <tr><th>Titulo</th><th>Tipo</th><th>Version Actual</th><th>Estado</th><th>Versiones</th><th>Acciones</th></tr>
+            </thead>
+            <tbody>
+                {% for item in documents %}
+                <tr>
+                    <td><strong>{{ item.doc.title }}</strong></td>
+                    <td><i class="fa-solid fa-tag" style="color:var(--text-secondary)"></i> {{ item.doc.document_type }}</td>
+                    <td><span class="version-tag">v{{ item.latest.version if item.latest else '0.0.0' }}</span></td>
+                    <td><span class="badge {{ item.latest.state.value if item.latest else 'draft' }}">{{ item.latest.state.value if item.latest else 'draft' }}</span></td>
+                    <td><span class="badge draft">{{ item.version_count }}</span></td>
+                    <td><a href="/documents/{{ item.doc.id }}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-eye"></i> Ver</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="fa-solid fa-file-lines"></i>
+            <p>No hay documentos registrados.</p>
+            <a href="/documents/new" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Crear primer documento</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

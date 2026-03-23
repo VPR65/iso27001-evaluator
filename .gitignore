@@ -1,0 +1,11 @@
+*.pyc
+__pycache__/
+*.db
+.env
+uploads/
+backups/
+venv/
+.venv/
+*.xlsx
+.DS_Store
+nul

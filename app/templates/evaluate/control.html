@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Evaluar: {{ ctrl.code }}{% endblock %}
+
+{% block content %}
+<div class="eval-nav">
+    <a href="/evaluations/{{ evaluation.id }}" class="button outline">Volver a Evaluacion</a>
+    <span class="eval-progress">{{ current_idx }} / {{ total }}</span>
+</div>
+
+<h1><span class="ctrl-code">{{ ctrl.code }}</span> - {{ ctrl.title }}</h1>
+
+<div class="control-info">
+    <p><strong>Dominio:</strong> {{ ctrl.domain }}</p>
+    <p><strong>Descripcion:</strong> {{ ctrl.description }}</p>
+</div>
+
+<div class="eval-form">
+    <form method="post" action="/evaluate/{{ evaluation.id }}/control/{{ ctrl.id }}/save">
+        <fieldset>
+            <legend>Nivel de Madurez</legend>
+            {% for level, (name, desc) in maturity_levels.items() %}
+            <label class="maturity-option {% if response and response.maturity == level %}selected{% endif %}">
+                <input type="radio" name="maturity" value="{{ level }}" {% if response and response.maturity == level %}checked{% endif %} required>
+                <span class="maturity-level level-{{ level }}">{{ level }}</span>
+                <span class="maturity-name"><strong>{{ name }}</strong></span>
+                <span class="maturity-desc">{{ desc }}</span>
+            </label>
+            {% endfor %}
+        </fieldset>
+
+        <label for="notes">Notas / Hallazgos</label>
+        <textarea id="notes" name="notes" rows="4" placeholder="Registre aqui los hallazgos, evidencias o comentarios sobre este control...">{{ response.notes if response else '' }}</textarea>
+
+        <div class="form-actions">
+            <button type="submit" class="primary">Guardar</button>
+        </div>
+    </form>
+
+    <div class="evidence-section">
+        <h3>Archivos de Evidencia</h3>
+        {% if files %}
+        <ul class="file-list">
+            {% for file in files %}
+            <li>
+                <a href="/{{ file.filepath }}" target="_blank">{{ file.filename }}</a>
+                ({{ (file.file_size / 1024)|round(1) }} KB)
+                <form method="post" action="/evaluate/{{ evaluation.id }}/control/{{ ctrl.id }}/delete-file/{{ file.id }}" style="display:inline">
+                    <button type="submit" class="outline contrast small">Eliminar</button>
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="no-files">Sin archivos de evidencia</p>
+        {% endif %}
+
+        <form method="post" action="/evaluate/{{ evaluation.id }}/control/{{ ctrl.id }}/upload" enctype="multipart/form-data">
+            <label for="file">Subir evidencia (PDF, imagenes, documentos)</label>
+            <input type="file" id="file" name="file" accept=".pdf,.png,.jpg,.jpeg,.docx,.xlsx">
+            <button type="submit" class="outline">Subir Archivo</button>
+        </form>
+    </div>
+</div>
+
+<div class="eval-nav-bottom">
+    {% if prev_ctrl %}
+    <a href="/evaluate/{{ evaluation.id }}/control/{{ prev_ctrl }}" class="button outline">Anterior</a>
+    {% endif %}
+    {% if next_ctrl %}
+    <a href="/evaluate/{{ evaluation.id }}/control/{{ next_ctrl }}" class="button">Siguiente</a>
+    {% endif %}
+</div>
+{% endblock %}

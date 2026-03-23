@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ title or 'ISO 27001 Evaluator' }}{% endblock %} | ISO27001</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/htmx.org@1.9.10/dist/htmx.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    {% if user %}
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>ISO27001</span>
+                </div>
+                <button class="sidebar-toggle" onclick="toggleSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="/dashboard" class="nav-item {% if request.url.path == '/dashboard' %}active{% endif %}">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/evaluations" class="nav-item {% if '/evaluations' in request.url.path %}active{% endif %}">
+                    <i class="fa-solid fa-clipboard-check"></i>
+                    <span>Evaluaciones</span>
+                </a>
+                <a href="/documents" class="nav-item {% if '/documents' in request.url.path %}active{% endif %}">
+                    <i class="fa-solid fa-file-lines"></i>
+                    <span>Documentos</span>
+                </a>
+                <a href="/rfcs" class="nav-item {% if '/rfcs' in request.url.path %}active{% endif %}">
+                    <i class="fa-solid fa-code-branch"></i>
+                    <span>RFCs</span>
+                </a>
+                <a href="/sprints" class="nav-item {% if '/sprints' in request.url.path %}active{% endif %}">
+                    <i class="fa-solid fa-layer-group"></i>
+                    <span>Sprints</span>
+                </a>
+                {% if user.role.value == 'superadmin' %}
+                <div class="nav-divider"></div>
+                <a href="/clients" class="nav-item {% if '/clients' in request.url.path %}active{% endif %}">
+                    <i class="fa-solid fa-building"></i>
+                    <span>Clientes</span>
+                </a>
+                <a href="/admin/all-users" class="nav-item {% if '/admin' in request.url.path %}active{% endif %}">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Usuarios</span>
+                </a>
+                {% endif %}
+                <div class="nav-divider"></div>
+                <a href="/import-export/import" class="nav-item {% if '/import' in request.url.path %}active{% endif %}">
+                    <i class="fa-solid fa-file-import"></i>
+                    <span>Importar</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-card">
+                    <div class="user-avatar">{{ user.name[:2]|upper }}</div>
+                    <div class="user-details">
+                        <div class="user-name">{{ user.name }}</div>
+                        <div class="user-role">{{ user.role.value|replace('superadmin','Superadmin')|replace('admin_cliente','Admin Cliente')|replace('evaluador','Evaluador')|replace('vista_solo','Solo Vista') }}</div>
+                    </div>
+                    <form method="post" action="/logout" class="logout-btn">
+                        <button type="submit" title="Cerrar sesion">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </aside>
+
+        <div class="main-area">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <h2 class="page-title">{% block page_title %}Dashboard{% endblock %}</h2>
+                </div>
+                <div class="topbar-right">
+                    <div class="datetime-widget">
+                        <i class="fa-regular fa-calendar"></i>
+                        <span id="current-date"></span>
+                        <span class="separator">|</span>
+                        <i class="fa-regular fa-clock"></i>
+                        <span id="current-time"></span>
+                    </div>
+                </div>
+            </header>
+
+            <main class="content">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+    {% else %}
+    {% block auth_content %}{% endblock %}
+    {% endif %}
+
+    <script>
+        function updateDateTime() {
+            const now = new Date();
+            const dateOptions = { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' };
+            const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            const dateEl = document.getElementById('current-date');
+            const timeEl = document.getElementById('current-time');
+            if (dateEl) dateEl.textContent = now.toLocaleDateString('es-ES', dateOptions);
+            if (timeEl) timeEl.textContent = now.toLocaleTimeString('es-ES', timeOptions);
+        }
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+
+        function toggleSidebar() {
+            document.querySelector('.app-layout').classList.toggle('sidebar-collapsed');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ doc.title }}{% endblock %}
+
+{% block content %}
+<h1>{{ doc.title }}</h1>
+<p><strong>Tipo:</strong> {{ doc.document_type }} | <strong>Versiones:</strong> {{ versions|length }}</p>
+
+<div class="doc-actions">
+    <a href="/documents/{{ doc.id }}/version/new" class="button primary">Nueva Version</a>
+</div>
+
+<h2>Historial de Versiones</h2>
+{% if versions %}
+<table>
+    <thead>
+        <tr><th>Version</th><th>Estado</th><th>Fecha</th><th>Resumen de Cambios</th><th>Acciones</th></tr>
+    </thead>
+    <tbody>
+        {% for v in versions %}
+        <tr class="{% if v.state.value == 'published' %}published-row{% endif %}">
+            <td><strong>{{ v.version }}</strong></td>
+            <td><span class="badge {{ v.state.value }}">{{ v.state.value }}</span></td>
+            <td>{{ v.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>{{ v.change_summary }}</td>
+            <td>
+                <a href="/documents/{{ doc.id }}/version/{{ v.id }}" class="button outline small">Ver</a>
+                {% if v.state.value == 'draft' %}
+                <form method="post" action="/documents/{{ doc.id }}/version/{{ v.id }}/approve" style="display:inline">
+                    <button type="submit" class="outline small">Aprobar</button>
+                </form>
+                {% endif %}
+                {% if v.state.value == 'approved' %}
+                <form method="post" action="/documents/{{ doc.id }}/version/{{ v.id }}/publish" style="display:inline">
+                    <button type="submit" class="primary small">Publicar</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No hay versiones.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}<i class="fa-solid fa-chart-line"></i> Dashboard{% endblock %}
+
+{% block content %}
+<div class="kpi-grid">
+    <div class="kpi-card">
+        <div class="kpi-icon blue"><i class="fa-solid fa-building"></i></div>
+        <div class="kpi-info">
+            <div class="kpi-value">{{ total_clients }}</div>
+            <div class="kpi-label">Clientes</div>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon green"><i class="fa-solid fa-clipboard-check"></i></div>
+        <div class="kpi-info">
+            <div class="kpi-value">{{ total_evals }}</div>
+            <div class="kpi-label">Evaluaciones</div>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon orange"><i class="fa-solid fa-code-branch"></i></div>
+        <div class="kpi-info">
+            <div class="kpi-value">{{ total_rfcs }}</div>
+            <div class="kpi-label">RFCs Activos</div>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon purple"><i class="fa-solid fa-layer-group"></i></div>
+        <div class="kpi-info">
+            <div class="kpi-value">{{ active_sprints }}</div>
+            <div class="kpi-label">Sprints Activos</div>
+        </div>
+    </div>
+</div>
+
+{% if score is not none %}
+<div class="score-section">
+    <h2><i class="fa-solid fa-chart-simple"></i> Score de Madurez Promedio</h2>
+    <div class="score-display">
+        <div class="score-number" style="color: {% if score >= 4 %}#10b981{% elif score >= 2.5 %}#f59e0b{% else %}#ef4444{% endif %}">{{ score }}</div>
+        <div class="score-max">/ 5.0</div>
+    </div>
+    <div class="score-bar">
+        <div class="score-bar-fill" style="width: {{ (score / 5 * 100)|round }}%; background: {% if score >= 4 %}linear-gradient(90deg, #10b981, #34d399){% elif score >= 2.5 %}linear-gradient(90deg, #f59e0b, #fbbf24){% else %}linear-gradient(90deg, #ef4444, #f87171){% endif %}"></div>
+    </div>
+</div>
+{% endif %}
+
+<div class="section-card">
+    <div class="section-header">
+        <h3><i class="fa-solid fa-clock-rotate-left"></i> Evaluaciones Recientes</h3>
+        <a href="/evaluations/new" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Nueva</a>
+    </div>
+    <div class="section-body">
+        {% if recent_evals %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for eval in recent_evals %}
+                <tr>
+                    <td><strong>{{ eval.name }}</strong></td>
+                    <td><span class="badge {{ eval.status.value }}">{{ eval.status.value|replace('_',' ') }}</span></td>
+                    <td><i class="fa-regular fa-calendar"></i> {{ eval.created_at.strftime('%d/%m/%Y') }}</td>
+                    <td>
+                        <a href="/evaluations/{{ eval.id }}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-eye"></i> Ver</a>
+                        <a href="/stats/{{ eval.id }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-chart-pie"></i> Stats</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="fa-solid fa-clipboard-list"></i>
+            <p>No hay evaluaciones aun.</p>
+            <a href="/evaluations/new" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Crear primera evaluacion</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="section-card">
+    <div class="section-header">
+        <h3><i class="fa-solid fa-bolt"></i> Acciones Rapidas</h3>
+    </div>
+    <div class="section-body">
+        <div class="quick-actions">
+            <a href="/evaluations/new" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Nueva Evaluacion</a>
+            <a href="/rfcs/new" class="btn btn-secondary"><i class="fa-solid fa-code-branch"></i> Nuevo RFC</a>
+            <a href="/sprints/new" class="btn btn-secondary"><i class="fa-solid fa-layer-group"></i> Nuevo Sprint</a>
+            <a href="/documents/new" class="btn btn-secondary"><i class="fa-solid fa-file-circle-plus"></i> Nuevo Documento</a>
+            <a href="/import-export/import" class="btn btn-outline"><i class="fa-solid fa-file-import"></i> Importar Excel</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

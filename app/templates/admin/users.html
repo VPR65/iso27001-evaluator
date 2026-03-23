@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Usuarios Globales{% endblock %}
+
+{% block content %}
+<h1>Usuarios del Sistema</h1>
+
+<form method="post" class="create-user-form">
+    <h3>Crear Nuevo Usuario</h3>
+    <div class="form-row">
+        <input type="text" name="name" placeholder="Nombre" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="password" name="password" placeholder="Contrasena" required>
+        <button type="submit" class="primary">Crear</button>
+    </div>
+</form>
+
+{% if users %}
+<table>
+    <thead>
+        <tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Cliente</th><th>Activo</th></tr>
+    </thead>
+    <tbody>
+        {% for item in users %}
+        <tr>
+            <td>{{ item.u.name }}</td>
+            <td>{{ item.u.email }}</td>
+            <td>{{ item.u.role.value }}</td>
+            <td>{{ item.client.name if item.client else '-' }}</td>
+            <td><span class="badge {{ 'active' if item.u.is_active else 'archived' }}">{{ 'Si' if item.u.is_active else 'No' }}</span></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}

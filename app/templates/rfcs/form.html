@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Nuevo RFC{% endblock %}
+
+{% block content %}
+<h1>Nueva Solicitud de Cambio (RFC)</h1>
+<form method="post">
+    <label for="title">Titulo *</label>
+    <input type="text" id="title" name="title" required>
+
+    <label for="description">Descripcion *</label>
+    <textarea id="description" name="description" rows="4" required></textarea>
+
+    {% if user.role.value == 'superadmin' %}
+    <label for="client_id">Cliente *</label>
+    <select id="client_id" name="client_id" required>
+        <option value="">Seleccionar cliente</option>
+        {% for client in clients %}
+        <option value="{{ client.id }}">{{ client.name }}</option>
+        {% endfor %}
+    </select>
+    {% else %}
+    <input type="hidden" name="client_id" value="{{ user.client_id }}">
+    {% endif %}
+
+    <div class="form-row">
+        <div>
+            <label for="risk_level">Nivel de Riesgo *</label>
+            <select id="risk_level" name="risk_level" required>
+                <option value="low">Bajo</option>
+                <option value="medium">Medio</option>
+                <option value="high">Alto</option>
+                <option value="critical">Critico</option>
+            </select>
+        </div>
+        <div>
+            <label for="impact">Impacto *</label>
+            <select id="impact" name="impact" required>
+                <option value="low">Bajo</option>
+                <option value="medium">Medio</option>
+                <option value="high">Alto</option>
+                <option value="critical">Critico</option>
+            </select>
+        </div>
+        <div>
+            <label for="urgency">Urgencia *</label>
+            <select id="urgency" name="urgency" required>
+                <option value="low">Bajo</option>
+                <option value="medium">Medio</option>
+                <option value="high">Alto</option>
+                <option value="critical">Critico</option>
+            </select>
+        </div>
+    </div>
+
+    <label for="implementation_plan">Plan de Implementacion</label>
+    <textarea id="implementation_plan" name="implementation_plan" rows="3"></textarea>
+
+    <label for="rollback_plan">Plan de Rollback</label>
+    <textarea id="rollback_plan" name="rollback_plan" rows="2"></textarea>
+
+    <label for="test_plan">Plan de Pruebas</label>
+    <textarea id="test_plan" name="test_plan" rows="2"></textarea>
+
+    <label for="target_date">Fecha Objetivo</label>
+    <input type="date" id="target_date" name="target_date">
+
+    <div class="form-actions">
+        <button type="submit" class="primary">Crear RFC</button>
+        <a href="/rfcs" class="button outline">Cancelar</a>
+    </div>
+</form>
+{% endblock %}

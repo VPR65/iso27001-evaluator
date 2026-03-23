@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{{ sprint.name }}{% endblock %}
+
+{% block content %}
+<h1>{{ sprint.name }}</h1>
+<p><strong>Objetivo:</strong> {{ sprint.goal or '-' }}</p>
+<p><span class="badge {{ sprint.status.value }}">{{ sprint.status.value }}</span></p>
+
+<div class="sprint-actions">
+    {% if sprint.status.value == 'planned' %}
+    <form method="post" action="/sprints/{{ sprint.id }}/status" style="display:inline">
+        <input type="hidden" name="status" value="active">
+        <button type="submit" class="primary">Iniciar Sprint</button>
+    </form>
+    {% endif %}
+    {% if sprint.status.value == 'active' %}
+    <form method="post" action="/sprints/{{ sprint.id }}/status" style="display:inline">
+        <input type="hidden" name="status" value="completed">
+        <button type="submit" class="primary">Completar Sprint</button>
+    </form>
+    {% endif %}
+</div>
+
+<h3>Agregar Item al Backlog</h3>
+<form method="post" action="/sprints/{{ sprint.id }}/add-item" class="add-item-form">
+    <input type="text" name="title" placeholder="Titulo del item" required>
+    <textarea name="description" placeholder="Descripcion"></textarea>
+    <select name="priority">
+        <option value="critical">Critico</option>
+        <option value="high">Alto</option>
+        <option value="medium" selected>Medio</option>
+        <option value="low">Bajo</option>
+    </select>
+    <input type="number" name="effort_hours" placeholder="Horas" min="0" value="0">
+    <button type="submit" class="primary">Agregar</button>
+</form>
+
+<h3>Backlog Items</h3>
+{% if items %}
+{% for item_data in items %}
+<div class="backlog-item">
+    <div class="item-header">
+        <strong>{{ item_data.item.title }}</strong>
+        <span class="badge priority-{{ item_data.item.priority.value }}">{{ item_data.item.priority.value }}</span>
+        <span class="badge {{ item_data.item.status.value }}">{{ item_data.item.status.value }}</span>
+        {% if item_data.item.effort_hours %}<span>{{ item_data.item.effort_hours }}h</span>{% endif %}
+    </div>
+    {% if item_data.item.description %}<p>{{ item_data.item.description }}</p>{% endif %}
+</div>
+{% endfor %}
+{% else %}
+<p>No hay items en este sprint.</p>
+{% endif %}
+
+<p><a href="/sprints">&larr; Volver a Sprints</a></p>
+{% endblock %}

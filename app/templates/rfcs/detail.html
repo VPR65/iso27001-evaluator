@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}{{ rfc.title }}{% endblock %}
+
+{% block content %}
+<h1>{{ rfc.title }}</h1>
+
+<div class="rfc-meta-grid">
+    <div class="rfc-meta-item">
+        <strong>Prioridad:</strong>
+        <span class="badge priority-{{ rfc.priority.value }}">{{ rfc.priority.value }}</span>
+    </div>
+    <div class="rfc-meta-item">
+        <strong>Riesgo:</strong>
+        <span class="badge risk-{{ rfc.risk_level.value }}">{{ rfc.risk_level.value }}</span>
+    </div>
+    <div class="rfc-meta-item">
+        <strong>Impacto:</strong> {{ rfc.impact.value }}
+    </div>
+    <div class="rfc-meta-item">
+        <strong>Urgencia:</strong> {{ rfc.urgency.value }}
+    </div>
+    <div class="rfc-meta-item">
+        <strong>Estado:</strong>
+        <span class="badge {{ rfc.status.value }}">{{ rfc.status.value }}</span>
+    </div>
+    <div class="rfc-meta-item">
+        <strong>Fecha:</strong> {{ rfc.created_at.strftime('%Y-%m-%d') }}
+    </div>
+</div>
+
+<h3>Descripcion</h3>
+<p>{{ rfc.description }}</p>
+
+{% if rfc.implementation_plan %}
+<h3>Plan de Implementacion</h3>
+<p>{{ rfc.implementation_plan }}</p>
+{% endif %}
+
+{% if rfc.rollback_plan %}
+<h3>Plan de Rollback</h3>
+<p>{{ rfc.rollback_plan }}</p>
+{% endif %}
+
+{% if rfc.test_plan %}
+<h3>Plan de Pruebas</h3>
+<p>{{ rfc.test_plan }}</p>
+{% endif %}
+
+<div class="rfc-workflow">
+    <h3>Gestionar Estado</h3>
+    <div class="workflow-buttons">
+        <form method="post" action="/rfcs/{{ rfc.id }}/status" style="display:inline">
+            <input type="hidden" name="status" value="evaluated">
+            <button type="submit" class="outline">Evaluar</button>
+        </form>
+        <form method="post" action="/rfcs/{{ rfc.id }}/status" style="display:inline">
+            <input type="hidden" name="status" value="approved">
+            <button type="submit" class="outline primary">Aprobar</button>
+        </form>
+        <form method="post" action="/rfcs/{{ rfc.id }}/status" style="display:inline">
+            <input type="hidden" name="status" value="rejected">
+            <button type="submit" class="outline contrast">Rechazar</button>
+        </form>
+        <form method="post" action="/rfcs/{{ rfc.id }}/status" style="display:inline">
+            <input type="hidden" name="status" value="implemented">
+            <button type="submit" class="primary">Marcar Implementado</button>
+        </form>
+        <form method="post" action="/rfcs/{{ rfc.id }}/status" style="display:inline">
+            <input type="hidden" name="status" value="closed">
+            <button type="submit" class="outline">Cerrar</button>
+        </form>
+    </div>
+</div>
+
+<p><a href="/rfcs">&larr; Volver a RFCs</a></p>
+{% endblock %}

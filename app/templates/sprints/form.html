@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Nuevo Sprint{% endblock %}
+
+{% block content %}
+<h1>Nuevo Sprint</h1>
+<form method="post">
+    <label for="name">Nombre del Sprint *</label>
+    <input type="text" id="name" name="name" required placeholder="Sprint 1 - ISO 27001">
+
+    <label for="goal">Objetivo del Sprint</label>
+    <textarea id="goal" name="goal" rows="2"></textarea>
+
+    {% if user.role.value == 'superadmin' %}
+    <label for="client_id">Cliente *</label>
+    <select id="client_id" name="client_id" required>
+        <option value="">Seleccionar cliente</option>
+        {% for client in clients %}
+        <option value="{{ client.id }}">{{ client.name }}</option>
+        {% endfor %}
+    </select>
+    {% else %}
+    <input type="hidden" name="client_id" value="{{ user.client_id }}">
+    {% endif %}
+
+    <div class="form-row">
+        <div>
+            <label for="start_date">Fecha de Inicio</label>
+            <input type="date" id="start_date" name="start_date">
+        </div>
+        <div>
+            <label for="end_date">Fecha de Fin</label>
+            <input type="date" id="end_date" name="end_date">
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="primary">Crear Sprint</button>
+        <a href="/sprints" class="button outline">Cancelar</a>
+    </div>
+</form>
+{% endblock %}

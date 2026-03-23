@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Nueva Evaluacion{% endblock %}
+
+{% block content %}
+<h1>Nueva Evaluacion</h1>
+<form method="post">
+    <label for="name">Nombre de la Evaluacion *</label>
+    <input type="text" id="name" name="name" required>
+
+    <label for="description">Descripcion</label>
+    <textarea id="description" name="description" rows="3"></textarea>
+
+    {% if user.role.value == 'superadmin' %}
+    <label for="client_id">Cliente *</label>
+    <select id="client_id" name="client_id" required>
+        <option value="">Seleccionar cliente</option>
+        {% for client in clients %}
+        <option value="{{ client.id }}">{{ client.name }}</option>
+        {% endfor %}
+    </select>
+    {% else %}
+    <input type="hidden" name="client_id" value="{{ user.client_id }}">
+    {% endif %}
+
+    <div class="form-actions">
+        <button type="submit" class="primary">Crear Evaluacion</button>
+        <a href="/evaluations" class="button outline">Cancelar</a>
+    </div>
+</form>
+{% endblock %}

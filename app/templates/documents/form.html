@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar' if doc else 'Nuevo' }} Documento{% endblock %}
+
+{% block content %}
+<h1>{{ 'Editar' if doc else 'Nuevo' }} Documento</h1>
+<form method="post">
+    <label for="title">Titulo *</label>
+    <input type="text" id="title" name="title" value="{{ doc.title if doc else '' }}" required>
+
+    <label for="document_type">Tipo de Documento</label>
+    <select id="document_type" name="document_type">
+        <option value="politica" {% if doc and doc.document_type == 'politica' %}selected{% endif %}>Politica</option>
+        <option value="procedimiento" {% if doc and doc.document_type == 'procedimiento' %}selected{% endif %}>Procedimiento</option>
+        <option value="instructivo" {% if doc and doc.document_type == 'instructivo' %}selected{% endif %}>Instructivo</option>
+        <option value="manual" {% if doc and doc.document_type == 'manual' %}selected{% endif %}>Manual</option>
+        <option value="guia" {% if doc and doc.document_type == 'guia' %}selected{% endif %}>Guia</option>
+        <option value="plan" {% if doc and doc.document_type == 'plan' %}selected{% endif %}>Plan</option>
+        <option value="informe" {% if doc and doc.document_type == 'informe' %}selected{% endif %}>Informe</option>
+        <option value="otro" {% if doc and doc.document_type == 'otro' %}selected{% endif %}>Otro</option>
+    </select>
+
+    {% if user.role.value == 'superadmin' %}
+    <label for="client_id">Cliente *</label>
+    <select id="client_id" name="client_id" required>
+        <option value="">Seleccionar cliente</option>
+        {% for client in clients %}
+        <option value="{{ client.id }}">{{ client.name }}</option>
+        {% endfor %}
+    </select>
+    {% else %}
+    <input type="hidden" name="client_id" value="{{ user.client_id }}">
+    {% endif %}
+
+    <label for="content">Contenido</label>
+    <textarea id="content" name="content" rows="10" placeholder="Contenido del documento..."></textarea>
+
+    <label for="change_summary">Resumen de Cambios</label>
+    <input type="text" id="change_summary" name="change_summary" value="Nueva version inicial">
+
+    <div class="form-actions">
+        <button type="submit" class="primary">Crear</button>
+        <a href="/documents" class="button outline">Cancelar</a>
+    </div>
+</form>
+{% endblock %}

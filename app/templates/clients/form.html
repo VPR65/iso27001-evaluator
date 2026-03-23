@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar' if client else 'Nuevo' }} Cliente{% endblock %}
+
+{% block content %}
+<h1>{{ 'Editar' if client else 'Nuevo' }} Cliente</h1>
+<form method="post">
+    <label for="name">Nombre *</label>
+    <input type="text" id="name" name="name" value="{{ client.name if client else '' }}" required>
+
+    <label for="sector">Sector</label>
+    <input type="text" id="sector" name="sector" value="{{ client.sector if client else '' }}">
+
+    <div class="form-actions">
+        <button type="submit" class="primary">{{ 'Guardar' if client else 'Crear' }}</button>
+        <a href="/clients" class="button outline">Cancelar</a>
+    </div>
+</form>
+{% endblock %}

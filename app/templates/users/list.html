@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Usuarios - {{ client.name }}{% endblock %}
+
+{% block content %}
+<h1>Usuarios: {{ client.name }}</h1>
+<a href="/clients/{{ client.id }}/users/new" class="button primary">Nuevo Usuario</a>
+<a href="/clients" class="button outline">Volver a Clientes</a>
+
+{% if users %}
+<table>
+    <thead>
+        <tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Activo</th><th>Acciones</th></tr>
+    </thead>
+    <tbody>
+        {% for u in users %}
+        <tr class="{% if not u.is_active %}inactive{% endif %}">
+            <td>{{ u.name }}</td>
+            <td>{{ u.email }}</td>
+            <td>{{ u.role.value }}</td>
+            <td><span class="badge {{ 'active' if u.is_active else 'archived' }}">{{ 'Si' if u.is_active else 'No' }}</span></td>
+            <td>
+                <form method="post" action="/clients/{{ client.id }}/users/{{ u.id }}/toggle" style="display:inline">
+                    <button type="submit" class="outline small">{{ 'Desactivar' if u.is_active else 'Activar' }}</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No hay usuarios.</p>
+{% endif %}
+{% endblock %}
