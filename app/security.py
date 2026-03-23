@@ -69,8 +69,8 @@ def verify_csrf_token(token: str) -> bool:
         timestamp_str, token_hash = token.split("_", 1)
         timestamp = int(timestamp_str)
 
-        # Verificar que el token no sea muy viejo (24 horas)
-        if time.time() - timestamp > 86400:
+        # Verificar que el token no sea muy viejo (48 horas)
+        if time.time() - timestamp > 172800:
             return False
 
         # Verificar el hash
