@@ -1,4 +1,4 @@
-# ISO 27001 Evaluator v1.1.0
+# ISO 27001 Evaluator v1.1.2
 
 Sistema web para evaluar el cumplimiento de seguridad de la informacion bajo el marco **ISO 27001:2022** (Anexo A - 93 controles organizados en 4 dominios).
 
@@ -42,6 +42,13 @@ La app estara disponible en: **http://localhost:8000**
 |----------------|------------------------|-----------|
 | Superadmin     | admin@iso27001.local   | admin123  |
 | Admin Cliente  | admin@demo.local       | demo123   |
+
+## Entornos Desplegados
+
+| Entorno | URL | Rama Git |
+|---------|-----|----------|
+| QA/Pruebas | https://iso27001-qa.onrender.com | main |
+| Produccion | https://iso27001-prod.onrender.com | production |
 
 ## Modulos
 

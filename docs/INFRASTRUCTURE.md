@@ -1,6 +1,6 @@
 # INFRAESTRUCTURA Y PLATAFORMAS - ISO 27001 Evaluator
 
-> Version: 1.1.0 | Ultima actualizacion: 2026-03-22
+> Version: 1.1.2 | Ultima actualizacion: 2026-03-23
 
 ---
 
@@ -120,18 +120,20 @@
   Repository: iso27001-evaluator
 
   Ramas:
-  ┌──────────────────────────────────────────────────┐
-  │  main (produccion) ─── etiquetas de release    │
-  │    │                                          │
-  │    └── dev (integracion)                      │
-  │          │                                     │
-  │          └── feature/nombre (desarrollo)        │
-  └──────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────┐
+  │  production ── etiquetas de release ──► Render Prod    │
+  │    │                                                     │
+  │    └── merge desde main (despues de QA OK)             │
+  │                                                         │
+  │  main ────────────────► Render QA                      │
+  │    │                                                     │
+  │    └── feature/nombre (desarrollo)                       │
+  └──────────────────────────────────────────────────────────┘
 
   Tags de version:
-  v1.0.0 ────── v1.1.0 ────── v1.2.0 (futuro)
+  v1.0.0 ────── v1.1.0 ────── v1.1.2 ────── v1.2.0 (futuro)
 
-  Integracion: Push automatico triggerea deploy en Render
+  Integracion: Push automatico triggerea deploy en Render (QA o Prod segun rama)
 ```
 
 | Recurso | Valor |
@@ -155,36 +157,49 @@
   Plan libre: 750 horas/mes
   (Si usas 1 servicio, dura ~31 dias con 24h activo)
 
-  ┌─────────────────────────────────────────────────────────┐
-  │                                                         │
-  │   GitHub Repo                                          │
-  │        │                                                │
-  │        ▼ (push a main)                                 │
-  │   Render Web Service                                   │
-  │        │                                                │
-  │        ├── Build: pip install -r requirements.txt         │
-  │        │                                                │
-  │        └── Start: uvicorn app.main:app                  │
-  │                   --host 0.0.0.0 --port $PORT          │
-  │                                                         │
-  │   URL: https://iso27001-evaluator.onrender.com          │
-  │   SSL: ✓ Automatico                                     │
-  │                                                         │
-  └─────────────────────────────────────────────────────────┘
+   ┌─────────────────────────────────────────────────────────┐
+   │                                                         │
+   │   GitHub Repo                                          │
+   │        │                                                │
+   │        ▼ (push a main)                                 │
+   │   QA: iso27001-qa.onrender.com (rama main)            │
+   │        │                                                │
+   │        ▼ (merge a production)                          │
+   │   Prod: iso27001-prod.onrender.com (rama production)   │
+   │                                                         │
+   │   Build: pip install -r requirements.txt                │
+   │   Start: uvicorn app.main:app --host 0.0.0.0 --port $PORT │
+   │   SSL: ✓ Automatico                                     │
+   │                                                         │
+   └─────────────────────────────────────────────────────────┘
 
-  Configuracion en Render:
-  ┌─────────────────────────┬──────────────────────────────┐
-  │ Name                   │ iso27001-evaluator          │
-  │ Region                 │ Oregon (o mas cercano)      │
-  │ Branch                 │ main                        │
-  │ Root Directory         │ (vacio)                     │
-  │ Environment            │ Python 3                    │
-  │ Build Command          │ pip install -r requirements.txt│
-  │ Start Command          │ uvicorn app.main:app        │
-  │                        │ --host 0.0.0.0              │
-  │                        │ --port $PORT                │
-  │ Plan                   │ Free                         │
-  └─────────────────────────┴──────────────────────────────┘
+   Render QA - iso27001-qa:
+   ┌─────────────────────────┬──────────────────────────────┐
+   │ Name                   │ iso27001-qa                  │
+   │ Region                 │ Oregon                       │
+   │ Branch                 │ main                         │
+   │ Root Directory         │ (vacio)                      │
+   │ Environment            │ Python 3                     │
+   │ Build Command          │ pip install -r requirements.txt│
+   │ Start Command          │ uvicorn app.main:app         │
+   │                        │ --host 0.0.0.0               │
+   │                        │ --port $PORT                 │
+   │ Plan                   │ Free                         │
+   └─────────────────────────┴──────────────────────────────┘
+
+   Render Prod - iso27001-prod:
+   ┌─────────────────────────┬──────────────────────────────┐
+   │ Name                   │ iso27001-prod                │
+   │ Region                 │ Oregon                       │
+   │ Branch                 │ production                   │
+   │ Root Directory         │ (vacio)                      │
+   │ Environment            │ Python 3                     │
+   │ Build Command          │ pip install -r requirements.txt│
+   │ Start Command          │ uvicorn app.main:app         │
+   │                        │ --host 0.0.0.0               │
+   │                        │ --port $PORT                 │
+   │ Plan                   │ Free                         │
+   └─────────────────────────┴──────────────────────────────┘
 ```
 
 | Recurso | Valor |
@@ -251,34 +266,32 @@
 ╚═══════════════════════════════════════════════════════════════════════╝
 
  DESARROLLO                    QA/STAGING                   PRODUCCION
- (Tu PC)                      (Render)                    (Render)
- ──────────                    ──────────                  ──────────
+ (Tu PC)                      (Render main)                (Render prod)
+ ──────────                    ──────────────                ──────────────
 
- 1. Crear rama feature         8. Pull request merge         12. Pull a main
-    git checkout -b             a dev (si hay)              desde dev
-    feature/mi-cambio                                        │
-    │                                                      ▼
-    ▼                                                 13. Deploy
- 2. Programar cambio                                       automatico
-    en VS Code              7. Probar en:                 a produccion
-    │                      https://iso27001-                  │
-    ▼                      qa.onrender.com                 ▼
- 3. Probar local                                          14. Accesible en:
-    uvicorn                                                https://
-    app.main:app --reload                                iso27001-eval
-    │                                                     .onrender.com
-    ▼                                                     │
- 4. Commit                      6. Si pasa QA:            15. Usuarios
-    git add .                 merge a dev                   finales usan
-    git commit -m                                        la app
-    "feat: cambio"                                        │
-    │                                                      ▼
-    ▼                                               16. Feedback
- 5. Push                       9. Si hay bugs:         del usuario
-    git push origin            volver a paso 1           │
-    feature/mi-cambio          con nueva rama            ▼
-                                 bugfix/xxx           17. Nuevo RFC
-                                                           ciclo
+ 1. Crear rama feature         6. Push a main              10. Merge a prod
+    git checkout -b             git push origin              git checkout prod
+    feature/mi-cambio          main                         git merge main
+    │                          │                            git push prod
+    ▼                          ▼                            │
+ 2. Programar cambio       7. QA auto-deploy              ▼
+    en VS Code          https://iso27001-           11. Prod auto-deploy
+    │                    qa.onrender.com            https://iso27001-prod
+    ▼                          │                            │
+ 3. Probar local          8. Probar todo OK              12. Verificar prod
+    uvicorn                 en QA                         │
+    app.main:app --reload   │                             ▼
+    │                        ▼                       13. Tag version
+ 4. Commit                 9. Si hay bugs:           git tag v1.2.0
+    git add .               volver a paso 1              -m "Release..."
+    git commit -m            con fix en main              │
+    "feat: cambio"           en nueva rama                 ▼
+    │                        │                       14. Usuarios finales
+ 5. Push                   Si todo OK ->                  usan prod
+    git push origin          ir a paso 10                 │
+    feature/mi-cambio        para promotion                ▼
+                                                     15. Feedback
+                                                     del usuario -> RFC
 
 ```
 

@@ -1,6 +1,6 @@
 # PROCESOS DE DESARROLLO - ISO 27001 Evaluator
 
-> Version: 1.1.0 | Ultima actualizacion: 2026-03-22
+> Version: 1.1.2 | Ultima actualizacion: 2026-03-23
 
 ---
 
@@ -336,30 +336,59 @@ python scripts/backup.py restore backups/backup_FECHA.zip
 - [ ] Documentacion actualizada (CHANGELOG.md)
 - [ ] Stakeholders notificados (si es release grande)
 
-### 5.2 Pasos de Despliegue
+### 5.2 Pasos de Despliegue (Flujo QA -> Prod)
+
+```
+rama main (QA)  ──────────────────►  iso27001-qa.onrender.com
+     │
+     │ git merge (despues de QA OK)
+     ▼
+rama production ──────────────────►  iso27001-prod.onrender.com
+```
 
 ```bash
-# 1. Crear backup pre-despliegue
+# 1. CREAR BACKUP pre-despliegue
 python scripts/backup.py backup
 
-# 2. Verificar que el codigo compila
-python -c "from app.main import app; print('OK')"
+# 2. DESARROLLAR en rama main
+git checkout main
+# ... hacer cambios, commitear ...
+git push origin main
+# --> QA se actualiza automaticamente
 
-# 3. Taggear la version
-git tag v1.1.0 -m "Release v1.1.0 - UI moderna, audit log, 93 controles"
+# 3. PROBAR en QA
+#    https://iso27001-qa.onrender.com
+#    Verificar todo funciona OK
 
-# 4. Push del tag
-git push origin --tags
+# 4. SI QA OK -> MERGE a production
+git checkout production
+git merge main
+git push origin production
+# --> PROD se actualiza automaticamente
 
-# 5. Desplegar
-#    Local: uvicorn app.main:app --reload --port 8000 --host 0.0.0.0
-#    Docker: docker-compose up --build -d
+# 5. VERIFICAR en PROD
+#    https://iso27001-prod.onrender.com
+curl https://iso27001-prod.onrender.com/health
 
-# 6. Verificar health check
-curl http://localhost:8000/health
-
-# 7. Verificar funcionalidades criticas manualmente
+# 6. TAGGEAR version en production
+git checkout production
+git tag v1.2.0 -m "Release v1.2.0"
+git push origin production --tags
 ```
+
+### 5.2b Ramas Git
+
+| Rama | Uso | Auto-deploy |
+|------|-----|-------------|
+| `main` | Desarrollo y QA | Render QA: iso27001-qa |
+| `production` | Produccion estable | Render Prod: iso27001-prod |
+
+### 5.2c Cambiar rama en Render
+
+Si necesitas cambiar la rama de un servicio en Render:
+1. Ve a Render Dashboard -> tu servicio
+2. Settings -> Branches
+3. Cambiar la rama -> Save changes
 
 ### 5.3 Rollback (1 comando, < 30 segundos)
 
