@@ -77,17 +77,15 @@ def dashboard(request: Request):
                 or 0
             )
 
-        return templates.TemplateResponse(
+        return render(
+            request,
             "dashboard/index.html",
-            make_context(
-                request,
-                user,
-                total_clients=total_clients,
-                total_evals=total_evals,
-                total_rfcs=total_rfcs,
-                active_sprints=active_sprints,
-                recent_evals=recent_evals,
-                score=round(score, 2) if score else None,
-                clients=clients,
-            ),
+            user,
+            total_clients=total_clients,
+            total_evals=total_evals,
+            total_rfcs=total_rfcs,
+            active_sprints=active_sprints,
+            recent_evals=recent_evals,
+            score=round(score, 2) if score else None,
+            clients=clients,
         )

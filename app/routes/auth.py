@@ -15,7 +15,6 @@ from app.security import (
     check_rate_limit,
     record_failed_attempt,
     reset_rate_limit,
-    get_csrf_token,
     verify_csrf_token,
 )
 
@@ -53,13 +52,10 @@ async def login(
     form_data = await request.form()
     csrf_token = form_data.get("csrf_token")
     if not csrf_token or not verify_csrf_token(csrf_token):
-        return templates.TemplateResponse(
+        return render(
+            request,
             "login.html",
-            {
-                "request": request,
-                "error": "Token de seguridad invalido. Refresca la pagina e intenta de nuevo.",
-                "csrf_token": get_csrf_token(),
-            },
+            error="Token de seguridad invalido. Refresca la pagina e intenta de nuevo.",
         )
 
     # Verificar rate limiting antes de procesar
