@@ -14,8 +14,8 @@ RUN useradd -m appuser
 COPY app/ ./app/
 COPY scripts/ ./scripts/
 
-RUN mkdir -p /app/uploads /app/backups
-RUN chown -R appuser:appuser /app/uploads /app/backups
+RUN mkdir -p /app/uploads /app/backups /app/backups/auto /app/backups/deploy /app/backups/rfc /app/backups/manual
+RUN chown -R appuser:appuser /app
 
 USER appuser
 
