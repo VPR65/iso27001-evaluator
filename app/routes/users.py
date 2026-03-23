@@ -125,9 +125,6 @@ async def toggle_user(request: Request, client_id: str, user_id: str):
     csrf_token = form_data.get("csrf_token")
     if not csrf_token or not verify_csrf_token(csrf_token):
         raise HTTPException(status_code=403, detail="Token CSRF invalido")
-    session_id = request.cookies.get("session_id")
-    user = get_current_user(session_id)
-    require_role(user, [UserRole.SUPERADMIN, UserRole.ADMIN_CLIENTE])
 
     with Session(engine) as session:
         if user.role == UserRole.ADMIN_CLIENTE and user.client_id != client_id:
@@ -136,6 +133,11 @@ async def toggle_user(request: Request, client_id: str, user_id: str):
         if edit_user and edit_user.client_id == client_id and edit_user.id != user.id:
             edit_user.is_active = not edit_user.is_active
             session.add(edit_user)
-            session.commit()
+            _log(
+                session,
+                user.id,
+                "USER_TOGGLED",
+                f"Toggle usuario {edit_user.email}: is_active={edit_user.is_active}",
+            )
 
     return RedirectResponse(url=f"/clients/{client_id}/users", status_code=302)

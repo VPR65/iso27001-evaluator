@@ -79,13 +79,20 @@ async def delete_client(request: Request, client_id: str):
     csrf_token = form_data.get("csrf_token")
     if not csrf_token or not verify_csrf_token(csrf_token):
         raise HTTPException(status_code=403, detail="Token CSRF invalido")
-    session_id = request.cookies.get("session_id")
-    user = get_current_user(session_id)
-    require_role(user, [UserRole.SUPERADMIN])
 
     with Session(engine) as session:
         client = session.get(Client, client_id)
         if client:
+            client_name = client.name
+            session.add(
+                AuditLog(
+                    user_id=user.id,
+                    action="CLIENT_DELETED",
+                    entity_type="client",
+                    entity_id=client_id,
+                    details=f"Cliente eliminado: {client_name}",
+                )
+            )
             session.delete(client)
             session.commit()
 

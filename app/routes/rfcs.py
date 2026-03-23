@@ -12,6 +12,7 @@ from app.models import (
     RfcPriority,
     RfcImpact,
     RfcUrgency,
+    AuditLog,
 )
 from app.auth import get_current_user, require_no_vista_solo
 from app.database import engine
@@ -127,6 +128,15 @@ async def create_rfc(request: Request):
             target_date=target,
         )
         session.add(rfc)
+        session.add(
+            AuditLog(
+                user_id=user.id,
+                action="RFC_CREATED",
+                entity_type="rfc",
+                entity_id=rfc.id,
+                details=f"RFC creado: {title} (riesgo: {risk_level}, prioridad: {priority.value})",
+            )
+        )
         session.commit()
 
     return RedirectResponse(url="/rfcs", status_code=302)
@@ -174,11 +184,6 @@ async def update_rfc_status(request: Request, rfc_id: str):
         raise HTTPException(status_code=403, detail="Token CSRF invalido")
 
     status = form_data.get("status")
-    session_id = request.cookies.get("session_id")
-    user = get_current_user(session_id)
-    from app.auth import require_role
-
-    require_role(user, [UserRole.SUPERADMIN, UserRole.ADMIN_CLIENTE])
     from datetime import datetime
 
     with Session(engine) as session:
@@ -187,6 +192,7 @@ async def update_rfc_status(request: Request, rfc_id: str):
             user.role != UserRole.SUPERADMIN and rfc.client_id != user.client_id
         ):
             raise HTTPException(status_code=404)
+        old_status = rfc.status.value
         rfc.status = RfcStatus(status)
         if status == "implemented":
             rfc.completed_at = datetime.utcnow()
@@ -195,5 +201,14 @@ async def update_rfc_status(request: Request, rfc_id: str):
         if status == "approved":
             rfc.approver_id = user.id
         session.add(rfc)
+        session.add(
+            AuditLog(
+                user_id=user.id,
+                action="RFC_STATUS_CHANGED",
+                entity_type="rfc",
+                entity_id=rfc_id,
+                details=f"RFC {rfc.title}: {old_status} -> {status}",
+            )
+        )
         session.commit()
     return RedirectResponse(url=f"/rfcs/{rfc_id}", status_code=302)

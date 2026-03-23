@@ -219,9 +219,7 @@ async def start_evaluation(request: Request, evaluation_id: str):
     csrf_token = form_data.get("csrf_token")
     if not csrf_token or not verify_csrf_token(csrf_token):
         raise HTTPException(status_code=403, detail="Token CSRF invalido")
-    session_id = request.cookies.get("session_id")
-    user = get_current_user(session_id)
-    require_no_vista_solo(user)
+
     with Session(engine) as session:
         evaluation = session.get(Evaluation, evaluation_id)
         if not evaluation or (
@@ -258,13 +256,6 @@ async def complete_evaluation(request: Request, evaluation_id: str):
 
     from datetime import datetime
 
-    session_id = request.cookies.get("session_id")
-    user = get_current_user(session_id)
-    from app.auth import require_role
-
-    require_role(user, [UserRole.SUPERADMIN, UserRole.ADMIN_CLIENTE])
-    from datetime import datetime
-
     with Session(engine) as session:
         evaluation = session.get(Evaluation, evaluation_id)
         if not evaluation:
@@ -297,6 +288,7 @@ async def delete_evaluation(request: Request, evaluation_id: str):
     csrf_token = form_data.get("csrf_token")
     if not csrf_token or not verify_csrf_token(csrf_token):
         raise HTTPException(status_code=403, detail="Token CSRF invalido")
+
     with Session(engine) as session:
         evaluation = session.get(Evaluation, evaluation_id)
         if evaluation and (

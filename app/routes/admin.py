@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
-from app.models import User, UserRole
+from app.models import User, UserRole, AuditLog
 from app.auth import get_current_user, hash_password
 from app.database import engine
 from app.templates_core import render
@@ -17,6 +17,16 @@ def all_users(request: Request):
     if not user:
         return RedirectResponse(url="/login")
     if user.role != UserRole.SUPERADMIN:
+        with Session(engine) as session:
+            session.add(
+                AuditLog(
+                    user_id=user.id,
+                    action="ACCESS_DENIED",
+                    entity_type="admin",
+                    details=f"Usuario {user.email} intento acceder a admin sin permisos",
+                )
+            )
+            session.commit()
         return RedirectResponse(url="/dashboard")
 
     with Session(engine) as session:
@@ -77,6 +87,17 @@ async def create_admin_user(request: Request):
         session.add(new_user)
         session.commit()
 
+        session.add(
+            AuditLog(
+                user_id=user.id,
+                action="USER_CREATED",
+                entity_type="user",
+                entity_id=new_user.id,
+                details=f"Usuario creado: {email} | Nombre: {name} | Rol: ADMIN_CLIENTE",
+            )
+        )
+        session.commit()
+
     return JSONResponse(
         status_code=200,
         content={"success": True, "message": f"Usuario {email} creado exitosamente"},
@@ -99,6 +120,41 @@ def debug_users(request: Request):
                 "users": [
                     {"id": u.id, "email": u.email, "name": u.name, "role": u.role.value}
                     for u in users
+                ],
+            },
+        )
+
+
+@router.get("/debug/audit-logs")
+def debug_audit_logs(request: Request):
+    session_id = request.cookies.get("session_id")
+    user = get_current_user(session_id)
+    if not user or user.role != UserRole.SUPERADMIN:
+        return JSONResponse(status_code=401, content={"error": "No autorizado"})
+
+    limit = int(request.query_params.get("limit", 50))
+    with Session(engine) as session:
+        from sqlalchemy import desc
+
+        logs = session.exec(
+            select(AuditLog).order_by(desc(AuditLog.created_at)).limit(limit)
+        ).all()
+        return JSONResponse(
+            status_code=200,
+            content={
+                "total": len(logs),
+                "logs": [
+                    {
+                        "id": l.id,
+                        "action": l.action,
+                        "entity_type": l.entity_type,
+                        "entity_id": l.entity_id,
+                        "user_id": l.user_id,
+                        "details": l.details,
+                        "ip_address": l.ip_address,
+                        "created_at": str(l.created_at),
+                    }
+                    for l in logs
                 ],
             },
         )

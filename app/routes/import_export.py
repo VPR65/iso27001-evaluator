@@ -8,9 +8,11 @@ from app.models import (
     ControlResponse,
     User,
     UserRole,
+    AuditLog,
 )
 from app.auth import get_current_user, require_no_vista_solo
 from app.database import engine
+from app.templates_core import render
 from app.security import verify_csrf_token
 import pandas as pd
 from datetime import datetime
@@ -86,7 +88,6 @@ def import_page(request: Request):
             clients = session.exec(select(Client)).all()
         else:
             clients = [session.get(Client, user.client_id)] if user.client_id else []
-    from app.templates_core import render
 
     return render(request, "import_export/import.html", clients=clients)
 
@@ -158,6 +159,16 @@ async def import_excel(request: Request):
                     r.maturity = int(maturity) if pd.notna(maturity) else 0
                     r.notes = notes if notes != "nan" else ""
                     session.add(r)
+        rows_imported = len(df)
+        session.add(
+            AuditLog(
+                user_id=user.id,
+                action="DATA_IMPORTED",
+                entity_type="evaluation",
+                entity_id=eval_obj.id,
+                details=f"Importo {rows_imported} controles desde Excel a evaluacion {eval_obj.name}",
+            )
+        )
         session.commit()
 
     return RedirectResponse(url=f"/evaluations/{eval_obj.id}", status_code=302)

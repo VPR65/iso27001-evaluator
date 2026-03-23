@@ -2,7 +2,15 @@ from fastapi import APIRouter, Request, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlmodel import Session, select
 from sqlalchemy import desc
-from app.models import Document, DocumentVersion, Client, User, UserRole, DocumentState
+from app.models import (
+    Document,
+    DocumentVersion,
+    Client,
+    User,
+    UserRole,
+    DocumentState,
+    AuditLog,
+)
 from app.auth import get_current_user, require_no_vista_solo, require_role
 from app.database import engine
 from app.templates_core import render
@@ -107,6 +115,15 @@ async def create_document(request: Request):
             content_hash=hashlib.sha256(content.encode()).hexdigest(),
         )
         session.add(v)
+        session.add(
+            AuditLog(
+                user_id=user.id,
+                action="DOCUMENT_CREATED",
+                entity_type="document",
+                entity_id=doc.id,
+                details=f"Documento creado: {title} (tipo: {document_type})",
+            )
+        )
         session.commit()
     return RedirectResponse(url="/documents", status_code=302)
 
@@ -220,6 +237,15 @@ async def new_version(request: Request, doc_id: str):
             previous_version_id=latest.id if latest else None,
         )
         session.add(v)
+        session.add(
+            AuditLog(
+                user_id=user.id,
+                action="DOCUMENT_VERSION_CREATED",
+                entity_type="document_version",
+                entity_id=v.id,
+                details=f"Nueva version {v.version} del documento {doc_id}: {change_summary}",
+            )
+        )
         session.commit()
     return RedirectResponse(url=f"/documents/{doc_id}", status_code=302)
 
@@ -234,9 +260,7 @@ async def approve_version(request: Request, doc_id: str, version_id: str):
     csrf_token = form_data.get("csrf_token")
     if not csrf_token or not verify_csrf_token(csrf_token):
         raise HTTPException(status_code=403, detail="Token CSRF invalido")
-    session_id = request.cookies.get("session_id")
-    user = get_current_user(session_id)
-    require_role(user, [UserRole.SUPERADMIN, UserRole.ADMIN_CLIENTE])
+
     from datetime import datetime
 
     with Session(engine) as session:
@@ -246,6 +270,15 @@ async def approve_version(request: Request, doc_id: str, version_id: str):
             v.approver_id = user.id
             v.approved_at = datetime.utcnow()
             session.add(v)
+            session.add(
+                AuditLog(
+                    user_id=user.id,
+                    action="DOCUMENT_VERSION_APPROVED",
+                    entity_type="document_version",
+                    entity_id=version_id,
+                    details=f"Version {v.version} del documento {doc_id} aprobada",
+                )
+            )
             session.commit()
     return RedirectResponse(
         url=f"/documents/{doc_id}/version/{version_id}", status_code=302
@@ -262,9 +295,6 @@ async def rollback_version(request: Request, doc_id: str, version_id: str):
     csrf_token = form_data.get("csrf_token")
     if not csrf_token or not verify_csrf_token(csrf_token):
         raise HTTPException(status_code=403, detail="Token CSRF invalido")
-    session_id = request.cookies.get("session_id")
-    user = get_current_user(session_id)
-    require_role(user, [UserRole.SUPERADMIN, UserRole.ADMIN_CLIENTE])
 
     with Session(engine) as session:
         source = session.get(DocumentVersion, version_id)
@@ -287,5 +317,14 @@ async def rollback_version(request: Request, doc_id: str, version_id: str):
             previous_version_id=latest.id if latest else None,
         )
         session.add(new_v)
+        session.add(
+            AuditLog(
+                user_id=user.id,
+                action="DOCUMENT_VERSION_ROLLBACK",
+                entity_type="document_version",
+                entity_id=new_v.id,
+                details=f"Rollback a version {source.version} del documento {doc_id}",
+            )
+        )
         session.commit()
     return RedirectResponse(url=f"/documents/{doc_id}", status_code=302)

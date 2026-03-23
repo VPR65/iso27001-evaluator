@@ -11,6 +11,7 @@ from app.models import (
     UserRole,
     TaskStatus,
     SprintStatus,
+    AuditLog,
 )
 from app.auth import get_current_user, require_no_vista_solo
 from app.database import engine
@@ -103,6 +104,15 @@ async def create_sprint(request: Request):
             end_date=end,
         )
         session.add(sprint)
+        session.add(
+            AuditLog(
+                user_id=user.id,
+                action="SPRINT_CREATED",
+                entity_type="sprint",
+                entity_id=sprint.id,
+                details=f"Sprint creado: {name} (meta: {goal})",
+            )
+        )
         session.commit()
 
     return RedirectResponse(url="/sprints", status_code=302)
@@ -167,6 +177,15 @@ async def add_backlog_item(request: Request, sprint_id: str):
             created_by=user.id,
         )
         session.add(item)
+        session.add(
+            AuditLog(
+                user_id=user.id,
+                action="BACKLOG_ITEM_ADDED",
+                entity_type="backlog_item",
+                entity_id=item.id,
+                details=f"Item agregado al sprint {sprint_id}: {title} (prioridad: {priority})",
+            )
+        )
         session.commit()
     return RedirectResponse(url=f"/sprints/{sprint_id}", status_code=302)
 
@@ -183,14 +202,21 @@ async def update_sprint_status(request: Request, sprint_id: str):
         raise HTTPException(status_code=403, detail="Token CSRF invalido")
 
     status = form_data.get("status")
-    session_id = request.cookies.get("session_id")
-    user = get_current_user(session_id)
-    require_no_vista_solo(user)
 
     with Session(engine) as session:
         sprint = session.get(Sprint, sprint_id)
         if sprint:
+            old_status = sprint.status.value
             sprint.status = SprintStatus(status)
             session.add(sprint)
+            session.add(
+                AuditLog(
+                    user_id=user.id,
+                    action="SPRINT_STATUS_CHANGED",
+                    entity_type="sprint",
+                    entity_id=sprint_id,
+                    details=f"Sprint {sprint.name}: {old_status} -> {status}",
+                )
+            )
             session.commit()
     return RedirectResponse(url=f"/sprints/{sprint_id}", status_code=302)

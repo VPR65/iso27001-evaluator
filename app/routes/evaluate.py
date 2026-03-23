@@ -6,6 +6,7 @@ from app.models import (
     ControlDefinition,
     ControlResponse,
     EvidenceFile,
+    AuditLog,
     User,
     UserRole,
 )
@@ -123,6 +124,16 @@ async def save_control(
             resp.notes = notes
             resp.updated_at = datetime.utcnow()
             session.add(resp)
+            ctrl = session.get(ControlDefinition, control_id)
+            session.add(
+                AuditLog(
+                    user_id=user.id,
+                    action="CONTROL_EVALUATED",
+                    entity_type="control_response",
+                    entity_id=resp.id,
+                    details=f"Control {ctrl.code} evaluado con madurez {maturity} en evaluacion {evaluation_id}",
+                )
+            )
         session.commit()
         return RedirectResponse(
             url=f"/evaluate/{evaluation_id}/control/{control_id}", status_code=302
@@ -180,6 +191,15 @@ async def upload_evidence(
             uploaded_by=user.id,
         )
         session.add(ef)
+        session.add(
+            AuditLog(
+                user_id=user.id,
+                action="EVIDENCE_UPLOADED",
+                entity_type="evidence_file",
+                entity_id=ef.id,
+                details=f"Evidencia subida: {safe_name} ({file_size} bytes) para control {control_id}",
+            )
+        )
         session.commit()
 
     return RedirectResponse(
@@ -202,9 +222,19 @@ async def delete_evidence(
     with Session(engine) as session:
         ef = session.get(EvidenceFile, file_id)
         if ef:
+            ef_name = ef.filename
             path = Path(ef.filepath)
             if path.exists():
                 path.unlink()
+            session.add(
+                AuditLog(
+                    user_id=user.id,
+                    action="EVIDENCE_DELETED",
+                    entity_type="evidence_file",
+                    entity_id=file_id,
+                    details=f"Evidencia eliminada: {ef_name} del control {control_id}",
+                )
+            )
             session.delete(ef)
             session.commit()
     return RedirectResponse(
