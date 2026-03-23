@@ -37,7 +37,7 @@ def all_users(request: Request):
         clients_map = {c.id: c for c in clients}
         user_list = [{"u": u, "client": clients_map.get(u.client_id)} for u in users]
 
-    resp = render(request, "admin/users.html", users=user_list)
+    resp = render(request, "admin/users.html", users=user_list, clients=clients)
     resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     resp.headers["Pragma"] = "no-cache"
     resp.headers["Expires"] = "0"
@@ -64,24 +64,35 @@ async def create_admin_user(request: Request):
     email = form_data.get("email")
     name = form_data.get("name")
     password = form_data.get("password")
+    role = form_data.get("role")
+    client_id = form_data.get("client_id")
 
-    if not email or not name or not password:
+    if not email or not name or not password or not role or not client_id:
         return JSONResponse(
             status_code=400,
             content={"success": False, "error": "Faltan campos obligatorios"},
         )
 
     with Session(engine) as session:
+        from app.models import Client
+
         existing = session.exec(select(User).where(User.email == email)).first()
         if existing:
             return JSONResponse(
                 status_code=409,
                 content={"success": False, "error": "El usuario ya existe"},
             )
+        client = session.get(Client, client_id)
+        if not client:
+            return JSONResponse(
+                status_code=404,
+                content={"success": False, "error": "Cliente no encontrado"},
+            )
         new_user = User(
             email=email,
             name=name,
-            role=UserRole.ADMIN_CLIENTE,
+            role=UserRole(role),
+            client_id=client_id,
             password_hash=hash_password(password),
         )
         session.add(new_user)
@@ -93,7 +104,7 @@ async def create_admin_user(request: Request):
                 action="USER_CREATED",
                 entity_type="user",
                 entity_id=new_user.id,
-                details=f"Usuario creado: {email} | Nombre: {name} | Rol: ADMIN_CLIENTE",
+                details=f"Usuario creado: {email} | Nombre: {name} | Rol: {role} | Cliente: {client.name}",
             )
         )
         session.commit()

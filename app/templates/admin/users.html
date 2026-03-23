@@ -11,6 +11,19 @@
         <input type="text" name="name" placeholder="Nombre" required>
         <input type="email" name="email" placeholder="Email" required>
         <input type="password" name="password" placeholder="Contrasena" required>
+        <select name="role" required>
+            <option value="admin_cliente">Admin Cliente</option>
+            <option value="auditor">Auditor</option>
+            <option value="responsable">Responsable</option>
+            <option value="consulta">Consulta</option>
+            <option value="vista_solo">Solo Vista</option>
+        </select>
+        <select name="client_id" required>
+            <option value="">-- Seleccionar Cliente --</option>
+            {% for c in clients %}
+            <option value="{{ c.id }}">{{ c.name }}</option>
+            {% endfor %}
+        </select>
         <button type="submit" class="primary">Crear</button>
     </div>
 </form>
