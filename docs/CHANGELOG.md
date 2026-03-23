@@ -7,6 +7,14 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 
 ## [v1.1.2] - 2026-03-23
 
+### Agregado
+- **AuditLog en todos los POST handlers** - rfcs.py (RFC_CREATED, RFC_STATUS_CHANGED), sprints.py (SPRINT_CREATED, BACKLOG_ITEM_ADDED, SPRINT_STATUS_CHANGED), users.py (USER_TOGGLED), import_export.py (DATA_IMPORTED), documents.py (DOCUMENT_CREATED, DOCUMENT_VERSION_CREATED/APPROVED/ROLLBACK), evaluations.py (EVALUATION_CREATED/STARTED/COMPLETED/DELETED), evaluate.py (CONTROL_EVALUATED, EVIDENCE_UPLOADED/DELETED), clients.py (CLIENT_CREATED/DELETED), admin.py (USER_CREATED, ACCESS_DENIED)
+
+### Correccion
+- **Admin user creation** - Formulario ahora requiere seleccion de cliente y rol; usuarios se asocian correctamente a su cliente
+- **Limpieza de duplicados** - Eliminados auth calls duplicados en rfcs.py, sprints.py, users.py
+- **import_export.py** - Render import movido a nivel de archivo; AuditLog adicionado
+
 ### Despliegue
 - **Deploy en Render QA** - https://iso27001-qa.onrender.com funcionando
 - **Deploy en Render Prod** - https://iso27001-prod.onrender.com funcionando
