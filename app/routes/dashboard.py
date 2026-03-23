@@ -14,7 +14,7 @@ from app.models import (
 )
 from app.auth import get_current_user, SESSION_COOKIE_NAME
 from app.database import engine
-from app.templates_core import templates, render
+from app.templates_core import render
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 

@@ -1,12 +1,16 @@
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 from pathlib import Path
+import jinja2
+from starlette.responses import HTMLResponse
 from app.security import get_csrf_token
 
 BASE_DIR = Path(__file__).parent
 
-templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
+_jinja_env = jinja2.Environment(
+    loader=jinja2.FileSystemLoader(str(BASE_DIR / "templates")),
+    autoescape=jinja2.select_autoescape(default=False, default_for_string=False),
+)
 
 
 def render(request: Request, template_name: str, user=None, **kwargs):
@@ -17,13 +21,18 @@ def render(request: Request, template_name: str, user=None, **kwargs):
         user = get_current_user(session_id)
     ctx = {"request": request, "user": user, "csrf_token": get_csrf_token()}
     ctx.update(kwargs)
-    return templates.TemplateResponse(template_name, ctx)
+    template = _jinja_env.get_template(template_name)
+    html = template.render(ctx)
+    return HTMLResponse(html)
 
 
 def setup_templates(app: FastAPI):
+    from starlette.templating import Jinja2Templates
+
     uploads_dir = BASE_DIR.parent / "uploads"
     uploads_dir.mkdir(exist_ok=True)
     app.mount("/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
+    templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
     return templates
 
 

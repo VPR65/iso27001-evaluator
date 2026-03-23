@@ -5,7 +5,7 @@ from sqlalchemy import desc
 from app.models import Document, DocumentVersion, Client, User, UserRole, DocumentState
 from app.auth import get_current_user, require_no_vista_solo, require_role
 from app.database import engine
-from app.templates_core import templates, render
+from app.templates_core import render
 from app.security import verify_csrf_token
 import hashlib
 import difflib

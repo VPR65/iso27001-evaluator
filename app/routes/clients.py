@@ -4,7 +4,7 @@ from sqlmodel import Session, select, func
 from app.models import Client, User, UserRole, AuditLog
 from app.auth import get_current_user, require_role
 from app.database import engine
-from app.templates_core import templates, render
+from app.templates_core import render
 from app.security import verify_csrf_token
 
 router = APIRouter(prefix="/clients", tags=["clients"])

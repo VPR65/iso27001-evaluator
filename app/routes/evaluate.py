@@ -33,7 +33,7 @@ MATURITY_LEVELS = {
 
 @router.get("/control/{control_id}", response_class=HTMLResponse)
 def evaluate_control(request: Request, evaluation_id: str, control_id: str):
-    from app.templates_core import templates, render
+    from app.templates_core import render
 
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)

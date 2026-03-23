@@ -86,7 +86,7 @@ def import_page(request: Request):
             clients = session.exec(select(Client)).all()
         else:
             clients = [session.get(Client, user.client_id)] if user.client_id else []
-    from app.templates_core import templates, render
+    from app.templates_core import render
 
     return render(request, "import_export/import.html", clients=clients)
 

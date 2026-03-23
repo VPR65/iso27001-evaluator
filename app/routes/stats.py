@@ -4,7 +4,7 @@ from sqlmodel import Session, select, func
 from app.models import Evaluation, ControlResponse, ControlDefinition, User, UserRole
 from app.auth import get_current_user
 from app.database import engine
-from app.templates_core import templates, render
+from app.templates_core import render
 
 router = APIRouter(prefix="/stats", tags=["stats"])
 

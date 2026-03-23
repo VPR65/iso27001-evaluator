@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from app.models import User, UserRole
 from app.auth import get_current_user, require_role, hash_password
 from app.database import engine
-from app.templates_core import templates, render
+from app.templates_core import render
 from app.security import verify_csrf_token
 from sqlmodel import Session, select
 

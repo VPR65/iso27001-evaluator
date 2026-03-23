@@ -10,7 +10,7 @@ from app.auth import (
     SESSION_EXPIRE_HOURS,
     verify_password,
 )
-from app.templates_core import templates, render
+from app.templates_core import render
 from app.security import (
     check_rate_limit,
     record_failed_attempt,
@@ -33,10 +33,7 @@ def login_page(request: Request):
     if user:
         return RedirectResponse(url="/dashboard")
 
-    csrf_token = get_csrf_token()
-    return templates.TemplateResponse(
-        "login.html", {"request": request, "error": None, "csrf_token": csrf_token}
-    )
+    return render(request, "login.html", error=None)
 
 
 @router.post("/login")
