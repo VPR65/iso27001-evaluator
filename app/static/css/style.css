@@ -897,17 +897,113 @@ details[open] summary::after {
 .empty-state p { margin: 0.25rem 0; }
 
 /* Responsive */
+
+/* Tablet landscape (1024px) */
+@media (max-width: 1024px) {
+    .sidebar { width: 200px; }
+    .app-layout.sidebar-collapsed .sidebar { width: 60px; }
+    .main-area { margin-left: 200px; }
+    .app-layout.sidebar-collapsed .main-area { margin-left: 60px; }
+}
+
+/* Tablet portrait (768px) - colapsar sidebar completamente */
 @media (max-width: 768px) {
     .sidebar {
         width: var(--sidebar-collapsed);
+        transform: translateX(-100%);
+    }
+    .sidebar.open {
+        transform: translateX(0);
+        width: 260px;
     }
     .sidebar .nav-item span,
     .sidebar .brand span,
     .sidebar .user-details { display: none; }
+    .sidebar.open .nav-item span,
+    .sidebar.open .brand span,
+    .sidebar.open .user-details { display: inline; }
     .sidebar .user-card { flex-direction: column; padding: 0.75rem 0.5rem; }
     .sidebar .logout-btn button i { display: block; }
-    .main-area { margin-left: var(--sidebar-collapsed); }
+    .main-area { margin-left: 0; }
     .charts-grid { grid-template-columns: 1fr; }
     .kpi-grid { grid-template-columns: repeat(2, 1fr); }
     .datetime-widget span:first-of-type { display: none; }
+    
+    /* Menu hamburguesa */
+    .mobile-menu-btn {
+        display: block !important;
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 200;
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+}
+
+/* Telefono pequeno (480px) */
+@media (max-width: 480px) {
+    .kpi-grid { grid-template-columns: 1fr; }
+    .kpi-card { padding: 1rem; }
+    .kpi-icon { width: 40px; height: 40px; font-size: 1.1rem; }
+    .kpi-value { font-size: 1.4rem; }
+    .page-title { font-size: 1rem; }
+    .topbar { padding: 0 0.75rem; }
+    .datetime-widget { font-size: 0.7rem; padding: 0.4rem 0.75rem; }
+    .content { padding: 0.75rem; }
+    .section-card { margin-bottom: 1rem; }
+    .section-header, .section-body { padding: 0.75rem; }
+    table { font-size: 0.75rem; }
+    th, td { padding: 0.5rem; }
+    .btn { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+    .form-row { grid-template-columns: 1fr; }
+    .eval-stats { grid-template-columns: repeat(2, 1fr); }
+    .score-number { font-size: 3rem; }
+    .login-card { padding: 1.5rem; margin: 1rem; }
+}
+
+/* Telefono normal (375px - iPhone standard) */
+@media (max-width: 375px) {
+    .sidebar.open { width: 100%; }
+    .kpi-card { flex-direction: column; text-align: center; }
+    .kpi-icon { margin: 0 auto 0.5rem; }
+    .charts-grid { display: flex; flex-direction: column; }
+    .chart-card { min-height: 250px; }
+}
+
+/* Tablet iPad landscape */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+    .sidebar { width: 180px; }
+    .main-area { margin-left: 180px; }
+    .charts-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* iPad Pro */
+@media (min-width: 1024px) and (max-width: 1366px) {
+    .sidebar { width: 240px; }
+    .main-area { margin-left: 240px; }
+    .kpi-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* Impresion */
+@media print {
+    .sidebar, .topbar, .btn, .mobile-menu-btn { display: none !important; }
+    .main-area { margin-left: 0; }
+    .content { padding: 0; }
+    .section-card { break-inside: avoid; border: 1px solid #ccc; }
+}
+
+/* Pantallas grandes */
+@media (min-width: 1440px) {
+    .content { max-width: 1400px; margin: 0 auto; }
+    .kpi-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* Soporte para Dark Mode (futuro) */
+@media (prefers-color-scheme: dark) {
+    /* Reserved for future dark mode implementation */
 }

@@ -11,6 +11,7 @@ from app.models import (
 )
 from app.auth import get_current_user, require_no_vista_solo
 from app.database import engine
+from app.security import verify_csrf_token
 from pathlib import Path
 import hashlib
 import aiofiles
@@ -89,16 +90,22 @@ def evaluate_control(request: Request, evaluation_id: str, control_id: str):
 
 
 @router.post("/control/{control_id}/save")
-def save_control(
+async def save_control(
     request: Request,
     evaluation_id: str,
     control_id: str,
-    maturity: int = Form(...),
-    notes: str = Form(""),
 ):
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
     require_no_vista_solo(user)
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        raise HTTPException(status_code=403, detail="Token CSRF invalido")
+
+    maturity = int(form_data.get("maturity"))
+    notes = form_data.get("notes", "")
 
     with Session(engine) as session:
         evaluation = session.get(Evaluation, evaluation_id)
@@ -127,8 +134,15 @@ def save_control(
 
 @router.post("/control/{control_id}/upload")
 async def upload_evidence(
-    request: Request, evaluation_id: str, control_id: str, file: UploadFile = File(...)
+    request: Request,
+    evaluation_id: str,
+    control_id: str,
+    csrf_token: str = Form(...),
+    file: UploadFile = File(...),
 ):
+    if not verify_csrf_token(csrf_token):
+        raise HTTPException(status_code=403, detail="Token CSRF invalido")
+
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
     require_no_vista_solo(user)
@@ -177,12 +191,17 @@ async def upload_evidence(
 
 
 @router.post("/control/{control_id}/delete-file/{file_id}")
-def delete_evidence(
+async def delete_evidence(
     request: Request, evaluation_id: str, control_id: str, file_id: str
 ):
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
     require_no_vista_solo(user)
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        raise HTTPException(status_code=403, detail="Token CSRF invalido")
     with Session(engine) as session:
         ef = session.get(EvidenceFile, file_id)
         if ef:

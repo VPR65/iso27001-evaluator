@@ -15,15 +15,18 @@
 
 <div class="version-actions">
     <form method="post" action="/documents/{{ doc.id }}/version/{{ version.id }}/rollback" style="display:inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <button type="submit" class="outline contrast" onclick="return confirm('Restaurar esta version como nueva version?')">Restaurar esta Version</button>
     </form>
     {% if version.state.value == 'draft' %}
     <form method="post" action="/documents/{{ doc.id }}/version/{{ version.id }}/approve" style="display:inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <button type="submit" class="outline primary">Aprobar</button>
     </form>
     {% endif %}
     {% if version.state.value == 'approved' %}
     <form method="post" action="/documents/{{ doc.id }}/version/{{ version.id }}/publish" style="display:inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <button type="submit" class="primary">Publicar</button>
     </form>
     {% endif %}

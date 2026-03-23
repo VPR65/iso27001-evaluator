@@ -20,6 +20,7 @@
             <td><span class="badge {{ 'active' if u.is_active else 'archived' }}">{{ 'Si' if u.is_active else 'No' }}</span></td>
             <td>
                 <form method="post" action="/clients/{{ client.id }}/users/{{ u.id }}/toggle" style="display:inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                     <button type="submit" class="outline small">{{ 'Desactivar' if u.is_active else 'Activar' }}</button>
                 </form>
             </td>

@@ -4,6 +4,7 @@
 {% block content %}
 <h1>Nueva Solicitud de Cambio (RFC)</h1>
 <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <label for="title">Titulo *</label>
     <input type="text" id="title" name="title" required>
 

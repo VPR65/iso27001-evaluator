@@ -6,6 +6,7 @@ from app.models import Document, DocumentVersion, Client, User, UserRole, Docume
 from app.auth import get_current_user, require_no_vista_solo, require_role
 from app.database import engine
 from app.templates_core import templates
+from app.security import verify_csrf_token
 import hashlib
 import difflib
 
@@ -77,17 +78,22 @@ def new_document_form(request: Request):
 
 
 @router.post("/new")
-def create_document(
-    request: Request,
-    title: str = Form(...),
-    document_type: str = Form(...),
-    client_id: str = Form(...),
-    content: str = Form(""),
-    change_summary: str = Form("Nueva version inicial"),
-):
+async def create_document(request: Request):
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
     require_no_vista_solo(user)
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        raise HTTPException(status_code=403, detail="Token CSRF invalido")
+
+    title = form_data.get("title")
+    document_type = form_data.get("document_type")
+    client_id = form_data.get("client_id")
+    content = form_data.get("content", "")
+    change_summary = form_data.get("change_summary", "Nueva version inicial")
+
     if user.role != UserRole.SUPERADMIN and user.client_id != client_id:
         raise HTTPException(status_code=403)
 
@@ -189,16 +195,19 @@ def view_version(request: Request, doc_id: str, version_id: str):
 
 
 @router.post("/{doc_id}/version")
-def new_version(
-    request: Request,
-    doc_id: str,
-    content: str = Form(...),
-    change_summary: str = Form(...),
-    state: str = Form("draft"),
-):
+async def new_version(request: Request, doc_id: str):
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
     require_no_vista_solo(user)
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        raise HTTPException(status_code=403, detail="Token CSRF invalido")
+
+    content = form_data.get("content")
+    change_summary = form_data.get("change_summary")
+    state = form_data.get("state", "draft")
 
     with Session(engine) as session:
         doc = session.get(Document, doc_id)
@@ -232,7 +241,15 @@ def new_version(
 
 
 @router.post("/{doc_id}/version/{version_id}/approve")
-def approve_version(request: Request, doc_id: str, version_id: str):
+async def approve_version(request: Request, doc_id: str, version_id: str):
+    session_id = request.cookies.get("session_id")
+    user = get_current_user(session_id)
+    require_role(user, [UserRole.SUPERADMIN, UserRole.ADMIN_CLIENTE])
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        raise HTTPException(status_code=403, detail="Token CSRF invalido")
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
     require_role(user, [UserRole.SUPERADMIN, UserRole.ADMIN_CLIENTE])
@@ -252,7 +269,15 @@ def approve_version(request: Request, doc_id: str, version_id: str):
 
 
 @router.post("/{doc_id}/version/{version_id}/rollback")
-def rollback_version(request: Request, doc_id: str, version_id: str):
+async def rollback_version(request: Request, doc_id: str, version_id: str):
+    session_id = request.cookies.get("session_id")
+    user = get_current_user(session_id)
+    require_role(user, [UserRole.SUPERADMIN, UserRole.ADMIN_CLIENTE])
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        raise HTTPException(status_code=403, detail="Token CSRF invalido")
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
     require_role(user, [UserRole.SUPERADMIN, UserRole.ADMIN_CLIENTE])

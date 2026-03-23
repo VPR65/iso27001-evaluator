@@ -5,6 +5,7 @@ from app.models import Client, User, UserRole, AuditLog
 from app.auth import get_current_user, require_role
 from app.database import engine
 from app.templates_core import templates
+from app.security import verify_csrf_token
 
 router = APIRouter(prefix="/clients", tags=["clients"])
 
@@ -42,10 +43,18 @@ def new_client_form(request: Request):
 
 
 @router.post("/new")
-def create_client(request: Request, name: str = Form(...), sector: str = Form("")):
+async def create_client(request: Request):
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
     require_role(user, [UserRole.SUPERADMIN])
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        raise HTTPException(status_code=403, detail="Token CSRF invalido")
+
+    name = form_data.get("name")
+    sector = form_data.get("sector", "")
 
     with Session(engine) as session:
         client = Client(name=name, sector=sector)
@@ -67,7 +76,15 @@ def create_client(request: Request, name: str = Form(...), sector: str = Form(""
 
 
 @router.post("/{client_id}/delete")
-def delete_client(request: Request, client_id: str):
+async def delete_client(request: Request, client_id: str):
+    session_id = request.cookies.get("session_id")
+    user = get_current_user(session_id)
+    require_role(user, [UserRole.SUPERADMIN])
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        raise HTTPException(status_code=403, detail="Token CSRF invalido")
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
     require_role(user, [UserRole.SUPERADMIN])

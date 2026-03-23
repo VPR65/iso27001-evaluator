@@ -11,6 +11,7 @@ from app.models import (
 )
 from app.auth import get_current_user, require_no_vista_solo
 from app.database import engine
+from app.security import verify_csrf_token
 import pandas as pd
 from datetime import datetime
 from io import BytesIO
@@ -94,16 +95,20 @@ def import_page(request: Request):
 
 
 @router.post("/import")
-async def import_excel(
-    request: Request,
-    client_id: str = Form(None),
-    name: str = Form(None),
-    evaluation_id: str = Form(None),
-    file: UploadFile = File(...),
-):
+async def import_excel(request: Request):
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
     require_no_vista_solo(user)
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        raise HTTPException(status_code=403, detail="Token CSRF invalido")
+
+    client_id = form_data.get("client_id")
+    name = form_data.get("name")
+    evaluation_id = form_data.get("evaluation_id")
+    file = form_data.get("file")
 
     if not file.filename.endswith((".xlsx", ".xls")):
         return HTMLResponse(

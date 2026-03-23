@@ -16,6 +16,7 @@ from app.models import (
 from app.auth import get_current_user, require_no_vista_solo
 from app.database import engine
 from app.templates_core import templates
+from app.security import verify_csrf_token
 import json
 
 router = APIRouter(prefix="/rfcs", tags=["rfcs"])
@@ -83,24 +84,29 @@ def new_rfc_form(request: Request):
 
 
 @router.post("/new")
-def create_rfc(
-    request: Request,
-    title: str = Form(...),
-    description: str = Form(...),
-    client_id: str = Form(...),
-    risk_level: str = Form(...),
-    impact: str = Form(...),
-    urgency: str = Form(...),
-    linked_controls: str = Form("[]"),
-    linked_documents: str = Form("[]"),
-    implementation_plan: str = Form(""),
-    rollback_plan: str = Form(""),
-    test_plan: str = Form(""),
-    target_date: str = Form(""),
-):
+async def create_rfc(request: Request):
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
     require_no_vista_solo(user)
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        raise HTTPException(status_code=403, detail="Token CSRF invalido")
+
+    title = form_data.get("title")
+    description = form_data.get("description")
+    client_id = form_data.get("client_id")
+    risk_level = form_data.get("risk_level")
+    impact = form_data.get("impact")
+    urgency = form_data.get("urgency")
+    linked_controls = form_data.get("linked_controls", "[]")
+    linked_documents = form_data.get("linked_documents", "[]")
+    implementation_plan = form_data.get("implementation_plan", "")
+    rollback_plan = form_data.get("rollback_plan", "")
+    test_plan = form_data.get("test_plan", "")
+    target_date = form_data.get("target_date", "")
+
     if user.role != UserRole.SUPERADMIN and user.client_id != client_id:
         raise HTTPException(status_code=403)
 
@@ -169,7 +175,19 @@ def view_rfc(request: Request, rfc_id: str):
 
 
 @router.post("/{rfc_id}/status")
-def update_rfc_status(request: Request, rfc_id: str, status: str = Form(...)):
+async def update_rfc_status(request: Request, rfc_id: str):
+    session_id = request.cookies.get("session_id")
+    user = get_current_user(session_id)
+    from app.auth import require_role
+
+    require_role(user, [UserRole.SUPERADMIN, UserRole.ADMIN_CLIENTE])
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        raise HTTPException(status_code=403, detail="Token CSRF invalido")
+
+    status = form_data.get("status")
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
     from app.auth import require_role

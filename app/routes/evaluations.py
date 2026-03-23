@@ -15,6 +15,7 @@ from app.models import (
 from app.auth import get_current_user, require_no_vista_solo
 from app.database import engine
 from app.templates_core import templates
+from app.security import verify_csrf_token
 
 router = APIRouter(prefix="/evaluations", tags=["evaluations"])
 
@@ -97,15 +98,19 @@ def new_evaluation_form(request: Request):
 
 
 @router.post("/new")
-def create_evaluation(
-    request: Request,
-    name: str = Form(...),
-    description: str = Form(""),
-    client_id: str = Form(...),
-):
+async def create_evaluation(request: Request):
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
     require_no_vista_solo(user)
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        raise HTTPException(status_code=403, detail="Token CSRF invalido")
+
+    name = form_data.get("name")
+    description = form_data.get("description", "")
+    client_id = form_data.get("client_id")
     with Session(engine) as session:
         if user.role != UserRole.SUPERADMIN and user.client_id != client_id:
             raise HTTPException(status_code=403)
@@ -214,7 +219,15 @@ def view_evaluation(request: Request, evaluation_id: str):
 
 
 @router.post("/{evaluation_id}/start")
-def start_evaluation(request: Request, evaluation_id: str):
+async def start_evaluation(request: Request, evaluation_id: str):
+    session_id = request.cookies.get("session_id")
+    user = get_current_user(session_id)
+    require_no_vista_solo(user)
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        raise HTTPException(status_code=403, detail="Token CSRF invalido")
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
     require_no_vista_solo(user)
@@ -240,7 +253,20 @@ def start_evaluation(request: Request, evaluation_id: str):
 
 
 @router.post("/{evaluation_id}/complete")
-def complete_evaluation(request: Request, evaluation_id: str):
+async def complete_evaluation(request: Request, evaluation_id: str):
+    session_id = request.cookies.get("session_id")
+    user = get_current_user(session_id)
+    from app.auth import require_role
+
+    require_role(user, [UserRole.SUPERADMIN, UserRole.ADMIN_CLIENTE])
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        raise HTTPException(status_code=403, detail="Token CSRF invalido")
+
+    from datetime import datetime
+
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
     from app.auth import require_role
@@ -269,12 +295,17 @@ def complete_evaluation(request: Request, evaluation_id: str):
 
 
 @router.post("/{evaluation_id}/delete")
-def delete_evaluation(request: Request, evaluation_id: str):
+async def delete_evaluation(request: Request, evaluation_id: str):
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
     from app.auth import require_role
 
     require_role(user, [UserRole.SUPERADMIN, UserRole.ADMIN_CLIENTE])
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        raise HTTPException(status_code=403, detail="Token CSRF invalido")
     with Session(engine) as session:
         evaluation = session.get(Evaluation, evaluation_id)
         if evaluation and (

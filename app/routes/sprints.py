@@ -15,6 +15,7 @@ from app.models import (
 from app.auth import get_current_user, require_no_vista_solo
 from app.database import engine
 from app.templates_core import templates
+from app.security import verify_csrf_token
 
 router = APIRouter(prefix="/sprints", tags=["sprints"])
 
@@ -71,19 +72,21 @@ def new_sprint_form(request: Request):
 
 
 @router.post("/new")
-def create_sprint(
-    request: Request,
-    name: str = Form(...),
-    goal: str = Form(""),
-    client_id: str = Form(...),
-    start_date: str = Form(""),
-    end_date: str = Form(""),
-):
+async def create_sprint(request: Request):
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
     require_no_vista_solo(user)
-    if user.role != UserRole.SUPERADMIN and user.client_id != client_id:
-        raise HTTPException(status_code=403)
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        raise HTTPException(status_code=403, detail="Token CSRF invalido")
+
+    name = form_data.get("name")
+    goal = form_data.get("goal", "")
+    client_id = form_data.get("client_id")
+    start_date = form_data.get("start_date", "")
+    end_date = form_data.get("end_date", "")
 
     start = end = None
     if start_date:
@@ -141,17 +144,20 @@ def view_sprint(request: Request, sprint_id: str):
 
 
 @router.post("/{sprint_id}/add-item")
-def add_backlog_item(
-    request: Request,
-    sprint_id: str,
-    title: str = Form(...),
-    description: str = Form(""),
-    priority: str = Form("medium"),
-    effort_hours: int = Form(0),
-):
+async def add_backlog_item(request: Request, sprint_id: str):
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
     require_no_vista_solo(user)
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        raise HTTPException(status_code=403, detail="Token CSRF invalido")
+
+    title = form_data.get("title")
+    description = form_data.get("description", "")
+    priority = form_data.get("priority", "medium")
+    effort_hours = int(form_data.get("effort_hours", 0) or 0)
 
     with Session(engine) as session:
         sprint = session.get(Sprint, sprint_id)
@@ -174,7 +180,17 @@ def add_backlog_item(
 
 
 @router.post("/{sprint_id}/status")
-def update_sprint_status(request: Request, sprint_id: str, status: str = Form(...)):
+async def update_sprint_status(request: Request, sprint_id: str):
+    session_id = request.cookies.get("session_id")
+    user = get_current_user(session_id)
+    require_no_vista_solo(user)
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        raise HTTPException(status_code=403, detail="Token CSRF invalido")
+
+    status = form_data.get("status")
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
     require_no_vista_solo(user)

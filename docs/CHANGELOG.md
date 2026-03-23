@@ -5,6 +5,51 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 
 ---
 
+## [v1.1.2] - 2026-03-23
+
+### Seguridad
+- **CSRF en 31 formularios** - Tokens CSRF en todos los formularios HTML (logout, login, clients, evaluations, evaluate, documents, rfcs, sprints, users, admin, import)
+- **CSRF verification en 18 handlers POST** - Todos los endpoints POST verifican token CSRF con `verify_csrf_token()`
+- **CSRF global en Jinja2** - `csrf_token` disponible en todas las plantillas via `templates.env.globals`
+- **Import fix** - Removido import no utilizado `HTTPBase` de `fastapi.security`
+
+---
+
+## [v1.1.1] - 2026-03-23
+
+### Agregado
+- **Documentacion completa** - Creados 8 documentos en carpeta `docs/`:
+  - `PROJECT_PLAN.md` - Planificacion y alcance ISO 27001
+  - `PROCESSES.md` - Procesos ITIL y Agile
+  - `ARCHITECTURE.md` - Arquitectura tecnica
+  - `TESTING.md` - Plan de pruebas funcionales
+  - `CHANGELOG.md` - Registro de cambios
+  - `INFRASTRUCTURE.md` - Plataformas gratuitas (GitHub, Render)
+  - `CONFIG_REGISTRY.md` - Registro de configuracion (cuentas, URLs, credenciales)
+  - `BACKUP_RECOVERY.md` - Procedimientos de backup y recuperacion
+- **Registro de configuracion** - Todas las cuentas, repositorios, URLs, credenciales documentadas
+- **Procedimientos de backup** - Con unidad F: como respaldo externo
+- **Flujo de desarrollo** - F: como desarrollo activo, GitHub, QA, Produccion
+
+### Seguridad
+- **CSRF Protection** - Tokens en todos los formularios (FastAPI CSRF middleware)
+- **Rate Limiting** - Limitacion de intentos de login (3 intentos, luego espera 5 min)
+- **Seguridad mejorada** - Validaciones adicionales en inputs
+
+### Documentacion de codigo
+- **Comentarios detallados** - Agregados en todos los archivos Python
+- **Docstrings** - Funciones documentadas con parametros y retornos
+
+### Responsive
+- **CSS mejorado** - Mejor soporte para dispositivos moviles y tablets
+- **Media queries** - breakpoints para diferentes tamanos de pantalla
+
+### Cambiado
+- Version actualizada a v1.1.1 en `app/main.py`
+- Configuracion actualizada en `docs/CONFIG_REGISTRY.md`
+
+---
+
 ## [v1.1.0] - 2026-03-22
 
 ### Agregado

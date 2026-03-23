@@ -4,6 +4,7 @@
 {% block content %}
 <h1>Nueva Evaluacion</h1>
 <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <label for="name">Nombre de la Evaluacion *</label>
     <input type="text" id="name" name="name" required>
 

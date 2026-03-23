@@ -5,6 +5,7 @@ from app.models import User, Client, UserRole, AuditLog
 from app.auth import get_current_user, require_role, hash_password
 from app.database import engine
 from app.templates_core import templates
+from app.security import verify_csrf_token
 
 
 def _log(session: Session, user_id: str, action: str, details: str = ""):
@@ -61,17 +62,20 @@ def new_user_form(request: Request, client_id: str):
 
 
 @router.post("/new")
-def create_user(
-    request: Request,
-    client_id: str,
-    email: str = Form(...),
-    name: str = Form(...),
-    role: str = Form(...),
-    password: str = Form(...),
-):
+async def create_user(request: Request, client_id: str):
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
     require_role(user, [UserRole.SUPERADMIN, UserRole.ADMIN_CLIENTE])
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        raise HTTPException(status_code=403, detail="Token CSRF invalido")
+
+    email = form_data.get("email")
+    name = form_data.get("name")
+    role = form_data.get("role")
+    password = form_data.get("password")
 
     with Session(engine) as session:
         if user.role == UserRole.ADMIN_CLIENTE and user.client_id != client_id:
@@ -124,7 +128,15 @@ def create_user(
 
 
 @router.post("/{user_id}/toggle")
-def toggle_user(request: Request, client_id: str, user_id: str):
+async def toggle_user(request: Request, client_id: str, user_id: str):
+    session_id = request.cookies.get("session_id")
+    user = get_current_user(session_id)
+    require_role(user, [UserRole.SUPERADMIN, UserRole.ADMIN_CLIENTE])
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        raise HTTPException(status_code=403, detail="Token CSRF invalido")
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
     require_role(user, [UserRole.SUPERADMIN, UserRole.ADMIN_CLIENTE])

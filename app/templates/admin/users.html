@@ -5,6 +5,7 @@
 <h1>Usuarios del Sistema</h1>
 
 <form method="post" class="create-user-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <h3>Crear Nuevo Usuario</h3>
     <div class="form-row">
         <input type="text" name="name" placeholder="Nombre" required>

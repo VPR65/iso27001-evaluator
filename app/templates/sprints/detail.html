@@ -9,12 +9,14 @@
 <div class="sprint-actions">
     {% if sprint.status.value == 'planned' %}
     <form method="post" action="/sprints/{{ sprint.id }}/status" style="display:inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <input type="hidden" name="status" value="active">
         <button type="submit" class="primary">Iniciar Sprint</button>
     </form>
     {% endif %}
     {% if sprint.status.value == 'active' %}
     <form method="post" action="/sprints/{{ sprint.id }}/status" style="display:inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <input type="hidden" name="status" value="completed">
         <button type="submit" class="primary">Completar Sprint</button>
     </form>
@@ -23,6 +25,7 @@
 
 <h3>Agregar Item al Backlog</h3>
 <form method="post" action="/sprints/{{ sprint.id }}/add-item" class="add-item-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <input type="text" name="title" placeholder="Titulo del item" required>
     <textarea name="description" placeholder="Descripcion"></textarea>
     <select name="priority">

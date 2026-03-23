@@ -1,11 +1,14 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
+from app.security import get_csrf_token
 
 BASE_DIR = Path(__file__).parent
 
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
+
+templates.env.globals["csrf_token"] = lambda: get_csrf_token()
 
 
 def setup_templates(app: FastAPI):

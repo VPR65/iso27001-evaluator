@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Response, Form
+from fastapi import APIRouter, Request, Response, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlmodel import Session as SqlSession, select
 from app.models import User, AuditLog
@@ -11,32 +11,81 @@ from app.auth import (
     verify_password,
 )
 from app.templates_core import templates
+from app.security import (
+    check_rate_limit,
+    record_failed_attempt,
+    reset_rate_limit,
+    get_csrf_token,
+    verify_csrf_token,
+)
 
 router = APIRouter(prefix="", tags=["auth"])
 
 
 @router.get("/login", response_class=HTMLResponse)
 def login_page(request: Request):
+    """
+    Pagina de inicio de sesion.
+    Muestra el formulario de login o redirige al dashboard si ya hay sesion activa.
+    """
     session_id = request.cookies.get(SESSION_COOKIE_NAME)
     user = get_current_user(session_id)
     if user:
         return RedirectResponse(url="/dashboard")
-    return templates.TemplateResponse("login.html", {"request": request, "error": None})
+
+    csrf_token = get_csrf_token()
+    return templates.TemplateResponse(
+        "login.html", {"request": request, "error": None, "csrf_token": csrf_token}
+    )
 
 
 @router.post("/login")
-def login(
+async def login(
     request: Request,
     response: Response,
     email: str = Form(...),
     password: str = Form(...),
 ):
+    """
+    Proceso de autenticacion de usuario.
+    Verifica credenciales y crea sesion.
+    Incluye proteccion rate limiting para prevenir ataques de fuerza bruta.
+    """
     from app.database import engine
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        return templates.TemplateResponse(
+            "login.html",
+            {
+                "request": request,
+                "error": "Token de seguridad invalido. Refresca la pagina e intenta de nuevo.",
+                "csrf_token": get_csrf_token(),
+            },
+        )
+
+    # Verificar rate limiting antes de procesar
+    can_login, wait_time = check_rate_limit(email)
+    if not can_login:
+        return templates.TemplateResponse(
+            "login.html",
+            {
+                "request": request,
+                "error": f"Demasiados intentos. Espera {wait_time} segundos antes de intentar de nuevo.",
+                "csrf_token": get_csrf_token(),
+            },
+        )
 
     with SqlSession(engine) as session:
         stmt = select(User).where(User.email == email)
         user = session.exec(stmt).first()
+
         if not user or not verify_password(password, user.password_hash):
+            # Registrar intento fallido para rate limiting
+            record_failed_attempt(email)
+
+            # Registrar en audit log
             session.add(
                 AuditLog(
                     action="LOGIN_FAILED",
@@ -47,12 +96,25 @@ def login(
             session.commit()
             return templates.TemplateResponse(
                 "login.html",
-                {"request": request, "error": "Email o contrasena incorrectos"},
+                {
+                    "request": request,
+                    "error": "Email o contrasena incorrectos",
+                    "csrf_token": get_csrf_token(),
+                },
             )
+
         if not user.is_active:
             return templates.TemplateResponse(
-                "login.html", {"request": request, "error": "Usuario desactivado"}
+                "login.html",
+                {
+                    "request": request,
+                    "error": "Usuario desactivado",
+                    "csrf_token": get_csrf_token(),
+                },
             )
+
+        # Login exitoso - resetear rate limit
+        reset_rate_limit(email)
 
         db_session = create_session(user)
         session.add(
@@ -76,7 +138,15 @@ def login(
 
 
 @router.post("/logout")
-def logout(request: Request):
+async def logout(request: Request):
+    from app.security import verify_csrf_token
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=403, detail="Token CSRF invalido")
     from app.database import engine
     from app.models import Session as AppSession
 

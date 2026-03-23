@@ -26,11 +26,13 @@
                 <a href="/documents/{{ doc.id }}/version/{{ v.id }}" class="button outline small">Ver</a>
                 {% if v.state.value == 'draft' %}
                 <form method="post" action="/documents/{{ doc.id }}/version/{{ v.id }}/approve" style="display:inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                     <button type="submit" class="outline small">Aprobar</button>
                 </form>
                 {% endif %}
                 {% if v.state.value == 'approved' %}
                 <form method="post" action="/documents/{{ doc.id }}/version/{{ v.id }}/publish" style="display:inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                     <button type="submit" class="primary small">Publicar</button>
                 </form>
                 {% endif %}

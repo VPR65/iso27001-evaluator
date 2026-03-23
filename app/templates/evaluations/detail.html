@@ -32,11 +32,13 @@
 <div class="eval-actions">
     {% if evaluation.status.value == 'draft' %}
     <form method="post" action="/evaluations/{{ evaluation.id }}/start" style="display:inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <button type="submit" class="primary">Iniciar Evaluacion</button>
     </form>
     {% endif %}
     {% if evaluation.status.value == 'in_progress' %}
     <form method="post" action="/evaluations/{{ evaluation.id }}/complete" style="display:inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <button type="submit" class="primary">Completar Evaluacion</button>
     </form>
     {% endif %}

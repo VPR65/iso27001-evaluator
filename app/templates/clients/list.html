@@ -23,6 +23,7 @@
                     <td>
                         <a href="/clients/{{ client.id }}/users" class="btn btn-secondary btn-sm"><i class="fa-solid fa-users"></i> Usuarios</a>
                         <form method="post" action="/clients/{{ client.id }}/delete" style="display:inline" onsubmit="return confirm('Eliminar este cliente y todos sus datos?')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                             <button type="submit" class="btn btn-outline btn-sm" style="color:#ef4444;border-color:#ef4444"><i class="fa-solid fa-trash"></i></button>
                         </form>
                     </td>

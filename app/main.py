@@ -1,3 +1,13 @@
+"""
+ISO 27001 Evaluator - Sistema de evaluacion de controles de seguridad
+Version: 1.1.2
+Fecha: 2026-03-23
+Autor: Equipo de Desarrollo
+
+Este modulo es el punto de entrada de la aplicacion FastAPI.
+Configura todos los middlewares, routers y servicios.
+"""
+
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -6,7 +16,19 @@ from app.database import create_db_and_tables
 from app.seed import seed_data
 from app.templates_core import setup_templates, setup_directories
 
-app = FastAPI(title="ISO 27001 Evaluator", version="1.1.0")
+# Configuracion de seguridad CSRF
+# Usamos secret key para generar tokens CSRF en formularios
+import os
+
+SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production")
+
+app = FastAPI(
+    title="ISO 27001 Evaluator",
+    version="1.1.2",
+    description="Sistema web para evaluar el cumplimiento de seguridad bajo ISO 27001:2022",
+    docs_url="/docs",
+    redoc_url="/redoc",
+)
 
 setup_directories()
 templates = setup_templates(app)

@@ -16,6 +16,7 @@
 
 <div class="eval-form">
     <form method="post" action="/evaluate/{{ evaluation.id }}/control/{{ ctrl.id }}/save">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <fieldset>
             <legend>Nivel de Madurez</legend>
             {% for level, (name, desc) in maturity_levels.items() %}
@@ -45,6 +46,7 @@
                 <a href="/{{ file.filepath }}" target="_blank">{{ file.filename }}</a>
                 ({{ (file.file_size / 1024)|round(1) }} KB)
                 <form method="post" action="/evaluate/{{ evaluation.id }}/control/{{ ctrl.id }}/delete-file/{{ file.id }}" style="display:inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                     <button type="submit" class="outline contrast small">Eliminar</button>
                 </form>
             </li>
@@ -55,6 +57,7 @@
         {% endif %}
 
         <form method="post" action="/evaluate/{{ evaluation.id }}/control/{{ ctrl.id }}/upload" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
             <label for="file">Subir evidencia (PDF, imagenes, documentos)</label>
             <input type="file" id="file" name="file" accept=".pdf,.png,.jpg,.jpeg,.docx,.xlsx">
             <button type="submit" class="outline">Subir Archivo</button>

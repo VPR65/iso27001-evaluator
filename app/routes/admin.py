@@ -4,6 +4,7 @@ from app.models import User, UserRole
 from app.auth import get_current_user, require_role, hash_password
 from app.database import engine
 from app.templates_core import templates
+from app.security import verify_csrf_token
 from sqlmodel import Session, select
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -29,15 +30,19 @@ def all_users(request: Request):
 
 
 @router.post("/all-users")
-def create_admin_user(
-    request: Request,
-    email: str = Form(...),
-    name: str = Form(...),
-    password: str = Form(...),
-):
+async def create_admin_user(request: Request):
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
     require_role(user, [UserRole.SUPERADMIN])
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        raise HTTPException(status_code=403, detail="Token CSRF invalido")
+
+    email = form_data.get("email")
+    name = form_data.get("name")
+    password = form_data.get("password")
 
     with Session(engine) as session:
         existing = session.exec(select(User).where(User.email == email)).first()

@@ -348,6 +348,7 @@
         {% endif %}
 
         <form method="post" action="/login" class="login-form" autocomplete="off">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
             <div class="form-group">
                 <label for="email">Correo electronico</label>
                 <div class="input-wrapper">

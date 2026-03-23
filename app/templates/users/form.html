@@ -4,6 +4,7 @@
 {% block content %}
 <h1>{{ 'Editar' if edit_user else 'Nuevo' }} Usuario</h1>
 <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <label for="name">Nombre *</label>
     <input type="text" id="name" name="name" value="{{ edit_user.name if edit_user else '' }}" required>
 
