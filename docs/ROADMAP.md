@@ -1,43 +1,50 @@
 # ROADMAP - Plan de Implementacion de Funcionalidades
 
-> Version: 1.0.0 | Fecha: 2026-03-24
+> Version: 1.1.0 | Fecha: 2026-03-24
 
 ---
 
 ## Estado Actual
 
-**ISO 27001 Evaluator v1.1.2** esta funcionando con:
-- 93 controles ISO 27001:2022
+**ISO 27001 Evaluator v1.3.0** esta funcionando con:
+- 4 normas ISO (27001, 9001, 20000-1, 22301)
+- 153 controles en total
 - Evaluaciones, evidencias, biblioteca
 - Dashboard, estadisticas, import/export
-- Multi-tenant, roles, auditlog
+- N/A con justificacion
+- Multi-tenant, roles (incl VISTA_SOLO), auditlog
 
 ---
 
-## Funcionalidades por Implementar
+## Funcionalidades Implementadas
 
-### FASE 1: Mejoras Inmediatas (Esta Semana)
+### FASE 1: Mejoras Inmediatas (COMPLETADO)
 
-| # | Modulo | Descripcion | Estado |
-|---|--------|-------------|--------|
-| 1.1 | N/A con Justificacion | Opcion N/A en madurez con campo de justificacion | PENDIENTE |
-| 1.2 | Recalculo de Score | Excluir N/A del denominador | PENDIENTE |
-| 1.3 | Indicador de progreso | % de evaluacion en lista | PENDIENTE |
+| # | Modulo | Descripcion | Estado | Version |
+|---|--------|-------------|--------|---------|
+| 1.1 | N/A con Justificacion | Opcion N/A en madurez con campo de justificacion | COMPLETADO | v1.2.0 |
+| 1.2 | Recalculo de Score | Excluir N/A del denominador | COMPLETADO | v1.2.0 |
+| 1.3 | Indicador de progreso | % de evaluacion en lista | COMPLETADO | v1.2.0 |
 
-### FASE 2: Multi-Norma (Proximas Semanas)
+### FASE 2: Multi-Norma (COMPLETADO)
 
-| # | Modulo | Descripcion | Estado |
-|---|--------|-------------|--------|
-| 2.1 | Selector de Norma | Elegir ISO 27001, 9001, 20000-1, 22301 | PENDIENTE |
-| 2.2 | Controles ISO 9001:2015 | ~100 clausulas/controles | PENDIENTE |
-| 2.3 | Controles ISO 20000-1 | SLA, Catalogo de Servicios | PENDIENTE |
-| 2.4 | Controles ISO 22301 | BIA, Plan de Continuidad | PENDIENTE |
+| # | Modulo | Descripcion | Estado | Version |
+|---|--------|-------------|--------|---------|
+| 2.1 | Selector de Norma | Elegir ISO 27001, 9001, 20000-1, 22301 | COMPLETADO | v1.3.0 |
+| 2.2 | Controles ISO 9001:2015 | 25 clausulas | COMPLETADO | v1.3.0 |
+| 2.3 | Controles ISO 20000-1 | 17 controles | COMPLETADO | v1.3.0 |
+| 2.4 | Controles ISO 22301 | 18 controles | COMPLETADO | v1.3.0 |
 
 ### FASE 3: Modulos Avanzados
 
 | # | Modulo | Descripcion | Estado |
 |---|--------|-------------|--------|
 | 3.1 | Catalogo de Servicios | CRUD servicios + SLAs | PENDIENTE |
+| 3.2 | BIA | Analisis de Impacto al Negocio | PENDIENTE |
+| 3.3 | SoA Automatizada | Declaracion de Aplicabilidad | PENDIENTE |
+| 3.4 | No Conformidades | Registro y seguimiento de NCs | PENDIENTE |
+| 3.5 | Mapa de Procesos | Diagrama visual de procesos | PENDIENTE |
+| 3.6 | DAFO/PESTEL | Analisis de contexto | PENDIENTE |
 | 3.2 | BIA | Analisis de Impacto al Negocio | PENDIENTE |
 | 3.3 | SoA Automatizada | Declaracion de Aplicabilidad | PENDIENTE |
 | 3.4 | No Conformidades | Registro y seguimiento de NCs | PENDIENTE |
