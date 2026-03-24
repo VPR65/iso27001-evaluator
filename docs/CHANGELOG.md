@@ -5,6 +5,28 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 
 ---
 
+## [v1.2.0] - 2026-03-24
+
+### Agregado
+- **N/A con Justificacion** - Opcion "No Aplica" en evaluacion de controles con campo de justificacion obligatorio
+- **Biblioteca de Documentos** - Nueva seccion para subir documentos de referencia (normas ISO, politicas, procesos ITIL, CMMI, Agile, Vision/Mision)
+- **Evaluacion detail** - Vista mejorada de evaluacion con progress, score, y lista de controles por dominio
+- **VISTA_SOLO role** - Rol que solo puede ver evaluaciones sin poder editarlas
+
+### Correccion
+- **Score calculation** - N/A ahora se excluye del denominador al calcular madurez
+- **Progress indicator** - Ahora muestra correctamente % sobre controles aplicables (excluyendo N/A)
+- **Detail view** - Muestra badge N/A en controles marcados como no aplicables
+- **Evaluation detail route** - Ruta GET para ver detalles de evaluacion
+- **Documents publish** - Agregado endpoint POST para publicar versiones de documentos
+
+### Documentacion
+- **docs/DEPLOYMENT_AND_TESTING.md** - Guia completa de despliegue y pruebas funcionales
+- **docs/REQUISITOS_NORMA.md** - Guia estrategica del proyecto
+- **docs/ROADMAP.md** - Plan de implementacion de funcionalidades
+
+---
+
 ## [v1.1.2] - 2026-03-23
 
 ### Agregado

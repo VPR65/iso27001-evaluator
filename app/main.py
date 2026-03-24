@@ -1,7 +1,7 @@
 """
 ISO 27001 Evaluator - Sistema de evaluacion de controles de seguridad
-Version: 1.1.2
-Fecha: 2026-03-23
+Version: 1.2.0
+Fecha: 2026-03-24
 Autor: Equipo de Desarrollo
 
 Este modulo es el punto de entrada de la aplicacion FastAPI.
