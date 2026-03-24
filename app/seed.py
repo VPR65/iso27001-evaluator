@@ -1,7 +1,34 @@
 from sqlmodel import Session, select
-from app.models import ControlDefinition, User, Client, UserRole
+from app.models import ControlDefinition, User, Client, UserRole, Norma
 from app.database import engine
 from app.auth import hash_password
+
+NORMAS = [
+    {
+        "code": "ISO27001",
+        "name": "ISO/IEC 27001:2022",
+        "version": "2022",
+        "description": "Sistema de Gestion de Seguridad de la Informacion",
+    },
+    {
+        "code": "ISO9001",
+        "name": "ISO 9001:2015",
+        "version": "2015",
+        "description": "Sistema de Gestion de la Calidad",
+    },
+    {
+        "code": "ISO20000",
+        "name": "ISO/IEC 20000-1:2018",
+        "version": "2018",
+        "description": "Sistema de Gestion de Servicios de TI",
+    },
+    {
+        "code": "ISO22301",
+        "name": "ISO 22301:2019",
+        "version": "2019",
+        "description": "Sistema de Gestion de Continuidad del Negocio",
+    },
+]
 
 ISO_CONTROLS = [
     # A.5 Controles Organizacionales (37)
@@ -576,7 +603,383 @@ def seed_data():
             print("Seed ya realizado, omitiendo.")
             return
 
+        normas_map = {}
+        for n in NORMAS:
+            norma = Norma(**n)
+            session.add(norma)
+            session.flush()
+            normas_map[n["code"]] = norma.id
+
+        iso27001_id = normas_map["ISO27001"]
+
         for ctrl in ISO_CONTROLS:
+            ctrl["norma_id"] = iso27001_id
+            session.add(ControlDefinition(**ctrl))
+
+        iso9001_controls = [
+            {
+                "code": "4.1",
+                "domain": "4. Contexto de la Organizacion",
+                "title": "Comprension de la organizacion y su contexto",
+                "description": "La organizacion debe determinar cuestiones externas e internas relevantes para su SGC.",
+            },
+            {
+                "code": "4.2",
+                "domain": "4. Contexto de la Organizacion",
+                "title": "Comprension de las necesidades y expectativas de las partes interesadas",
+                "description": "La organizacion debe identificar las partes interesadas relevantes para el SGC.",
+            },
+            {
+                "code": "5.1",
+                "domain": "5. Liderazgo",
+                "title": "Liderazgo y compromiso",
+                "description": "La alta direccion debe demostrar liderazgo y compromiso con el SGC.",
+            },
+            {
+                "code": "5.2",
+                "domain": "5. Liderazgo",
+                "title": "Politica de calidad",
+                "description": "La alta direccion debe establecer una politica de calidad apropiada.",
+            },
+            {
+                "code": "5.3",
+                "domain": "5. Liderazgo",
+                "title": "Roles, responsabilidades e autoridades",
+                "description": "La alta direccion debe asignar responsabilidades y autoridades.",
+            },
+            {
+                "code": "6.1",
+                "domain": "6. Planificacion",
+                "title": "Acciones para abordar riesgos y oportunidades",
+                "description": "La organizacion debe planificar acciones para abordar riesgos.",
+            },
+            {
+                "code": "6.2",
+                "domain": "6. Planificacion",
+                "title": "Objetivos de calidad y planificación",
+                "description": "La organizacion debe establecer objetivos de calidad.",
+            },
+            {
+                "code": "7.1",
+                "domain": "7. Apoyo",
+                "title": "Recursos",
+                "description": "La organizacion debe determinar y proporcionar recursos necesarios.",
+            },
+            {
+                "code": "7.2",
+                "domain": "7. Apoyo",
+                "title": "Competencia",
+                "description": "La organizacion debe asegurar que el personal sea competente.",
+            },
+            {
+                "code": "7.3",
+                "domain": "7. Apoyo",
+                "title": "Toma de conciencia",
+                "description": "El personal debe ser consciente de la politica y objetivos de calidad.",
+            },
+            {
+                "code": "7.4",
+                "domain": "7. Apoyo",
+                "title": "Comunicacion",
+                "description": "La organizacion debe determinar comunicaciones relevantes para el SGC.",
+            },
+            {
+                "code": "7.5",
+                "domain": "7. Apoyo",
+                "title": "Informacion documentada",
+                "description": "La organizacion debe crear y controlar informacion documentada.",
+            },
+            {
+                "code": "8.1",
+                "domain": "8. Operacion",
+                "title": "Planificacion y control operacional",
+                "description": "La organizacion debe planificar y controlar procesos operativos.",
+            },
+            {
+                "code": "8.2",
+                "domain": "8. Operacion",
+                "title": "Requisitos de productos y servicios",
+                "description": "La organizacion debe determinar requisitos de productos/servicios.",
+            },
+            {
+                "code": "8.3",
+                "domain": "8. Operacion",
+                "title": "Diseno y desarrollo",
+                "description": "La organizacion debe establecer procesos de diseno y desarrollo.",
+            },
+            {
+                "code": "8.4",
+                "domain": "8. Operacion",
+                "title": "Control de procesos, productos y servicios externos",
+                "description": "La organizacion debe controlar proveedores externos.",
+            },
+            {
+                "code": "8.5",
+                "domain": "8. Operacion",
+                "title": "Produccion y provision del servicio",
+                "description": "La organizacion debe controlar la produccion y provision de servicios.",
+            },
+            {
+                "code": "8.6",
+                "domain": "8. Operacion",
+                "title": "Liberacion de productos y servicios",
+                "description": "La organizacion debe liberar productos y servicios.",
+            },
+            {
+                "code": "8.7",
+                "domain": "8. Operacion",
+                "title": "Control de salidas no conformes",
+                "description": "La organizacion debe controlar salidas no conformes.",
+            },
+            {
+                "code": "9.1",
+                "domain": "9. Evaluacion del desempeno",
+                "title": "Monitorizacion, medicion, analisis y evaluacion",
+                "description": "La organizacion debe monitorear y medir procesos y productos.",
+            },
+            {
+                "code": "9.2",
+                "domain": "9. Evaluacion del desempeno",
+                "title": "Auditoria interna",
+                "description": "La organizacion debe realizar auditorias internas programadas.",
+            },
+            {
+                "code": "9.3",
+                "domain": "9. Evaluacion del desempeno",
+                "title": "Revision por la direccion",
+                "description": "La alta direccion debe revisar el SGC periodicamente.",
+            },
+            {
+                "code": "10.1",
+                "domain": "10. Mejora",
+                "title": "Generalidades",
+                "description": "La organizacion debe determinar oportunidades de mejora.",
+            },
+            {
+                "code": "10.2",
+                "domain": "10. Mejora",
+                "title": "No conformidades y acciones correctivas",
+                "description": "La organizacion debe tratar no conformidades y tomar acciones.",
+            },
+            {
+                "code": "10.3",
+                "domain": "10. Mejora",
+                "title": "Mejora continua",
+                "description": "La organizacion debe mejorar continuamente la adecuacion del SGC.",
+            },
+        ]
+        for ctrl in iso9001_controls:
+            ctrl["norma_id"] = normas_map["ISO9001"]
+            session.add(ControlDefinition(**ctrl))
+
+        iso20000_controls = [
+            {
+                "code": "4.1",
+                "domain": "4. Sistema de Gestion",
+                "title": "理解组织",
+                "description": "La organizacion debe entender su contexto y necesidades.",
+            },
+            {
+                "code": "4.2",
+                "domain": "4. Sistema de Gestion",
+                "title": "Comprension de necesidades de partes interesadas",
+                "description": "La organizacion debe identificar partes interesadas y sus necesidades.",
+            },
+            {
+                "code": "5.1",
+                "domain": "5. Responsabilidad de la Direccion",
+                "title": "Politica de SMS",
+                "description": "La direccion debe establecer politica de gestion de servicios.",
+            },
+            {
+                "code": "5.2",
+                "domain": "5. Responsabilidad de la Direccion",
+                "title": "Responsabilidades delegadas",
+                "description": "La direccion debe definir responsabilidades claras.",
+            },
+            {
+                "code": "6.1",
+                "domain": "6. Gestion de Recursos",
+                "title": "Recursos humanos",
+                "description": "La organizacion debe definir competencias y gestionar personal.",
+            },
+            {
+                "code": "6.2",
+                "domain": "6. Gestion de Recursos",
+                "title": "Competencias",
+                "description": "El personal debe ser competente en base a educacion y experiencia.",
+            },
+            {
+                "code": "7.1",
+                "domain": "7. Procesos de Gestion de Servicios",
+                "title": "Catalogo de servicios",
+                "description": "La organizacion debe mantener un catalogo de servicios documentado.",
+            },
+            {
+                "code": "7.2",
+                "domain": "7. Procesos de Gestion de Servicios",
+                "title": "Acuerdos de nivel de servicio (SLA)",
+                "description": "La organizacion debe establecer y mantener SLAs.",
+            },
+            {
+                "code": "7.3",
+                "domain": "7. Procesos de Gestion de Servicios",
+                "title": "Gestion de capacidad",
+                "description": "La organizacion debe asegurar capacidad adecuada de servicios.",
+            },
+            {
+                "code": "7.4",
+                "domain": "7. Procesos de Gestion de Servicios",
+                "title": "Gestion de continuidad",
+                "description": "La organizacion debe mantener continuidad de servicios.",
+            },
+            {
+                "code": "8.1",
+                "domain": "8. Relacion con el Cliente",
+                "title": "Acuerdos de servicio",
+                "description": "La organizacion debe establecer acuerdos con clientes.",
+            },
+            {
+                "code": "8.2",
+                "domain": "8. Gestion de Incidentes",
+                "title": "Proceso de gestion de incidentes",
+                "description": "La organizacion debe tener proceso documentado de incidentes.",
+            },
+            {
+                "code": "8.3",
+                "domain": "8. Gestion de Problemas",
+                "title": "Proceso de gestion de problemas",
+                "description": "La organizacion debe gestionar problemas y sus causas raiz.",
+            },
+            {
+                "code": "9.1",
+                "domain": "9. Medicion y Mejora",
+                "title": "Recopilacion y analisis de datos",
+                "description": "La organizacion debe recopilar y analizar datos de servicios.",
+            },
+            {
+                "code": "9.2",
+                "domain": "9. Medicion y Mejora",
+                "title": "Auditoria interna",
+                "description": "La organizacion debe realizar auditorias internas.",
+            },
+            {
+                "code": "9.3",
+                "domain": "9. Medicion y Mejora",
+                "title": "Revision del SMS",
+                "description": "La direccion debe revisar el sistema de gestion de servicios.",
+            },
+        ]
+        for ctrl in iso20000_controls:
+            ctrl["norma_id"] = normas_map["ISO20000"]
+            session.add(ControlDefinition(**ctrl))
+
+        iso22301_controls = [
+            {
+                "code": "4.1",
+                "domain": "4. Contexto",
+                "title": "Comprension de la organizacion",
+                "description": "La organizacion debe entender su contexto y requisitos legales.",
+            },
+            {
+                "code": "4.2",
+                "domain": "4. Contexto",
+                "title": "Partes interesadas",
+                "description": "La organizacion debe identificar partes interesadas en BCM.",
+            },
+            {
+                "code": "5.1",
+                "domain": "5. Liderazgo",
+                "title": "Politica de continuidad",
+                "description": "La direccion debe establecer politica de continuidad.",
+            },
+            {
+                "code": "5.2",
+                "domain": "5. Liderazgo",
+                "title": "Roles y responsabilidades",
+                "description": "La organizacion debe definir roles para BCM.",
+            },
+            {
+                "code": "6.1",
+                "domain": "6. Planificacion",
+                "title": "Evaluacion de riesgos",
+                "description": "La organizacion debe identificar y analizar riesgos.",
+            },
+            {
+                "code": "6.2",
+                "domain": "6. Planificacion",
+                "title": "Determinacion de estrategias",
+                "description": "La organizacion debe determinar estrategias de continuidad.",
+            },
+            {
+                "code": "7.1",
+                "domain": "7. Soporte",
+                "title": "Recursos",
+                "description": "La organizacion debe proporcionar recursos para BCM.",
+            },
+            {
+                "code": "7.2",
+                "domain": "7. Soporte",
+                "title": "Competencia",
+                "description": "El personal debe ser competente en continuidad.",
+            },
+            {
+                "code": "7.3",
+                "domain": "7. Soporte",
+                "title": "Toma de conciencia",
+                "description": "El personal debe entender sus responsabilidades en BCM.",
+            },
+            {
+                "code": "8.1",
+                "domain": "8. Operacion",
+                "title": "Analisis de impacto (BIA)",
+                "description": "La organizacion debe realizar analisis de impacto al negocio.",
+            },
+            {
+                "code": "8.2",
+                "domain": "8. Operacion",
+                "title": "Evaluacion de riesgos",
+                "description": "La organizacion debe evaluar riesgos de continuidad.",
+            },
+            {
+                "code": "8.3",
+                "domain": "8. Operacion",
+                "title": "Estrategia de continuidad",
+                "description": "La organizacion debe desarrollar estrategias de continuidad.",
+            },
+            {
+                "code": "8.4",
+                "domain": "8. Operacion",
+                "title": "Plan de continuidad (BCP)",
+                "description": "La organizacion debe establecer planes de continuidad.",
+            },
+            {
+                "code": "8.5",
+                "domain": "8. Operacion",
+                "title": "Plan de recuperacion (DRP)",
+                "description": "La organizacion debe establecer planes de recuperacion.",
+            },
+            {
+                "code": "9.1",
+                "domain": "9. Evaluacion",
+                "title": "Ejercicios y pruebas",
+                "description": "La organizacion debe probar los planes regularmente.",
+            },
+            {
+                "code": "9.2",
+                "domain": "9. Evaluacion",
+                "title": "Revision por la direccion",
+                "description": "La direccion debe revisar el sistema de BCM.",
+            },
+            {
+                "code": "10.1",
+                "domain": "10. Mejora",
+                "title": "Mejora continua",
+                "description": "La organizacion debe mejorar continuamente el BCM.",
+            },
+        ]
+        for ctrl in iso22301_controls:
+            ctrl["norma_id"] = normas_map["ISO22301"]
             session.add(ControlDefinition(**ctrl))
 
         default_client = Client(name="Cliente Demo", sector="General")

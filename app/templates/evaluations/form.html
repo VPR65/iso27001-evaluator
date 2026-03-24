@@ -11,6 +11,14 @@
     <label for="description">Descripcion</label>
     <textarea id="description" name="description" rows="3"></textarea>
 
+    <label for="norma_id">Norma *</label>
+    <select id="norma_id" name="norma_id" required>
+        <option value="">Seleccionar norma</option>
+        {% for norma in normas %}
+        <option value="{{ norma.id }}">{{ norma.name }} - {{ norma.description }}</option>
+        {% endfor %}
+    </select>
+
     {% if user.role.value == 'superadmin' %}
     <label for="client_id">Cliente *</label>
     <select id="client_id" name="client_id" required>

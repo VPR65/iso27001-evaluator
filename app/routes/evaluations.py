@@ -11,6 +11,7 @@ from app.models import (
     UserRole,
     EvaluationStatus,
     AuditLog,
+    Norma,
 )
 from app.auth import get_current_user, require_no_vista_solo
 from app.database import engine
@@ -179,8 +180,14 @@ def new_evaluation_form(request: Request):
             clients = session.exec(select(Client)).all()
         else:
             clients = [session.get(Client, user.client_id)] if user.client_id else []
+        normas = session.exec(select(Norma).where(Norma.is_active == True)).all()
     return render(
-        request, "evaluations/form.html", clients=clients, evaluation=None, errors=None
+        request,
+        "evaluations/form.html",
+        clients=clients,
+        normas=normas,
+        evaluation=None,
+        errors=None,
     )
 
 
@@ -198,20 +205,29 @@ async def create_evaluation(request: Request):
     name = form_data.get("name")
     description = form_data.get("description", "")
     client_id = form_data.get("client_id")
+    norma_id = form_data.get("norma_id")
+    if not norma_id:
+        raise HTTPException(status_code=400, detail="Debe seleccionar una norma")
     with Session(engine) as session:
         if user.role != UserRole.SUPERADMIN and user.client_id != client_id:
             raise HTTPException(status_code=403)
+        norma = session.get(Norma, norma_id)
+        if not norma:
+            raise HTTPException(status_code=400, detail="Norma no encontrada")
         evaluation = Evaluation(
             name=name,
             description=description,
             client_id=client_id,
+            norma_id=norma_id,
             created_by=user.id,
             status=EvaluationStatus.DRAFT,
         )
         session.add(evaluation)
         session.commit()
         session.refresh(evaluation)
-        all_controls = session.exec(select(ControlDefinition)).all()
+        all_controls = session.exec(
+            select(ControlDefinition).where(ControlDefinition.norma_id == norma_id)
+        ).all()
         for ctrl in all_controls:
             resp = ControlResponse(
                 evaluation_id=evaluation.id,
@@ -221,13 +237,14 @@ async def create_evaluation(request: Request):
             )
             session.add(resp)
         session.commit()
+        norma_name = norma.name
         session.add(
             AuditLog(
                 user_id=user.id,
                 action="EVALUATION_CREATED",
                 entity_type="evaluation",
                 entity_id=evaluation.id,
-                details=f"Evaluacion creada: {name} (ID: {evaluation.id})",
+                details=f"Evaluacion creada: {name} ({norma_name}) (ID: {evaluation.id})",
             )
         )
         session.commit()
@@ -247,7 +264,11 @@ def view_evaluation(request: Request, evaluation_id: str):
         if user.role != UserRole.SUPERADMIN and evaluation.client_id != user.client_id:
             raise HTTPException(status_code=403)
         client = session.get(Client, evaluation.client_id)
-        all_controls = session.exec(select(ControlDefinition)).all()
+        all_controls = session.exec(
+            select(ControlDefinition).where(
+                ControlDefinition.norma_id == evaluation.norma_id
+            )
+        ).all()
         responses = session.exec(
             select(ControlResponse).where(
                 ControlResponse.evaluation_id == evaluation_id

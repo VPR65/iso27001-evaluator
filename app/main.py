@@ -1,6 +1,6 @@
 """
 ISO 27001 Evaluator - Sistema de evaluacion de controles de seguridad
-Version: 1.2.0
+Version: 1.3.0
 Fecha: 2026-03-24
 Autor: Equipo de Desarrollo
 

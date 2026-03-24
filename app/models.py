@@ -152,6 +152,25 @@ class Session(SQLModel, table=True):
     user: Optional[User] = Relationship(back_populates="sessions")
 
 
+# === NORMA (ISO 9001, 20000-1, 22301, 27001) ===
+class Norma(SQLModel, table=True):
+    __tablename__ = "normas"
+
+    id: Optional[str] = Field(
+        default_factory=lambda: str(uuid.uuid4()), primary_key=True
+    )
+    code: str = Field(unique=True, index=True)
+    name: str
+    version: str
+    description: str
+    is_active: bool = Field(default=True)
+
+    controls: list["ControlDefinition"] = Relationship(
+        back_populates="norma",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    )
+
+
 # === CONTROL DEFINITION ===
 class ControlDefinition(SQLModel, table=True):
     __tablename__ = "control_definitions"
@@ -159,12 +178,14 @@ class ControlDefinition(SQLModel, table=True):
     id: Optional[str] = Field(
         default_factory=lambda: str(uuid.uuid4()), primary_key=True
     )
-    code: str = Field(unique=True, index=True)
+    norma_id: str = Field(foreign_key="normas.id", index=True)
+    code: str = Field(index=True)
     domain: str = Field(index=True)
     title: str
     description: str
     parent_control: Optional[str] = None
 
+    norma: Optional["Norma"] = Relationship(back_populates="controls")
     responses: list["ControlResponse"] = Relationship(
         back_populates="control",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
@@ -179,6 +200,7 @@ class Evaluation(SQLModel, table=True):
         default_factory=lambda: str(uuid.uuid4()), primary_key=True
     )
     client_id: str = Field(foreign_key="clients.id", index=True)
+    norma_id: str = Field(foreign_key="normas.id", index=True)
     name: str
     description: Optional[str] = None
     status: EvaluationStatus = Field(default=EvaluationStatus.DRAFT)
@@ -188,6 +210,7 @@ class Evaluation(SQLModel, table=True):
     completed_at: Optional[datetime] = None
 
     client: Optional[Client] = Relationship(back_populates="evaluations")
+    norma: Optional["Norma"] = Relationship()
     responses: list["ControlResponse"] = Relationship(
         back_populates="evaluation",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},

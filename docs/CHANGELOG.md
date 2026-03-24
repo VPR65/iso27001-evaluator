@@ -5,6 +5,38 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 
 ---
 
+## [v1.3.0] - 2026-03-24
+
+### Agregado
+- **Multi-Norma** - Soporte para 4 normas ISO:
+  - ISO/IEC 27001:2022 (Seguridad de la Informacion) - 93 controles
+  - ISO 9001:2015 (Gestion de la Calidad) - 25 clausulas
+  - ISO/IEC 20000-1:2018 (Gestion de Servicios TI) - 17 controles
+  - ISO 22301:2019 (Continuidad del Negocio) - 18 controles
+- **Modelo Norma** - Nueva entidad para gestionar normas y sus controles
+- **Selector de norma** - Al crear evaluacion se selecciona la norma a evaluar
+- **Filtro por norma** - Los controles se muestran segun la norma seleccionada
+
+### Agregado
+- **N/A con Justificacion** - Opcion "No Aplica" en evaluacion de controles con campo de justificacion obligatorio
+- **Biblioteca de Documentos** - Nueva seccion para subir documentos de referencia (normas ISO, politicas, procesos ITIL, CMMI, Agile, Vision/Mision)
+- **Evaluacion detail** - Vista mejorada de evaluacion con progress, score, y lista de controles por dominio
+- **VISTA_SOLO role** - Rol que solo puede ver evaluaciones sin poder editarlas
+
+### Correccion
+- **Score calculation** - N/A ahora se excluye del denominador al calcular madurez
+- **Progress indicator** - Ahora muestra correctamente % sobre controles aplicables (excluyendo N/A)
+- **Detail view** - Muestra badge N/A en controles marcados como no aplicables
+- **Evaluation detail route** - Ruta GET para ver detalles de evaluacion
+- **Documents publish** - Agregado endpoint POST para publicar versiones de documentos
+
+### Documentacion
+- **docs/DEPLOYMENT_AND_TESTING.md** - Guia completa de despliegue y pruebas funcionales
+- **docs/REQUISITOS_NORMA.md** - Guia estrategica del proyecto
+- **docs/ROADMAP.md** - Plan de implementacion de funcionalidades
+
+---
+
 ## [v1.2.0] - 2026-03-24
 
 ### Agregado
