@@ -285,6 +285,38 @@ async def approve_version(request: Request, doc_id: str, version_id: str):
     )
 
 
+@router.post("/{doc_id}/version/{version_id}/publish")
+async def publish_version(request: Request, doc_id: str, version_id: str):
+    session_id = request.cookies.get("session_id")
+    user = get_current_user(session_id)
+    require_role(user, [UserRole.SUPERADMIN, UserRole.ADMIN_CLIENTE])
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        raise HTTPException(status_code=403, detail="Token CSRF invalido")
+
+    from datetime import datetime
+
+    with Session(engine) as session:
+        v = session.get(DocumentVersion, version_id)
+        if v and v.document_id == doc_id:
+            v.state = DocumentState.PUBLISHED
+            v.published_at = datetime.utcnow()
+            session.add(v)
+            session.add(
+                AuditLog(
+                    user_id=user.id,
+                    action="DOCUMENT_VERSION_PUBLISHED",
+                    entity_type="document_version",
+                    entity_id=version_id,
+                    details=f"Version {v.version} del documento {doc_id} publicada",
+                )
+            )
+            session.commit()
+    return RedirectResponse(url=f"/documents/{doc_id}", status_code=302)
+
+
 @router.post("/{doc_id}/version/{version_id}/rollback")
 async def rollback_version(request: Request, doc_id: str, version_id: str):
     session_id = request.cookies.get("session_id")
