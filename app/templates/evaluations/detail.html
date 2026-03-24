@@ -30,17 +30,19 @@
 </div>
 
 <div class="eval-actions">
-    {% if evaluation.status.value == 'draft' %}
-    <form method="post" action="/evaluations/{{ evaluation.id }}/start" style="display:inline">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-        <button type="submit" class="primary">Iniciar Evaluacion</button>
-    </form>
-    {% endif %}
-    {% if evaluation.status.value == 'in_progress' %}
-    <form method="post" action="/evaluations/{{ evaluation.id }}/complete" style="display:inline">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-        <button type="submit" class="primary">Completar Evaluacion</button>
-    </form>
+    {% if user.role.value != 'vista_solo' %}
+        {% if evaluation.status.value == 'draft' %}
+        <form method="post" action="/evaluations/{{ evaluation.id }}/start" style="display:inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit" class="primary">Iniciar Evaluacion</button>
+        </form>
+        {% endif %}
+        {% if evaluation.status.value == 'in_progress' %}
+        <form method="post" action="/evaluations/{{ evaluation.id }}/complete" style="display:inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit" class="primary">Completar Evaluacion</button>
+        </form>
+        {% endif %}
     {% endif %}
     <a href="/stats/{{ evaluation.id }}" class="button">Ver Estadisticas</a>
     <a href="/import-export/export/{{ evaluation.id }}" class="button outline">Exportar Excel</a>
@@ -76,9 +78,13 @@
                         {% else %}-{% endif %}
                     </td>
                     <td>
+                        {% if user.role.value != 'vista_solo' %}
                         <a href="/evaluate/{{ evaluation.id }}/control/{{ item.ctrl.id }}" class="button outline small">
                             {{ 'Editar' if item.response and item.response.maturity > 0 else 'Evaluar' }}
                         </a>
+                        {% else %}
+                        <span class="text-muted">Solo vista</span>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}

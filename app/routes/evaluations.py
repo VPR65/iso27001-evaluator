@@ -139,6 +139,7 @@ def view_evaluation(request: Request, evaluation_id: str):
         progress=progress,
         score=round(score, 2),
         domains=domains,
+        user=user,
     )
 
 
