@@ -41,6 +41,9 @@
                             <div class="progress-fill" style="width: {{ item.progress }}%"></div>
                         </div>
                         <span style="font-size:0.75rem;color:var(--text-secondary)">{{ item.progress }}%</span>
+                        {% if item.na_count %}
+                        <span style="font-size:0.7rem;color:#6b7280"> ({{ item.na_count }} N/A)</span>
+                        {% endif %}
                     </td>
                     <td><i class="fa-regular fa-calendar" style="color:var(--text-secondary)"></i> {{ item.eval.created_at.strftime('%d/%m/%Y') }}</td>
                     <td>

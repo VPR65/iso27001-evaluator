@@ -204,6 +204,8 @@ class ControlResponse(SQLModel, table=True):
     evaluation_id: str = Field(foreign_key="evaluations.id", index=True)
     control_id: str = Field(foreign_key="control_definitions.id", index=True)
     maturity: int = Field(default=0, ge=0, le=5)
+    not_applicable: bool = Field(default=False)
+    justification: Optional[str] = None
     notes: Optional[str] = None
     created_by: str = Field(foreign_key="users.id")
     created_at: datetime = Field(default_factory=datetime.utcnow)

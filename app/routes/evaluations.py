@@ -52,13 +52,21 @@ def list_evaluations(request: Request):
             total_controls = session.exec(
                 select(func.count(ControlDefinition.id))
             ).one()
-            answered = len(responses)
+            applicable = sum(1 for r in responses if not r.not_applicable)
+            answered = sum(
+                1 for r in responses if r.maturity > 0 and not r.not_applicable
+            )
+            na_count = sum(1 for r in responses if r.not_applicable)
             score = (
-                round(sum(r.maturity for r in responses) / answered, 2)
-                if answered
+                round(
+                    sum(r.maturity for r in responses if not r.not_applicable)
+                    / applicable,
+                    2,
+                )
+                if applicable
                 else 0
             )
-            pct = round(answered / total_controls * 100, 1) if total_controls else 0
+            pct = round(answered / applicable * 100, 1) if applicable else 0
             data.append(
                 {
                     "eval": e,
@@ -66,7 +74,8 @@ def list_evaluations(request: Request):
                     "score": score,
                     "progress": pct,
                     "answered": answered,
-                    "total": total_controls,
+                    "total": applicable,
+                    "na_count": na_count,
                 }
             )
 
@@ -100,28 +109,42 @@ def view_evaluation(request: Request, evaluation_id: str):
         ).all()
         resp_map = {r.control_id: r for r in responses}
 
-        answered = sum(1 for r in responses if r.maturity > 0)
         total = len(all_controls)
-        progress = int((answered / total) * 100) if total > 0 else 0
-        score = sum(r.maturity for r in responses) / total if total > 0 else 0
+        applicable_total = sum(1 for r in responses if not r.not_applicable)
+        na_count = sum(1 for r in responses if r.not_applicable)
+
+        answered = sum(1 for r in responses if r.maturity > 0 and not r.not_applicable)
+        progress = (
+            int((answered / applicable_total) * 100) if applicable_total > 0 else 0
+        )
+
+        score_sum = sum(r.maturity for r in responses if not r.not_applicable)
+        score = score_sum / applicable_total if applicable_total > 0 else 0
 
         domains = {}
         for ctrl in all_controls:
             domain = ctrl.domain
             if domain not in domains:
-                domains[domain] = {"controls": [], "answered": 0, "total": 0, "sum": 0}
+                domains[domain] = {
+                    "controls": [],
+                    "answered": 0,
+                    "total": 0,
+                    "na_count": 0,
+                    "sum": 0,
+                }
             resp = resp_map.get(ctrl.id)
             domains[domain]["controls"].append({"ctrl": ctrl, "response": resp})
             domains[domain]["total"] += 1
-            if resp and resp.maturity > 0:
+            if resp and resp.not_applicable:
+                domains[domain]["na_count"] += 1
+            elif resp and resp.maturity > 0:
                 domains[domain]["answered"] += 1
                 domains[domain]["sum"] += resp.maturity
 
         for domain, info in domains.items():
+            applicable = info["total"] - info["na_count"]
             info["pct"] = (
-                int((info["answered"] / info["total"]) * 100)
-                if info["total"] > 0
-                else 0
+                int((info["answered"] / applicable) * 100) if applicable > 0 else 0
             )
             info["avg"] = (
                 round(info["sum"] / info["total"], 2) if info["total"] > 0 else 0

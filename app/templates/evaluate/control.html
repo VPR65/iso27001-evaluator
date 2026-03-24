@@ -21,13 +21,24 @@
             <legend>Nivel de Madurez (0-5)</legend>
             {% for level, (name, desc) in maturity_levels.items() %}
             <label class="maturity-option {% if response and response.maturity == level %}selected{% endif %}">
-                <input type="radio" name="maturity" value="{{ level }}" {% if response and response.maturity == level %}checked{% endif %} required>
+                <input type="radio" name="maturity" value="{{ level }}" {% if response and response.maturity == level %}checked{% endif %}>
                 <span class="maturity-level level-{{ level }}">{{ level }}</span>
                 <span class="maturity-name">{{ name }}</span>
                 <span class="maturity-desc">{{ desc }}</span>
             </label>
             {% endfor %}
+            <label class="maturity-option na-option {% if response and response.not_applicable %}selected{% endif %}">
+                <input type="radio" name="maturity" value="0" {% if response and response.not_applicable %}checked{% endif %}>
+                <span class="maturity-level level-na">N/A</span>
+                <span class="maturity-name">No Aplica</span>
+                <span class="maturity-desc">El control no es aplicable para esta organizacion</span>
+            </label>
         </fieldset>
+
+        <div id="justification-section" style="{% if not response or not response.not_applicable %}display:none{% endif %}">
+            <label for="justification">Justificacion N/A *</label>
+            <textarea id="justification" name="justification" rows="3" placeholder="Explique por que este control no aplica...">{{ response.justification if response and response.justification else '' }}</textarea>
+        </div>
 
         <label for="notes">Notas / Hallazgos</label>
         <textarea id="notes" name="notes" rows="4" placeholder="Registre aqui los hallazgos, evidencias o comentarios sobre este control...">{{ response.notes if response else '' }}</textarea>
@@ -73,4 +84,30 @@
     <a href="/evaluate/{{ evaluation.id }}/control/{{ next_ctrl }}" class="button">Siguiente</a>
     {% endif %}
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const naOption = document.querySelector('input[name="maturity"][value="0"]');
+    const justificationSection = document.getElementById('justification-section');
+    
+    function updateJustification() {
+        const isNA = naOption && naOption.checked;
+        justificationSection.style.display = isNA ? 'block' : 'none';
+        
+        // Set required on maturity radio only if N/A is not selected
+        document.querySelectorAll('input[name="maturity"]').forEach(function(radio) {
+            if (radio.value !== "0") {
+                radio.required = !isNA;
+            }
+        });
+    }
+    
+    if (naOption) {
+        naOption.addEventListener('change', updateJustification);
+    }
+    
+    // Initialize on page load
+    updateJustification();
+});
+</script>
 {% endblock %}

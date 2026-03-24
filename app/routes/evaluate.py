@@ -102,7 +102,9 @@ async def save_control(
     if not csrf_token or not verify_csrf_token(csrf_token):
         raise HTTPException(status_code=403, detail="Token CSRF invalido")
 
-    maturity = int(form_data.get("maturity"))
+    maturity = int(form_data.get("maturity") or 0)
+    not_applicable = form_data.get("not_applicable") == "true"
+    justification = form_data.get("justification", "")
     notes = form_data.get("notes", "")
 
     with Session(engine) as session:
@@ -121,17 +123,21 @@ async def save_control(
         ).first()
         if resp:
             resp.maturity = maturity
+            resp.not_applicable = not_applicable
+            resp.justification = justification if not_applicable else None
             resp.notes = notes
             resp.updated_at = datetime.utcnow()
             session.add(resp)
             ctrl = session.get(ControlDefinition, control_id)
+
+            status = "N/A" if not_applicable else f"madurez {maturity}"
             session.add(
                 AuditLog(
                     user_id=user.id,
                     action="CONTROL_EVALUATED",
                     entity_type="control_response",
                     entity_id=resp.id,
-                    details=f"Control {ctrl.code} evaluado con madurez {maturity} en evaluacion {evaluation_id}",
+                    details=f"Control {ctrl.code} evaluado con {status} en evaluacion {evaluation_id}",
                 )
             )
         session.commit()

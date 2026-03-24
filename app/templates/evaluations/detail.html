@@ -70,18 +70,22 @@
             </thead>
             <tbody>
                 {% for item in info.controls %}
-                <tr class="{% if item.response and item.response.maturity == 0 %}unanswered{% elif item.response and item.response.maturity < 2 %}critical{% endif %}">
+                <tr class="{% if item.response and item.response.not_applicable %}na-answered{% elif item.response and item.response.maturity == 0 %}unanswered{% elif item.response and item.response.maturity < 2 %}critical{% endif %}">
                     <td><strong>{{ item.ctrl.code }}</strong></td>
                     <td>{{ item.ctrl.title }}</td>
                     <td>
                         {% if item.response %}
-                        <span class="maturity-badge level-{{ item.response.maturity }}">{{ item.response.maturity }}</span>
+                            {% if item.response.not_applicable %}
+                            <span class="maturity-badge level-na">N/A</span>
+                            {% else %}
+                            <span class="maturity-badge level-{{ item.response.maturity }}">{{ item.response.maturity }}</span>
+                            {% endif %}
                         {% else %}-{% endif %}
                     </td>
                     <td>
                         {% if user.role.value != 'vista_solo' %}
                         <a href="/evaluate/{{ evaluation.id }}/control/{{ item.ctrl.id }}" class="button outline small">
-                            {{ 'Editar' if item.response and item.response.maturity > 0 else 'Evaluar' }}
+                            {% if item.response and item.response.not_applicable %}Ver{% elif item.response and item.response.maturity > 0 %}Editar{% else %}Evaluar{% endif %}
                         </a>
                         {% else %}
                         <span class="text-muted">Solo vista</span>
