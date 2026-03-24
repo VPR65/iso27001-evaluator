@@ -73,6 +73,75 @@ def list_evaluations(request: Request):
     return render(request, "evaluations/list.html", evaluations=data)
 
 
+@router.get("/{evaluation_id}", response_class=HTMLResponse)
+def view_evaluation(request: Request, evaluation_id: str):
+    session_id = request.cookies.get("session_id")
+    user = get_current_user(session_id)
+    if not user:
+        return RedirectResponse(url="/login")
+
+    with Session(engine) as session:
+        evaluation = session.get(Evaluation, evaluation_id)
+        if not evaluation:
+            raise HTTPException(status_code=404, detail="Evaluacion no encontrada")
+        if user.role != UserRole.SUPERADMIN and evaluation.client_id != user.client_id:
+            raise HTTPException(
+                status_code=403, detail="No tienes permiso para ver esta evaluacion"
+            )
+
+        client = (
+            session.get(Client, evaluation.client_id) if evaluation.client_id else None
+        )
+        all_controls = session.exec(select(ControlDefinition)).all()
+        responses = session.exec(
+            select(ControlResponse).where(
+                ControlResponse.evaluation_id == evaluation_id
+            )
+        ).all()
+        resp_map = {r.control_id: r for r in responses}
+
+        answered = sum(1 for r in responses if r.maturity > 0)
+        total = len(all_controls)
+        progress = int((answered / total) * 100) if total > 0 else 0
+        score = sum(r.maturity for r in responses) / total if total > 0 else 0
+
+        domains = {}
+        for ctrl in all_controls:
+            domain = ctrl.domain
+            if domain not in domains:
+                domains[domain] = {"controls": [], "answered": 0, "total": 0, "sum": 0}
+            resp = resp_map.get(ctrl.id)
+            domains[domain]["controls"].append({"ctrl": ctrl, "response": resp})
+            domains[domain]["total"] += 1
+            if resp and resp.maturity > 0:
+                domains[domain]["answered"] += 1
+                domains[domain]["sum"] += resp.maturity
+
+        for domain, info in domains.items():
+            info["pct"] = (
+                int((info["answered"] / info["total"]) * 100)
+                if info["total"] > 0
+                else 0
+            )
+            info["avg"] = (
+                round(info["sum"] / info["total"], 2) if info["total"] > 0 else 0
+            )
+
+    return render(
+        request,
+        "evaluations/detail.html",
+        evaluation=evaluation,
+        client=client,
+        controls=all_controls,
+        responses=resp_map,
+        answered=answered,
+        total=total,
+        progress=progress,
+        score=round(score, 2),
+        domains=domains,
+    )
+
+
 @router.get("/new", response_class=HTMLResponse)
 def new_evaluation_form(request: Request):
     session_id = request.cookies.get("session_id")
