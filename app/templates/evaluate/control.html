@@ -18,12 +18,12 @@
     <form method="post" action="/evaluate/{{ evaluation.id }}/control/{{ ctrl.id }}/save">
         <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <fieldset>
-            <legend>Nivel de Madurez</legend>
+            <legend>Nivel de Madurez (0-5)</legend>
             {% for level, (name, desc) in maturity_levels.items() %}
             <label class="maturity-option {% if response and response.maturity == level %}selected{% endif %}">
                 <input type="radio" name="maturity" value="{{ level }}" {% if response and response.maturity == level %}checked{% endif %} required>
                 <span class="maturity-level level-{{ level }}">{{ level }}</span>
-                <span class="maturity-name"><strong>{{ name }}</strong></span>
+                <span class="maturity-name">{{ name }}</span>
                 <span class="maturity-desc">{{ desc }}</span>
             </label>
             {% endfor %}
