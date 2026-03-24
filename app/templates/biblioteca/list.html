@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Biblioteca de Documentos{% endblock %}
+
+{% block content %}
+<h1>Biblioteca de Documentos</h1>
+<p class="subtitle">Documentos de referencia, normas, politicas y procedimientos</p>
+
+<div class="upload-section">
+    <details class="upload-form">
+        <summary><strong>+ Subir Documento</strong></summary>
+        <form method="post" action="/biblioteca/upload" enctype="multipart/form-data" class="form-stack">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            
+            <div class="form-row">
+                <div>
+                    <label for="title">Titulo *</label>
+                    <input type="text" id="title" name="title" placeholder="Nombre del documento" required>
+                </div>
+                <div>
+                    <label for="category">Categoria</label>
+                    <select id="category" name="category">
+                        <option value="general">General</option>
+                        <option value="iso27001">ISO 27001</option>
+                        <option value="politicas">Politicas</option>
+                        <option value="procedimientos">Procedimientos</option>
+                        <option value="procesos">Procesos</option>
+                        <option value="itil">ITIL</option>
+                        <option value="cmmi">CMMI</option>
+                        <option value="agile">Agile</option>
+                        <option value="vision">Vision/Mision</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                </div>
+            </div>
+            
+            <label for="description">Descripcion</label>
+            <input type="text" id="description" name="description" placeholder="Breve descripcion del documento">
+            
+            {% if user.role.value == 'superadmin' %}
+            <label for="client_id">Cliente *</label>
+            <select id="client_id" name="client_id" required>
+                <option value="">-- Seleccionar Cliente --</option>
+                {% for c in clients %}
+                <option value="{{ c.id }}">{{ c.name }}</option>
+                {% endfor %}
+            </select>
+            {% else %}
+            <input type="hidden" name="client_id" value="{{ user.client_id }}">
+            {% endif %}
+            
+            <label for="file">Archivo * (PDF, DOCX, XLSX, PPTX)</label>
+            <input type="file" id="file" name="file" accept=".pdf,.docx,.xlsx,.pptx,.txt" required>
+            
+            <button type="submit" class="primary">Subir Documento</button>
+        </form>
+    </details>
+</div>
+
+{% if documents %}
+<table>
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Categoria</th>
+            <th>Descripcion</th>
+            <th>Cliente</th>
+            <th>Usuario</th>
+            <th>Fecha</th>
+            <th>Size</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in documents %}
+        <tr>
+            <td>
+                <strong>{{ item.doc.title }}</strong>
+                <br><small>{{ item.doc.filename }}</small>
+            </td>
+            <td><span class="badge">{{ item.doc.category }}</span></td>
+            <td>{{ item.doc.description or '-' }}</td>
+            <td>{{ item.client.name if item.client else '-' }}</td>
+            <td>{{ item.uploader.name if item.uploader else '-' }}</td>
+            <td>{{ item.doc.created_at.strftime('%Y-%m-%d') }}</td>
+            <td>{{ (item.doc.file_size / 1024)|round(1) }} KB</td>
+            <td>
+                <a href="/biblioteca/download/{{ item.doc.id }}" class="button outline small">Descargar</a>
+                <form method="post" action="/biblioteca/{{ item.doc.id }}/delete" style="display:inline" onsubmit="return confirm('Eliminar este documento?')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <button type="submit" class="outline contrast small">Eliminar</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="empty-state">No hay documentos en la biblioteca. Sube tu primer documento de referencia.</p>
+{% endif %}
+{% endblock %}

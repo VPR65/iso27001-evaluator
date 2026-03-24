@@ -74,7 +74,7 @@ from app.routes import (
     stats,
     import_export,
 )
-from app.routes import documents, rfcs, sprints, admin
+from app.routes import documents, rfcs, sprints, admin, biblioteca
 
 app.include_router(auth.router)
 app.include_router(dashboard.router)
@@ -84,6 +84,7 @@ app.include_router(evaluations.router)
 app.include_router(evaluate.router)
 app.include_router(stats.router)
 app.include_router(import_export.router)
+app.include_router(biblioteca.router)
 app.include_router(documents.router)
 app.include_router(rfcs.router)
 app.include_router(sprints.router)

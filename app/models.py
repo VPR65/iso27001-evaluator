@@ -281,6 +281,25 @@ class DocumentVersion(SQLModel, table=True):
     document: Optional[Document] = Relationship(back_populates="versions")
 
 
+# === BIBLIOTECA (Documentos de referencia) ===
+class Biblioteca(SQLModel, table=True):
+    __tablename__ = "biblioteca"
+
+    id: Optional[str] = Field(
+        default_factory=lambda: str(uuid.uuid4()), primary_key=True
+    )
+    client_id: str = Field(foreign_key="clients.id", index=True)
+    title: str
+    description: Optional[str] = ""
+    category: str = Field(default="general")
+    filename: str
+    filepath: str
+    file_size: int = 0
+    mime_type: str = ""
+    uploaded_by: str = Field(foreign_key="users.id")
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
 # === RFC ===
 class Rfc(SQLModel, table=True):
     __tablename__ = "rfcs"
