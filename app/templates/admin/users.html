@@ -143,9 +143,12 @@
 
 <script>
 function showDeleteModal(userId, userName, userEmail) {
+    console.log('Opening delete modal for user:', userId, userName);
     document.getElementById('deleteUserName').textContent = userName;
     document.getElementById('deleteUserEmail').textContent = userEmail;
-    document.getElementById('deleteForm').action = '/admin/users/' + userId + '/delete';
+    const formAction = '/admin/users/' + userId + '/delete';
+    console.log('Setting form action to:', formAction);
+    document.getElementById('deleteForm').action = formAction;
     document.getElementById('confirm_password').value = '';
     document.getElementById('deleteModal').style.display = 'flex';
 }
@@ -153,6 +156,17 @@ function showDeleteModal(userId, userName, userEmail) {
 function closeDeleteModal() {
     document.getElementById('deleteModal').style.display = 'none';
 }
+
+// Debug: Log form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteForm = document.getElementById('deleteForm');
+    if (deleteForm) {
+        deleteForm.addEventListener('submit', function(e) {
+            console.log('Form submitting to:', this.action);
+            console.log('Form data:', new FormData(this));
+        });
+    }
+});
 
 window.onclick = function(event) {
     if (event.target.classList.contains('modal')) {

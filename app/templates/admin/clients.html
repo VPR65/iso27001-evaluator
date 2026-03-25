@@ -167,10 +167,13 @@ function closeCreateModal() {
 }
 
 function showDeleteModal(clientId, clientName, userCount, evalCount) {
+    console.log('Opening delete modal for client:', clientId, clientName);
     document.getElementById('deleteClientName').textContent = clientName;
     document.getElementById('deleteUsers').textContent = userCount;
     document.getElementById('deleteEvals').textContent = evalCount;
-    document.getElementById('deleteForm').action = '/admin/clients/' + clientId + '/delete';
+    const formAction = '/admin/clients/' + clientId + '/delete';
+    console.log('Setting form action to:', formAction);
+    document.getElementById('deleteForm').action = formAction;
     document.getElementById('confirm_password').value = '';
     document.getElementById('deleteModal').style.display = 'flex';
 }
@@ -178,6 +181,17 @@ function showDeleteModal(clientId, clientName, userCount, evalCount) {
 function closeDeleteModal() {
     document.getElementById('deleteModal').style.display = 'none';
 }
+
+// Debug: Log form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteForm = document.getElementById('deleteForm');
+    if (deleteForm) {
+        deleteForm.addEventListener('submit', function(e) {
+            console.log('Form submitting to:', this.action);
+            console.log('Form data:', new FormData(this));
+        });
+    }
+});
 
 // Cerrar modal al hacer clic fuera
 window.onclick = function(event) {
