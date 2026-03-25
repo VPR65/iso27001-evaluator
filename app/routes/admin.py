@@ -210,7 +210,7 @@ def debug_audit_logs(request: Request):
         )
 
 
-@router.post("/debug/seed-test-data")
+@router.get("/debug/seed-test-data")
 def debug_seed_test_data(request: Request):
     """Endpoint de debug para poblar datos de prueba en QA"""
     debug_token = request.query_params.get("token")
