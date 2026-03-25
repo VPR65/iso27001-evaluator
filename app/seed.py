@@ -598,9 +598,23 @@ ISO_CONTROLS = [
 
 def seed_data():
     with Session(engine) as session:
-        existing = session.exec(select(ControlDefinition)).first()
-        if existing:
-            print("Seed ya realizado, omitiendo.")
+        existing_norms = session.exec(select(Norma)).first()
+        if existing_norms:
+            print("Seed ya realizado, omitiendo creacion de normas y controles.")
+            existing_superadmin = session.exec(
+                select(User).where(User.email == "admin@iso27001.local")
+            ).first()
+            if not existing_superadmin:
+                print("Creando superadmin faltante...")
+                superadmin = User(
+                    email="admin@iso27001.local",
+                    password_hash=hash_password("admin123"),
+                    name="Super Administrador",
+                    role=UserRole.SUPERADMIN,
+                    client_id=None,
+                )
+                session.add(superadmin)
+                session.commit()
             return
 
         normas_map = {}
@@ -982,27 +996,41 @@ def seed_data():
             ctrl["norma_id"] = normas_map["ISO22301"]
             session.add(ControlDefinition(**ctrl))
 
-        default_client = Client(name="Cliente Demo", sector="General")
-        session.add(default_client)
-        session.flush()
+        existing_client = session.exec(
+            select(Client).where(Client.name == "Cliente Demo")
+        ).first()
+        if not existing_client:
+            default_client = Client(name="Cliente Demo", sector="General")
+            session.add(default_client)
+            session.flush()
+        else:
+            default_client = existing_client
 
-        superadmin = User(
-            email="admin@iso27001.local",
-            password_hash=hash_password("admin123"),
-            name="Super Administrador",
-            role=UserRole.SUPERADMIN,
-            client_id=None,
-        )
-        session.add(superadmin)
+        existing_superadmin = session.exec(
+            select(User).where(User.email == "admin@iso27001.local")
+        ).first()
+        if not existing_superadmin:
+            superadmin = User(
+                email="admin@iso27001.local",
+                password_hash=hash_password("admin123"),
+                name="Super Administrador",
+                role=UserRole.SUPERADMIN,
+                client_id=None,
+            )
+            session.add(superadmin)
 
-        admin_demo = User(
-            email="admin@demo.local",
-            password_hash=hash_password("demo123"),
-            name="Administrador Demo",
-            role=UserRole.ADMIN_CLIENTE,
-            client_id=default_client.id,
-        )
-        session.add(admin_demo)
+        existing_admin_demo = session.exec(
+            select(User).where(User.email == "admin@demo.local")
+        ).first()
+        if not existing_admin_demo:
+            admin_demo = User(
+                email="admin@demo.local",
+                password_hash=hash_password("demo123"),
+                name="Administrador Demo",
+                role=UserRole.ADMIN_CLIENTE,
+                client_id=default_client.id,
+            )
+            session.add(admin_demo)
 
         session.commit()
         print("Seed completado. Usuarios creados:")
