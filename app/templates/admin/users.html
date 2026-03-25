@@ -4,6 +4,12 @@
 {% block content %}
 <h1>Usuarios del Sistema</h1>
 
+{% if show_success %}
+<div class="success-message">
+    <i class="fa-solid fa-check-circle"></i> Usuario creado exitosamente
+</div>
+{% endif %}
+
 <form method="post" class="create-user-form">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <h3>Crear Nuevo Usuario</h3>

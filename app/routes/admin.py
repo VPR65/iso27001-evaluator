@@ -29,6 +29,8 @@ def all_users(request: Request):
             session.commit()
         return RedirectResponse(url="/dashboard")
 
+    show_success = request.query_params.get("created") == "1"
+
     with Session(engine) as session:
         from app.models import Client
 
@@ -37,7 +39,13 @@ def all_users(request: Request):
         clients_map = {c.id: c for c in clients}
         user_list = [{"u": u, "client": clients_map.get(u.client_id)} for u in users]
 
-    resp = render(request, "admin/users.html", users=user_list, clients=clients)
+    resp = render(
+        request,
+        "admin/users.html",
+        users=user_list,
+        clients=clients,
+        show_success=show_success,
+    )
     resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     resp.headers["Pragma"] = "no-cache"
     resp.headers["Expires"] = "0"
@@ -109,10 +117,7 @@ async def create_admin_user(request: Request):
         )
         session.commit()
 
-    return JSONResponse(
-        status_code=200,
-        content={"success": True, "message": f"Usuario {email} creado exitosamente"},
-    )
+    return RedirectResponse(url="/admin/all-users?created=1", status_code=302)
 
 
 @router.get("/debug/users")

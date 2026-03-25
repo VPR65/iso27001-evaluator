@@ -470,6 +470,40 @@ tbody tr:last-child td { border-bottom: none; }
 .badge.level-4 { background: #10b981; color: white; }
 .badge.level-5 { background: #065f46; color: white; }
 
+.success-message {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.success-message i {
+    font-size: 1.25rem;
+}
+
+.error-message {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.error-message i {
+    font-size: 1.25rem;
+}
+
 .status-dot {
     display: inline-block;
     width: 8px;
