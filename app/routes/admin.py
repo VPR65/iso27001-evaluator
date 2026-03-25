@@ -224,11 +224,20 @@ def debug_seed_test_data(request: Request):
 
     import uuid
     from datetime import datetime
-    from app.models import Client, User, UserRole, Evaluation
+    from app.models import Client, User, UserRole, Evaluation, Norma
 
     created = {"clients": 0, "users": 0, "evaluations": 0}
 
     with Session(engine) as session:
+        iso27001 = session.exec(select(Norma).where(Norma.code == "ISO27001")).first()
+        iso9001 = session.exec(select(Norma).where(Norma.code == "ISO9001")).first()
+
+        if not iso27001:
+            return JSONResponse(
+                status_code=500,
+                content={"error": "No se encontro ISO27001, ejecutar seed primero"},
+            )
+
         client1_id = str(uuid.uuid4())
         client1 = Client(
             id=client1_id,
@@ -255,7 +264,7 @@ def debug_seed_test_data(request: Request):
             id=str(uuid.uuid4()),
             email="evaluador@demo.local",
             password_hash=hash_password("demo123"),
-            full_name="Juan Pérez",
+            name="Juan Pérez",
             role=UserRole.EVALUADOR,
             client_id=client1_id,
             is_active=True,
@@ -267,7 +276,7 @@ def debug_seed_test_data(request: Request):
             id=str(uuid.uuid4()),
             email="admin2@demo.local",
             password_hash=hash_password("demo123"),
-            full_name="María García",
+            name="María García",
             role=UserRole.ADMIN_CLIENTE,
             client_id=client1_id,
             is_active=True,
@@ -279,7 +288,7 @@ def debug_seed_test_data(request: Request):
             id=str(uuid.uuid4()),
             email="admin@global.local",
             password_hash=hash_password("demo123"),
-            full_name="Carlos López",
+            name="Carlos López",
             role=UserRole.ADMIN_CLIENTE,
             client_id=client2_id,
             is_active=True,
@@ -287,11 +296,14 @@ def debug_seed_test_data(request: Request):
         session.add(user3)
         created["users"] += 1
 
+        session.flush()
+
         eval1_id = str(uuid.uuid4())
         eval1 = Evaluation(
             id=eval1_id,
             name="Auditoría ISO 27001:2022 - Q1 2026",
             client_id=client1_id,
+            norma_id=iso27001.id,
             created_by=user1.id,
             status="in_progress",
             created_at=datetime.utcnow(),
@@ -304,6 +316,7 @@ def debug_seed_test_data(request: Request):
             id=eval2_id,
             name="Evaluación ISO 9001 - Global Services",
             client_id=client2_id,
+            norma_id=iso9001.id if iso9001 else iso27001.id,
             created_by=user3.id,
             status="completed",
             created_at=datetime.utcnow(),
