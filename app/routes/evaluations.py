@@ -195,7 +195,12 @@ def view_evaluation(request: Request, evaluation_id: str):
         client = (
             session.get(Client, evaluation.client_id) if evaluation.client_id else None
         )
-        all_controls = session.exec(select(ControlDefinition)).all()
+        norma = session.get(Norma, evaluation.norma_id) if evaluation.norma_id else None
+        all_controls = session.exec(
+            select(ControlDefinition).where(
+                ControlDefinition.norma_id == evaluation.norma_id
+            )
+        ).all()
         responses = session.exec(
             select(ControlResponse).where(
                 ControlResponse.evaluation_id == evaluation_id
@@ -249,6 +254,7 @@ def view_evaluation(request: Request, evaluation_id: str):
         "evaluations/detail.html",
         evaluation=evaluation,
         client=client,
+        norma=norma,
         controls=all_controls,
         responses=resp_map,
         answered=answered,

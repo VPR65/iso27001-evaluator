@@ -6,6 +6,7 @@
     <h1>{{ evaluation.name }}</h1>
     <div class="eval-meta">
         <span class="badge {{ evaluation.status.value }}">{{ evaluation.status.value }}</span>
+        {% if norma %}<span class="badge">{{ norma.code }} - {{ norma.name }}</span>{% endif %}
         {% if evaluation.description %}<p>{{ evaluation.description }}</p>{% endif %}
     </div>
 </div>
