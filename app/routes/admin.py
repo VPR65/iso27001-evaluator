@@ -5,7 +5,7 @@ from app.auth import get_current_user, hash_password
 from app.database import engine
 from app.templates_core import render
 from app.security import verify_csrf_token
-from sqlmodel import Session, select, func
+from sqlmodel import Session, select, func, desc
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -191,6 +191,193 @@ async def delete_client(request: Request, client_id: str):
     return RedirectResponse(url="/admin/clients?deleted=1", status_code=302)
 
 
+@router.get("/evaluations", response_class=HTMLResponse)
+def manage_evaluations(request: Request):
+    """Panel de administracion de evaluaciones"""
+    session_id = request.cookies.get("session_id")
+    user = get_current_user(session_id)
+    if not user:
+        return RedirectResponse(url="/login")
+    if user.role != UserRole.SUPERADMIN:
+        return RedirectResponse(url="/dashboard")
+
+    show_deleted = request.query_params.get("deleted") == "1"
+
+    with Session(engine) as session:
+        from app.models import Evaluation, Client, Norma, ControlResponse
+
+        evaluations = session.exec(
+            select(Evaluation).order_by(desc(Evaluation.created_at))
+        ).all()
+
+        evals_data = []
+        for eval_obj in evaluations:
+            client = (
+                session.get(Client, eval_obj.client_id) if eval_obj.client_id else None
+            )
+            norma = session.get(Norma, eval_obj.norma_id) if eval_obj.norma_id else None
+
+            response_count = session.exec(
+                select(func.count(ControlResponse.id)).where(
+                    ControlResponse.evaluation_id == eval_obj.id
+                )
+            ).one()
+
+            evals_data.append(
+                {
+                    "evaluation": eval_obj,
+                    "client": client,
+                    "norma": norma,
+                    "response_count": response_count,
+                }
+            )
+
+    return render(
+        request,
+        "admin/evaluations.html",
+        evaluations=evals_data,
+        show_deleted=show_deleted,
+    )
+
+
+@router.post("/evaluations/{eval_id}/delete")
+async def delete_evaluation(request: Request, eval_id: str):
+    """Eliminar evaluacion con confirmacion de password"""
+    session_id = request.cookies.get("session_id")
+    user = get_current_user(session_id)
+    if not user or user.role != UserRole.SUPERADMIN:
+        return JSONResponse(
+            status_code=401,
+            content={"success": False, "error": "No tienes permisos"},
+        )
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        return JSONResponse(
+            status_code=403, content={"success": False, "error": "Token CSRF invalido"}
+        )
+
+    confirm_password = form_data.get("confirm_password", "")
+    if not confirm_password:
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "error": "Debe confirmar con su password"},
+        )
+
+    from app.auth import verify_password
+
+    if not verify_password(confirm_password, user.password_hash):
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "error": "Password incorrecto"},
+        )
+
+    with Session(engine) as session:
+        from app.models import ControlResponse
+
+        evaluation = session.get(Evaluation, eval_id)
+        if not evaluation:
+            return JSONResponse(
+                status_code=404,
+                content={"success": False, "error": "Evaluacion no encontrada"},
+            )
+
+        eval_name = evaluation.name
+
+        session.query(ControlResponse).where(
+            ControlResponse.evaluation_id == eval_id
+        ).delete(synchronize_session=False)
+        session.delete(evaluation)
+
+        session.add(
+            AuditLog(
+                user_id=user.id,
+                action="EVALUATION_DELETED",
+                entity_type="evaluation",
+                entity_id=eval_id,
+                details=f"Evaluacion eliminada: {eval_name}",
+            )
+        )
+        session.commit()
+
+    return RedirectResponse(url="/admin/evaluations?deleted=1", status_code=302)
+
+
+@router.post("/users/{user_id}/delete")
+async def delete_user(request: Request, user_id: str):
+    """Eliminar usuario con confirmacion de password"""
+    session_id = request.cookies.get("session_id")
+    user = get_current_user(session_id)
+    if not user or user.role != UserRole.SUPERADMIN:
+        return JSONResponse(
+            status_code=401,
+            content={"success": False, "error": "No tienes permisos"},
+        )
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        return JSONResponse(
+            status_code=403, content={"success": False, "error": "Token CSRF invalido"}
+        )
+
+    confirm_password = form_data.get("confirm_password", "")
+    if not confirm_password:
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "error": "Debe confirmar con su password"},
+        )
+
+    from app.auth import verify_password
+
+    if not verify_password(confirm_password, user.password_hash):
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "error": "Password incorrecto"},
+        )
+
+    with Session(engine) as session:
+        from app.models import Session as UserSession
+
+        target_user = session.get(User, user_id)
+        if not target_user:
+            return JSONResponse(
+                status_code=404,
+                content={"success": False, "error": "Usuario no encontrado"},
+            )
+
+        if target_user.email == "admin@iso27001.local":
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "success": False,
+                    "error": "No se puede eliminar el superadmin",
+                },
+            )
+
+        user_email = target_user.email
+        user_name = target_user.name
+
+        session.query(UserSession).where(UserSession.user_id == user_id).delete(
+            synchronize_session=False
+        )
+        session.delete(target_user)
+
+        session.add(
+            AuditLog(
+                user_id=user.id,
+                action="USER_DELETED",
+                entity_type="user",
+                entity_id=user_id,
+                details=f"Usuario eliminado: {user_email} ({user_name})",
+            )
+        )
+        session.commit()
+
+    return RedirectResponse(url="/admin/all-users?deleted=1", status_code=302)
+
+
 @router.get("/all-users", response_class=HTMLResponse)
 def all_users(request: Request):
     session_id = request.cookies.get("session_id")
@@ -211,6 +398,7 @@ def all_users(request: Request):
         return RedirectResponse(url="/dashboard")
 
     show_success = request.query_params.get("created") == "1"
+    show_deleted = request.query_params.get("deleted") == "1"
 
     with Session(engine) as session:
         from app.models import Client
@@ -226,6 +414,7 @@ def all_users(request: Request):
         users=user_list,
         clients=clients,
         show_success=show_success,
+        show_deleted=show_deleted,
     )
     resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     resp.headers["Pragma"] = "no-cache"

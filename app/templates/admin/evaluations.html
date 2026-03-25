@@ -1,97 +1,70 @@
 {% extends "base.html" %}
-{% block title %}Usuarios Globales{% endblock %}
+{% block title %}Gestion de Evaluaciones{% endblock %}
 
 {% block content %}
-<h1><i class="fa-solid fa-users"></i> Usuarios del Sistema</h1>
-
-{% if show_success %}
-<div class="success-message">
-    <i class="fa-solid fa-check-circle"></i> Usuario creado exitosamente
-</div>
-{% endif %}
+<h1><i class="fa-solid fa-clipboard-check"></i> Gestion de Evaluaciones</h1>
 
 {% if show_deleted %}
 <div class="success-message">
-    <i class="fa-solid fa-check-circle"></i> Usuario eliminado exitosamente
+    <i class="fa-solid fa-check-circle"></i> Evaluacion eliminada exitosamente
 </div>
 {% endif %}
 
 <div class="section-card">
     <div class="section-header">
-        <h3><i class="fa-solid fa-user-plus"></i> Crear Nuevo Usuario</h3>
+        <h3><i class="fa-solid fa-list"></i> Todas las Evaluaciones</h3>
+        <a href="/evaluations/new" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Nueva Evaluacion
+        </a>
     </div>
     <div class="section-body">
-        <form method="post" class="create-user-form">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-            <div class="form-row-4">
-                <input type="text" name="name" placeholder="Nombre completo" required>
-                <input type="email" name="email" placeholder="Email" required>
-                <input type="password" name="password" placeholder="Contrasena" required>
-                <select name="role" required>
-                    <option value="admin_cliente">Admin Cliente</option>
-                    <option value="evaluador">Evaluador</option>
-                    <option value="vista_solo">Solo Vista</option>
-                </select>
-            </div>
-            <div class="form-row-2">
-                <select name="client_id" required>
-                    <option value="">-- Seleccionar Cliente --</option>
-                    {% for c in clients %}
-                    <option value="{{ c.id }}">{{ c.name }}</option>
-                    {% endfor %}
-                </select>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fa-solid fa-user-plus"></i> Crear Usuario
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<div class="section-card">
-    <div class="section-header">
-        <h3><i class="fa-solid fa-list"></i> Usuarios Registrados</h3>
-    </div>
-    <div class="section-body">
-        {% if users %}
+        {% if evaluations %}
         <table class="admin-table">
             <thead>
                 <tr>
                     <th>Nombre</th>
-                    <th>Email</th>
-                    <th>Rol</th>
                     <th>Cliente</th>
-                    <th>Activo</th>
+                    <th>Norma</th>
+                    <th>Estado</th>
+                    <th>Respuestas</th>
+                    <th>Fecha</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                {% for item in users %}
+                {% for item in evaluations %}
                 <tr>
                     <td>
-                        <i class="fa-solid fa-user" style="color: var(--primary); margin-right: 0.5rem"></i>
-                        <strong>{{ item.u.name }}</strong>
-                    </td>
-                    <td>{{ item.u.email }}</td>
-                    <td>
-                        <span class="badge role-{{ item.u.role.value }}">
-                            {{ item.u.role.value.replace('_', ' ').title() }}
-                        </span>
+                        <i class="fa-solid fa-clipboard-list" style="color: var(--primary); margin-right: 0.5rem"></i>
+                        <strong>{{ item.evaluation.name }}</strong>
+                        {% if item.evaluation.description %}
+                        <br><small style="color: var(--text-muted)">{{ item.evaluation.description[:50] }}...</small>
+                        {% endif %}
                     </td>
                     <td>{{ item.client.name if item.client else '-' }}</td>
                     <td>
-                        <span class="badge {{ 'active' if item.u.is_active else 'archived' }}">
-                            {{ 'Si' if item.u.is_active else 'No' }}
+                        <span class="badge norma">
+                            {{ item.norma.code if item.norma else '-' }}
                         </span>
                     </td>
                     <td>
-                        {% if item.u.email != 'admin@iso27001.local' %}
-                        <button type="button" class="btn-icon btn-danger" 
-                                onclick="showDeleteModal('{{ item.u.id }}', '{{ item.u.name }}', '{{ item.u.email }}')"
-                                title="Eliminar usuario">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                        {% endif %}
+                        <span class="badge {{ item.evaluation.status.value }}">
+                            {{ item.evaluation.status.value.replace('_', ' ').title() }}
+                        </span>
+                    </td>
+                    <td>{{ item.response_count }}</td>
+                    <td>{{ item.evaluation.created_at.strftime('%d/%m/%Y') if item.evaluation.created_at else '-' }}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="/evaluations/{{ item.evaluation.id }}" class="btn-icon btn-primary" title="Ver evaluacion">
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
+                            <button type="button" class="btn-icon btn-danger" 
+                                    onclick="showDeleteModal('{{ item.evaluation.id }}', '{{ item.evaluation.name }}', {{ item.response_count }})"
+                                    title="Eliminar evaluacion">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -99,14 +72,17 @@
         </table>
         {% else %}
         <div class="empty-state">
-            <i class="fa-solid fa-users-slash"></i>
-            <p>No hay usuarios registrados</p>
+            <i class="fa-solid fa-clipboard-list"></i>
+            <p>No hay evaluaciones registradas</p>
+            <a href="/evaluations/new" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Crear primera evaluacion
+            </a>
         </div>
         {% endif %}
     </div>
 </div>
 
-<!-- Modal Eliminar Usuario -->
+<!-- Modal Eliminar Evaluacion -->
 <div id="deleteModal" class="modal">
     <div class="modal-content modal-danger">
         <div class="modal-header">
@@ -117,9 +93,9 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
             
             <div class="warning-box">
-                <p>Esta a punto de eliminar al usuario:</p>
-                <p><strong id="deleteUserName"></strong></p>
-                <p id="deleteUserEmail" style="color: var(--text-muted)"></p>
+                <p>Esta a punto de eliminar la evaluacion:</p>
+                <p><strong id="deleteEvalName"></strong></p>
+                <p id="deleteEvalDetails"></p>
                 <p class="text-danger"><strong>Esta accion no se puede deshacer.</strong></p>
             </div>
             
@@ -131,7 +107,7 @@
             
             <div class="form-actions">
                 <button type="submit" class="btn btn-danger">
-                    <i class="fa-solid fa-trash"></i> Eliminar Usuario
+                    <i class="fa-solid fa-trash"></i> Eliminar Evaluacion
                 </button>
                 <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">
                     Cancelar
@@ -142,10 +118,10 @@
 </div>
 
 <script>
-function showDeleteModal(userId, userName, userEmail) {
-    document.getElementById('deleteUserName').textContent = userName;
-    document.getElementById('deleteUserEmail').textContent = userEmail;
-    document.getElementById('deleteForm').action = '/admin/users/' + userId + '/delete';
+function showDeleteModal(evalId, evalName, responseCount) {
+    document.getElementById('deleteEvalName').textContent = evalName;
+    document.getElementById('deleteEvalDetails').textContent = responseCount + ' respuestas de control seran eliminadas';
+    document.getElementById('deleteForm').action = '/admin/evaluations/' + evalId + '/delete';
     document.getElementById('confirm_password').value = '';
     document.getElementById('deleteModal').style.display = 'flex';
 }
@@ -276,6 +252,7 @@ window.onclick = function(event) {
     border-radius: 6px;
     cursor: pointer;
     border: none;
+    margin: 0 0.25rem;
 }
 
 .btn-danger {
@@ -283,31 +260,23 @@ window.onclick = function(event) {
     color: white;
 }
 
-.role-superadmin { background: #8b5cf6; color: white; }
-.role-admin_cliente { background: #3b82f6; color: white; }
-.role-evaluador { background: #10b981; color: white; }
-.role-vista_solo { background: #6b7280; color: white; }
-
-.form-row-4 {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark, #2563eb) 100%);
+    color: white;
 }
 
-.form-row-2 {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 0.5rem;
+.action-buttons {
+    display: flex;
+    gap: 0.25rem;
 }
 
-@media (max-width: 768px) {
-    .form-row-4 {
-        grid-template-columns: 1fr;
-    }
-    .form-row-2 {
-        grid-template-columns: 1fr;
-    }
+.badge.norma {
+    background: var(--secondary, #8b5cf6);
+    color: white;
 }
+
+.badge.draft { background: #6b7280; color: white; }
+.badge.in_progress { background: #f59e0b; color: white; }
+.badge.completed { background: #10b981; color: white; }
 </style>
 {% endblock %}

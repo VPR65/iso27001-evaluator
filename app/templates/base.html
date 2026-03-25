@@ -56,11 +56,15 @@
                 </a>
                 {% if user.role.value == 'superadmin' %}
                 <div class="nav-divider"></div>
-                <a href="/clients" class="nav-item {% if '/clients' in request.url.path %}active{% endif %}">
+                <a href="/admin/clients" class="nav-item {% if '/admin/clients' in request.url.path %}active{% endif %}">
                     <i class="fa-solid fa-building"></i>
                     <span>Clientes</span>
                 </a>
-                <a href="/admin/all-users" class="nav-item {% if '/admin' in request.url.path %}active{% endif %}">
+                <a href="/admin/evaluations" class="nav-item {% if '/admin/evaluations' in request.url.path %}active{% endif %}">
+                    <i class="fa-solid fa-clipboard-check"></i>
+                    <span>Evaluaciones</span>
+                </a>
+                <a href="/admin/all-users" class="nav-item {% if '/admin/all-users' in request.url.path %}active{% endif %}">
                     <i class="fa-solid fa-users"></i>
                     <span>Usuarios</span>
                 </a>
