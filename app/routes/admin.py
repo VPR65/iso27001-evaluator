@@ -404,3 +404,154 @@ def debug_init_neon(request: Request):
                 "error": str(e),
             },
         )
+
+
+@router.get("/debug/clear-evaluations")
+def debug_clear_evaluations(request: Request):
+    """Endpoint de debug para eliminar todas las evaluaciones de prueba"""
+    debug_token = request.query_params.get("token")
+    if debug_token != "qa-debug-2024":
+        return JSONResponse(status_code=403, content={"error": "Token invalido"})
+
+    try:
+        from app.models import ControlResponse, Evaluation
+
+        deleted_responses = 0
+        deleted_evals = 0
+
+        with Session(engine) as session:
+            # Contar antes de borrar
+            responses = session.exec(select(ControlResponse)).all()
+            evals = session.exec(select(Evaluation)).all()
+            deleted_responses = len(responses)
+            deleted_evals = len(evals)
+
+            # Borrar en orden (primero responses por FK)
+            session.exec(select(ControlResponse).where(ControlResponse.id != None))
+            session.query(ControlResponse).delete()
+            session.query(Evaluation).delete()
+            session.commit()
+
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "message": f"Eliminadas {deleted_evals} evaluaciones y {deleted_responses} respuestas de control",
+            },
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": str(e)},
+        )
+
+
+@router.get("/debug/clear-test-data")
+def debug_clear_test_data(request: Request):
+    """Endpoint de debug para eliminar TODOS los datos de prueba (evaluaciones, usuarios demo, clientes demo)"""
+    debug_token = request.query_params.get("token")
+    if debug_token != "qa-debug-2024":
+        return JSONResponse(status_code=403, content={"error": "Token invalido"})
+
+    try:
+        from app.models import ControlResponse, Evaluation, User, Client
+
+        with Session(engine) as session:
+            # Contar
+            deleted = {
+                "evaluations": session.query(Evaluation).count(),
+                "control_responses": session.query(ControlResponse).count(),
+                "test_users": 0,
+                "test_clients": 0,
+            }
+
+            # Usuarios de prueba (no superadmin, no admin@iso27001)
+            test_users = session.exec(
+                select(User).where(User.email.notin_(["admin@iso27001.local"]))
+            ).all()
+            deleted["test_users"] = len(test_users)
+
+            # Clientes de prueba (no Cliente Demo)
+            test_clients = session.exec(
+                select(Client).where(Client.name.notin_(["Cliente Demo"]))
+            ).all()
+            deleted["test_clients"] = len(test_clients)
+
+            # Borrar en orden (primero responses, luego evals, luego users, luego clients)
+            session.query(ControlResponse).delete()
+            session.query(Evaluation).delete()
+            for u in test_users:
+                session.delete(u)
+            for c in test_clients:
+                session.delete(c)
+            session.commit()
+
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "message": "Datos de prueba eliminados",
+                "deleted": deleted,
+            },
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": str(e)},
+        )
+
+
+@router.get("/debug/reset-all")
+def debug_reset_all(request: Request):
+    """Endpoint de debug para RESETEAR toda la base de datos (elimina TODO y recrea seed)"""
+    debug_token = request.query_params.get("token")
+    if debug_token != "qa-debug-2024":
+        return JSONResponse(status_code=403, content={"error": "Token invalido"})
+
+    try:
+        from app.models import (
+            AuditLog,
+            BibliotecaDocument,
+            SprintTask,
+            Sprint,
+            RFC,
+            DocumentVersion,
+            Document,
+            ControlResponse,
+            Evaluation,
+            User,
+            Client,
+        )
+        from app.database import create_db_and_tables
+        from app.seed import seed_data as run_seed
+
+        with Session(engine) as session:
+            # Borrar todo en orden (por FK)
+            session.query(AuditLog).delete()
+            session.query(BibliotecaDocument).delete()
+            session.query(SprintTask).delete()
+            session.query(Sprint).delete()
+            session.query(RFC).delete()
+            session.query(DocumentVersion).delete()
+            session.query(Document).delete()
+            session.query(ControlResponse).delete()
+            session.query(Evaluation).delete()
+            # No borrar usuarios ni clientes base (los recrea el seed)
+            session.commit()
+
+        # Recrear tablas y seed
+        create_db_and_tables()
+        run_seed()
+
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "message": "Base de datos reseteada completamente. Seed ejecutado.",
+            },
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": str(e)},
+        )
