@@ -26,7 +26,8 @@
                     <th>Cliente</th>
                     <th>Norma</th>
                     <th>Estado</th>
-                    <th>Respuestas</th>
+                    <th>% Avance</th>
+                    <th>Respuestas.</th>
                     <th>Fecha</th>
                     <th>Acciones</th>
                 </tr>
@@ -52,12 +53,20 @@
                             {{ item.evaluation.status.value.replace('_', ' ').title() }}
                         </span>
                     </td>
-                    <td>{{ item.response_count }}</td>
+                    <td>
+                        <div class="progress-cell">
+                            <div class="progress-bar">
+                                <div class="progress-fill {% if item.progress_percent < 33 %}low{% elif item.progress_percent < 66 %}medium{% endif %}" style="width: {{ item.progress_percent }}%"></div>
+                            </div>
+                            <span class="progress-text">{{ item.progress_percent }}%</span>
+                        </div>
+                    </td>
+                    <td>{{ item.response_count }}/{{ item.total_controls }}</td>
                     <td>{{ item.evaluation.created_at.strftime('%d/%m/%Y') if item.evaluation.created_at else '-' }}</td>
                     <td>
                         <div class="action-buttons">
-                            <a href="/evaluations/{{ item.evaluation.id }}" class="btn-icon btn-primary" title="Ver evaluacion">
-                                <i class="fa-solid fa-eye"></i>
+                            <a href="/evaluations/{{ item.evaluation.id }}" class="btn-icon btn-success" title="Retomar evaluacion">
+                                <i class="fa-solid fa-play"></i>
                             </a>
                             <form method="post" action="/admin/evaluations/{{ item.evaluation.id }}/delete" style="display:inline;">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
@@ -250,5 +259,47 @@ window.onclick = function(event) {
 .badge.draft { background: #6b7280; color: white; }
 .badge.in_progress { background: #f59e0b; color: white; }
 .badge.completed { background: #10b981; color: white; }
+
+.progress-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 120px;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--bg-secondary, #e5e7eb);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #34d399);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.progress-fill.low { background: linear-gradient(90deg, #ef4444, #f87171); }
+.progress-fill.medium { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+
+.progress-text {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-color);
+    min-width: 35px;
+    text-align: right;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
 </style>
 {% endblock %}

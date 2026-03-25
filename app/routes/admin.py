@@ -204,7 +204,13 @@ def manage_evaluations(request: Request):
     show_deleted = request.query_params.get("deleted") == "1"
 
     with Session(engine) as session:
-        from app.models import Evaluation, Client, Norma, ControlResponse
+        from app.models import (
+            Evaluation,
+            Client,
+            Norma,
+            ControlResponse,
+            ControlDefinition,
+        )
 
         evaluations = session.exec(
             select(Evaluation).order_by(desc(Evaluation.created_at))
@@ -223,12 +229,27 @@ def manage_evaluations(request: Request):
                 )
             ).one()
 
+            total_controls = 0
+            progress_percent = 0
+            if norma:
+                total_controls = session.exec(
+                    select(func.count(ControlDefinition.id)).where(
+                        ControlDefinition.norma_id == norma.id
+                    )
+                ).one()
+                if total_controls > 0:
+                    progress_percent = min(
+                        100, round((response_count / total_controls) * 100, 1)
+                    )
+
             evals_data.append(
                 {
                     "evaluation": eval_obj,
                     "client": client,
                     "norma": norma,
                     "response_count": response_count,
+                    "total_controls": total_controls,
+                    "progress_percent": progress_percent,
                 }
             )
 
