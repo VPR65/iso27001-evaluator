@@ -5,9 +5,190 @@ from app.auth import get_current_user, hash_password
 from app.database import engine
 from app.templates_core import render
 from app.security import verify_csrf_token
-from sqlmodel import Session, select
+from sqlmodel import Session, select, func
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+
+
+@router.get("/clients", response_class=HTMLResponse)
+def manage_clients(request: Request):
+    """Panel de administracion de clientes"""
+    session_id = request.cookies.get("session_id")
+    user = get_current_user(session_id)
+    if not user:
+        return RedirectResponse(url="/login")
+    if user.role != UserRole.SUPERADMIN:
+        return RedirectResponse(url="/dashboard")
+
+    show_success = request.query_params.get("created") == "1"
+    show_deleted = request.query_params.get("deleted") == "1"
+
+    with Session(engine) as session:
+        from app.models import Evaluation, User
+
+        clients = session.exec(select(Client)).all()
+        clients_data = []
+
+        for client in clients:
+            eval_count = session.exec(
+                select(func.count(Evaluation.id)).where(
+                    Evaluation.client_id == client.id
+                )
+            ).one()
+            user_count = session.exec(
+                select(func.count(User.id)).where(User.client_id == client.id)
+            ).one()
+            clients_data.append(
+                {
+                    "client": client,
+                    "eval_count": eval_count,
+                    "user_count": user_count,
+                }
+            )
+
+    return render(
+        request,
+        "admin/clients.html",
+        clients_data=clients_data,
+        show_success=show_success,
+        show_deleted=show_deleted,
+    )
+
+
+@router.post("/clients")
+async def create_client(request: Request):
+    """Crear nuevo cliente"""
+    session_id = request.cookies.get("session_id")
+    user = get_current_user(session_id)
+    if not user or user.role != UserRole.SUPERADMIN:
+        return JSONResponse(
+            status_code=401,
+            content={"success": False, "error": "No tienes permisos"},
+        )
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        return JSONResponse(
+            status_code=403, content={"success": False, "error": "Token CSRF invalido"}
+        )
+
+    name = form_data.get("name")
+    description = form_data.get("description", "")
+    industry = form_data.get("industry", "")
+    size = form_data.get("size", "mediana")
+    sector = form_data.get("sector", "")
+
+    if not name or not name.strip():
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "error": "El nombre es requerido"},
+        )
+
+    with Session(engine) as session:
+        client = Client(
+            name=name,
+            description=description,
+            industry=industry,
+            size=size,
+            sector=sector,
+        )
+        session.add(client)
+        session.add(
+            AuditLog(
+                user_id=user.id,
+                action="CLIENT_CREATED",
+                entity_type="client",
+                entity_id=client.id,
+                details=f"Cliente creado: {name}",
+            )
+        )
+        session.commit()
+
+    return RedirectResponse(url="/admin/clients?created=1", status_code=302)
+
+
+@router.post("/clients/{client_id}/delete")
+async def delete_client(request: Request, client_id: str):
+    """Eliminar cliente con confirmacion de password"""
+    session_id = request.cookies.get("session_id")
+    user = get_current_user(session_id)
+    if not user or user.role != UserRole.SUPERADMIN:
+        return JSONResponse(
+            status_code=401,
+            content={"success": False, "error": "No tienes permisos"},
+        )
+
+    form_data = await request.form()
+    csrf_token = form_data.get("csrf_token")
+    if not csrf_token or not verify_csrf_token(csrf_token):
+        return JSONResponse(
+            status_code=403, content={"success": False, "error": "Token CSRF invalido"}
+        )
+
+    confirm_password = form_data.get("confirm_password", "")
+    if not confirm_password:
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "error": "Debe confirmar con su password"},
+        )
+
+    from app.auth import verify_password
+
+    if not verify_password(confirm_password, user.password_hash):
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "error": "Password incorrecto"},
+        )
+
+    with Session(engine) as session:
+        from app.models import Evaluation, ControlResponse, User, Session as UserSession
+
+        client = session.get(Client, client_id)
+        if not client:
+            return JSONResponse(
+                status_code=404,
+                content={"success": False, "error": "Cliente no encontrado"},
+            )
+
+        client_name = client.name
+
+        evals = session.exec(
+            select(Evaluation).where(Evaluation.client_id == client_id)
+        ).all()
+
+        for eval_obj in evals:
+            session.exec(
+                select(ControlResponse).where(
+                    ControlResponse.evaluation_id == eval_obj.id
+                )
+            )
+            session.query(ControlResponse).where(
+                ControlResponse.evaluation_id == eval_obj.id
+            ).delete()
+            session.delete(eval_obj)
+
+        session.query(User).where(User.client_id == client_id).delete()
+        session.query(UserSession).where(
+            UserSession.user_id.in_(
+                session.exec(select(User.id).where(User.client_id == client_id))
+            )
+        ).delete(synchronize_session=False)
+
+        session.delete(client)
+
+        session.add(
+            AuditLog(
+                user_id=user.id,
+                action="CLIENT_DELETED",
+                entity_type="client",
+                entity_id=client_id,
+                details=f"Cliente eliminado: {client_name}",
+            )
+        )
+        session.commit()
+
+    return RedirectResponse(url="/admin/clients?deleted=1", status_code=302)
 
 
 @router.get("/all-users", response_class=HTMLResponse)

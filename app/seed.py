@@ -28,6 +28,12 @@ NORMAS = [
         "version": "2019",
         "description": "Sistema de Gestion de Continuidad del Negocio",
     },
+    {
+        "code": "ITIL4",
+        "name": "ITIL v4 Framework",
+        "version": "4.0",
+        "description": "Framework de Gestion de Servicios de TI",
+    },
 ]
 
 ISO_CONTROLS = [
@@ -995,6 +1001,231 @@ def seed_data():
         for ctrl in iso22301_controls:
             ctrl["norma_id"] = normas_map["ISO22301"]
             session.add(ControlDefinition(**ctrl))
+
+        # ITIL v4 Practices
+        itil4_controls = [
+            # General
+            {
+                "code": "ITSV-1",
+                "domain": "SVS - Service Value System",
+                "title": "Service Value System",
+                "description": "El SVS determina como los recursos se transforman en valor a traves de actividades y gobernanza.",
+            },
+            {
+                "code": "ITSV-2",
+                "domain": "4 Dimensions Model",
+                "title": "Four Dimensions of Service Value",
+                "description": "Las cuatro dimensiones que deben estar balanceadas para la creacion de valor.",
+            },
+            # Governance
+            {
+                "code": "GOV-1",
+                "domain": "Governance - Direct",
+                "title": "Direct and Justify",
+                "description": "Direccionar y justificar las politicas, regulaciones y estrategas de la organizacion.",
+            },
+            {
+                "code": "GOV-2",
+                "domain": "Governance - Plan",
+                "title": "Plan and Set Direction",
+                "description": "Planificar y establecer la direccion estrategica y tactica de la organizacion.",
+            },
+            {
+                "code": "GOV-3",
+                "domain": "Governance - Improve",
+                "title": "Improve and Achieve Objectives",
+                "description": "Mejorar continuamente y lograr los objetivos de la organizacion.",
+            },
+            # Value Streams
+            {
+                "code": "VST-1",
+                "domain": "Value Streams and Pathways",
+                "title": "Design and Engineer",
+                "description": "Disenar e ingenierar servicios para crear valor.",
+            },
+            {
+                "code": "VST-2",
+                "domain": "Value Streams and Pathways",
+                "title": "Deliver and Support",
+                "description": "Entregar y soportar servicios para generar valor.",
+            },
+            # Operational Practices
+            {
+                "code": "OPE-1",
+                "domain": "Operating Model",
+                "title": "Change Enablement",
+                "description": "Maximizar la probabilidad de resultados exitosos de cambios changeEnablementng.",
+            },
+            {
+                "code": "OPE-2",
+                "domain": "Operating Model",
+                "title": "Incident Management",
+                "description": "Minimizar el impacto negativo de incidentes restaurando el servicio normal.",
+            },
+            {
+                "code": "OPE-3",
+                "domain": "Operating Model",
+                "title": "Problem Management",
+                "description": "Reducir la probabilidad e impacto de incidentes eliminando errores.",
+            },
+            {
+                "code": "OPE-4",
+                "domain": "Operating Model",
+                "title": "Service Request Management",
+                "description": "Soportar la carga de trabajo predefinida y auto-servicio.",
+            },
+            {
+                "code": "OPE-5",
+                "domain": "Operating Model",
+                "title": "IT Asset Management",
+                "description": "Planificar y gestionar el ciclo de vida de los activos de TI.",
+            },
+            # Improvement
+            {
+                "code": "IMP-1",
+                "domain": "Improvement - Continual",
+                "title": "Continual Improvement",
+                "description": "Alinear las practicas de mejora con las necesidades actuales y futuras.",
+            },
+            {
+                "code": "IMP-2",
+                "domain": "Improvement - Measurement",
+                "title": "Measurement and Reporting",
+                "description": "Definir y capturar metricas para demostrar valor y mejora.",
+            },
+            # Relationships
+            {
+                "code": "REL-1",
+                "domain": "Relationships",
+                "title": "Business Analysis",
+                "description": "Identificar necesidades y oportunidades de negocio.",
+            },
+            {
+                "code": "REL-2",
+                "domain": "Relationships",
+                "title": "Portfolio Management",
+                "description": "Gestionar portafolio de servicios, productos y recursos.",
+            },
+            {
+                "code": "REL-3",
+                "domain": "Relationships",
+                "title": "Relationship Management",
+                "description": "Fomentar relaciones positivas y trabajar con stakeholders.",
+            },
+            # Supply
+            {
+                "code": "SUP-1",
+                "domain": "Supply and Demand",
+                "title": "Supplier Management",
+                "description": "Asegurar que los proveedores deliversn valor sostenible.",
+            },
+            {
+                "code": "SUP-2",
+                "domain": "Supply and Demand",
+                "title": "Service Level Management",
+                "description": "Establecer y mantener acuerdos de nivel de servicio.",
+            },
+            {
+                "code": "SUP-3",
+                "domain": "Supply and Demand",
+                "title": "Service Configuration",
+                "description": "Asegurar informacion akuratica de configuracion de servicios.",
+            },
+            # Technical
+            {
+                "code": "TEC-1",
+                "domain": "Technical Practices",
+                "title": "Deployment Management",
+                "description": "Mover servicios nuevos o modificados a produccion.",
+            },
+            {
+                "code": "TEC-2",
+                "domain": "Technical Practices",
+                "title": "Infrastructure and Platform",
+                "description": "Gestionar infraestructura y plataformas de servicios.",
+            },
+            {
+                "code": "TEC-3",
+                "domain": "Technical Practices",
+                "title": "Software Development",
+                "description": "Desarrollar y mantener software de servicios.",
+            },
+            {
+                "code": "TEC-4",
+                "domain": "Technical Practices",
+                "title": "Security Management",
+                "description": "Proteger la informacion y los datos de la organizacion.",
+            },
+            # Service Value Chain
+            {
+                "code": "SVC-1",
+                "domain": "Service Value Chain",
+                "title": "Engage and Plan",
+                "description": "Proveer vision clara, retroalimentacion y mejora continua.",
+            },
+            {
+                "code": "SVC-2",
+                "domain": "Service Value Chain",
+                "title": "Design and Transition",
+                "description": "Diseñar y desarrollar nuevos servicios y caracteristicas.",
+            },
+            {
+                "code": "SVC-3",
+                "domain": "Service Value Chain",
+                "title": "Obtain and Build",
+                "description": "Asegurar que componentes de servicio esten disponibles.",
+            },
+            {
+                "code": "SVC-4",
+                "domain": "Service Value Chain",
+                "title": "Deliver and Support",
+                "description": "Entregar servicios de acuerdo a especificaciones.",
+            },
+            # Additional ITIL Practices
+            {
+                "code": "ADD-1",
+                "domain": "Organization and People",
+                "title": "Organizational Change Management",
+                "description": "Preparar a personas para cambios organizacionales.",
+            },
+            {
+                "code": "ADD-2",
+                "domain": "Organization and People",
+                "title": "Workforce and Talent Management",
+                "description": "Desarrollar capacidades y competencias del personal.",
+            },
+            {
+                "code": "ADD-3",
+                "domain": "Information and Technology",
+                "title": "Information Security Management",
+                "description": "Proteger la informacion mediante controles de seguridad.",
+            },
+            {
+                "code": "ADD-4",
+                "domain": "Information and Technology",
+                "title": "Knowledge Management",
+                "description": "Mantener y mejorar el conocimiento organizacional.",
+            },
+            {
+                "code": "ADD-5",
+                "domain": "Partners and Suppliers",
+                "title": "Vendor Assessment",
+                "description": "Evaluar capacidades y riesgos de proveedores.",
+            },
+        ]
+
+        itil4_norma = session.exec(select(Norma).where(Norma.code == "ITIL4")).first()
+        if itil4_norma:
+            itil_controls = session.exec(
+                select(ControlDefinition).where(
+                    ControlDefinition.norma_id == itil4_norma.id
+                )
+            ).first()
+            if not itil_controls:
+                for ctrl in itil4_controls:
+                    ctrl["norma_id"] = itil4_norma.id
+                    session.add(ControlDefinition(**ctrl))
+                print(f"  Agregados {len(itil4_controls)} controles ITIL v4")
 
         existing_client = session.exec(
             select(Client).where(Client.name == "Cliente Demo")

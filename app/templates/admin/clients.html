@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+{% block title %}Gestion de Clientes{% endblock %}
+
+{% block content %}
+<h1><i class="fa-solid fa-building"></i> Gestion de Clientes</h1>
+
+{% if show_success %}
+<div class="success-message">
+    <i class="fa-solid fa-check-circle"></i> Cliente creado exitosamente
+</div>
+{% endif %}
+
+{% if show_deleted %}
+<div class="success-message">
+    <i class="fa-solid fa-check-circle"></i> Cliente eliminado exitosamente
+</div>
+{% endif %}
+
+<div class="section-card">
+    <div class="section-header">
+        <h3><i class="fa-solid fa-list"></i> Clientes del Sistema</h3>
+        <button type="button" class="btn btn-primary" onclick="showCreateModal()">
+            <i class="fa-solid fa-plus"></i> Nuevo Cliente
+        </button>
+    </div>
+    <div class="section-body">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Sector</th>
+                    <th>Industria</th>
+                    <th>Usuarios</th>
+                    <th>Evaluaciones</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in clients_data %}
+                <tr>
+                    <td>
+                        <i class="fa-solid fa-building" style="color: var(--primary); margin-right: 0.5rem"></i>
+                        <strong>{{ item.client.name }}</strong>
+                        {% if item.client.description %}
+                        <br><small style="color: var(--text-muted)">{{ item.client.description }}</small>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.client.sector or '-' }}</td>
+                    <td>{{ item.client.industry or '-' }}</td>
+                    <td><span class="badge">{{ item.user_count }}</span></td>
+                    <td><span class="badge">{{ item.eval_count }}</span></td>
+                    <td>
+                        <button type="button" class="btn-icon btn-danger" 
+                                onclick="showDeleteModal('{{ item.client.id }}', '{{ item.client.name }}', {{ item.user_count }}, {{ item.eval_count }})"
+                                title="Eliminar cliente">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center">No hay clientes registrados</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Crear Cliente -->
+<div id="createModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-plus-circle"></i> Nuevo Cliente</h3>
+            <button type="button" class="modal-close" onclick="closeCreateModal()">&times;</button>
+        </div>
+        <form method="post" action="/admin/clients">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            
+            <div class="form-group">
+                <label for="name">Nombre *</label>
+                <input type="text" id="name" name="name" required placeholder="Nombre del cliente">
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Descripcion</label>
+                <textarea id="description" name="description" rows="2" placeholder="Descripcion del cliente"></textarea>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="industry">Industria</label>
+                    <input type="text" id="industry" name="industry" placeholder="Ej: Tecnologia">
+                </div>
+                <div class="form-group">
+                    <label for="size">Tamano</label>
+                    <select id="size" name="size">
+                        <option value="pequena">Pequena</option>
+                        <option value="mediana" selected>Mediana</option>
+                        <option value="grande">Grande</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="sector">Sector</label>
+                <input type="text" id="sector" name="sector" placeholder="Ej: Servicios Financieros">
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-save"></i> Crear Cliente
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closeCreateModal()">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Eliminar Cliente -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content modal-danger">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-exclamation-triangle"></i> Confirmar Eliminacion</h3>
+            <button type="button" class="modal-close" onclick="closeDeleteModal()">&times;</button>
+        </div>
+        <form method="post" id="deleteForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            
+            <div class="warning-box">
+                <p><strong id="deleteClientName"></strong></p>
+                <p>Esta accion eliminara:</p>
+                <ul id="deleteDetails">
+                    <li><span id="deleteUsers">0</span> usuarios</li>
+                    <li><span id="deleteEvals">0</span> evaluaciones</li>
+                </ul>
+                <p class="text-danger"><strong>Esta accion no se puede deshacer.</strong></p>
+            </div>
+            
+            <div class="form-group">
+                <label for="confirm_password">Ingrese su password para confirmar *</label>
+                <input type="password" id="confirm_password" name="confirm_password" required 
+                       placeholder="Password de superadmin">
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fa-solid fa-trash"></i> Eliminar Cliente
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function showCreateModal() {
+    document.getElementById('createModal').style.display = 'flex';
+}
+
+function closeCreateModal() {
+    document.getElementById('createModal').style.display = 'none';
+}
+
+function showDeleteModal(clientId, clientName, userCount, evalCount) {
+    document.getElementById('deleteClientName').textContent = clientName;
+    document.getElementById('deleteUsers').textContent = userCount;
+    document.getElementById('deleteEvals').textContent = evalCount;
+    document.getElementById('deleteForm').action = '/admin/clients/' + clientId + '/delete';
+    document.getElementById('confirm_password').value = '';
+    document.getElementById('deleteModal').style.display = 'flex';
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+}
+
+// Cerrar modal al hacer clic fuera
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        closeCreateModal();
+        closeDeleteModal();
+    }
+}
+</script>
+
+<style>
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-muted);
+}
+
+.modal-close:hover {
+    color: var(--text-color);
+}
+
+.modal-danger .modal-header h3 {
+    color: var(--danger);
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.warning-box {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid var(--danger);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.warning-box ul {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+}
+
+.warning-box .text-danger {
+    color: var(--danger);
+    margin-top: 0.5rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.admin-table th {
+    background: var(--bg-secondary);
+    font-weight: 600;
+}
+
+.btn-icon {
+    padding: 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+</style>
+{% endblock %}
