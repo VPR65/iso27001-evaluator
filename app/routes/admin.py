@@ -373,3 +373,34 @@ def debug_seed_test_data(request: Request):
             "data": created,
         },
     )
+
+
+@router.get("/debug/init-neon")
+def debug_init_neon(request: Request):
+    """Endpoint de debug para inicializar tablas y seed en Neon PostgreSQL"""
+    debug_token = request.query_params.get("token")
+    if debug_token != "qa-debug-2024":
+        return JSONResponse(status_code=403, content={"error": "Token invalido"})
+
+    try:
+        from app.database import create_db_and_tables
+        from app.seed import seed_data as run_seed
+
+        create_db_and_tables()
+        run_seed()
+
+        return JSONResponse(
+            status_code=200,
+            content={
+                "success": True,
+                "message": "Base de datos Neon inicializada correctamente. Tablas creadas y datos seed cargados.",
+            },
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": str(e),
+            },
+        )
