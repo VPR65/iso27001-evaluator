@@ -59,11 +59,15 @@
                             <a href="/evaluations/{{ item.evaluation.id }}" class="btn-icon btn-primary" title="Ver evaluacion">
                                 <i class="fa-solid fa-eye"></i>
                             </a>
-                            <button type="button" class="btn-icon btn-danger" 
-                                    onclick="showDeleteModal('{{ item.evaluation.id }}', '{{ item.evaluation.name }}', {{ item.response_count }})"
-                                    title="Eliminar evaluacion">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
+                            <form method="post" action="/admin/evaluations/{{ item.evaluation.id }}/delete" style="display:inline;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <input type="hidden" name="confirm_password" id="pwd_eval_{{ item.evaluation.id }}">
+                                <button type="button" class="btn-icon btn-danger" 
+                                        onclick="confirmDeleteEval('{{ item.evaluation.id }}', '{{ item.evaluation.name }}', {{ item.response_count }})"
+                                        title="Eliminar evaluacion">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </form>
                         </div>
                     </td>
                 </tr>
@@ -82,67 +86,21 @@
     </div>
 </div>
 
-<!-- Modal Eliminar Evaluacion -->
-<div id="deleteModal" class="modal">
-    <div class="modal-content modal-danger">
-        <div class="modal-header">
-            <h3><i class="fa-solid fa-exclamation-triangle"></i> Confirmar Eliminacion</h3>
-            <button type="button" class="modal-close" onclick="closeDeleteModal()">&times;</button>
-        </div>
-        <form method="post" id="deleteForm">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-            
-            <div class="warning-box">
-                <p>Esta a punto de eliminar la evaluacion:</p>
-                <p><strong id="deleteEvalName"></strong></p>
-                <p id="deleteEvalDetails"></p>
-                <p class="text-danger"><strong>Esta accion no se puede deshacer.</strong></p>
-            </div>
-            
-            <div class="form-group">
-                <label for="confirm_password">Ingrese su password para confirmar *</label>
-                <input type="password" id="confirm_password" name="confirm_password" required 
-                       placeholder="Password de superadmin">
-            </div>
-            
-            <div class="form-actions">
-                <button type="submit" class="btn btn-danger">
-                    <i class="fa-solid fa-trash"></i> Eliminar Evaluacion
-                </button>
-                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">
-                    Cancelar
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
 <script>
-function showDeleteModal(evalId, evalName, responseCount) {
-    console.log('Opening delete modal for evaluation:', evalId, evalName);
-    document.getElementById('deleteEvalName').textContent = evalName;
-    document.getElementById('deleteEvalDetails').textContent = responseCount + ' respuestas de control seran eliminadas';
-    const formAction = '/admin/evaluations/' + evalId + '/delete';
-    console.log('Setting form action to:', formAction);
-    document.getElementById('deleteForm').action = formAction;
-    document.getElementById('confirm_password').value = '';
-    document.getElementById('deleteModal').style.display = 'flex';
+function confirmDeleteEval(evalId, evalName, responseCount) {
+    const message = `¿Está seguro de eliminar la evaluación?\n\nNombre: ${evalName}\nRespuestas: ${responseCount}\n\nEsta acción no se puede deshacer.`;
+    
+    const password = prompt(message + '\n\nIngrese su password para confirmar:');
+    
+    if (password) {
+        document.getElementById('pwd_eval_' + evalId).value = password;
+        document.querySelector(`form[action="/admin/evaluations/${evalId}/delete"]`).submit();
+    }
 }
 
 function closeDeleteModal() {
     document.getElementById('deleteModal').style.display = 'none';
 }
-
-// Debug: Log form submission
-document.addEventListener('DOMContentLoaded', function() {
-    const deleteForm = document.getElementById('deleteForm');
-    if (deleteForm) {
-        deleteForm.addEventListener('submit', function(e) {
-            console.log('Form submitting to:', this.action);
-            console.log('Form data:', new FormData(this));
-        });
-    }
-});
 
 window.onclick = function(event) {
     if (event.target.classList.contains('modal')) {
