@@ -208,3 +208,111 @@ def debug_audit_logs(request: Request):
                 ],
             },
         )
+
+
+@router.post("/debug/seed-test-data")
+def debug_seed_test_data(request: Request):
+    """Endpoint de debug para poblar datos de prueba en QA"""
+    debug_token = request.query_params.get("token")
+    if debug_token != "qa-debug-2024":
+        return JSONResponse(status_code=403, content={"error": "Token invalido"})
+
+    import uuid
+    from datetime import datetime
+    from app.models import Client, User, UserRole, Evaluation
+
+    created = {"clients": 0, "users": 0, "evaluations": 0}
+
+    with Session(engine) as session:
+        client1_id = str(uuid.uuid4())
+        client1 = Client(
+            id=client1_id,
+            name="Acme Corporation",
+            description="Empresa de tecnología y consultoría",
+            industry="Tecnología",
+            size="mediana",
+        )
+        session.add(client1)
+        created["clients"] += 1
+
+        client2_id = str(uuid.uuid4())
+        client2 = Client(
+            id=client2_id,
+            name="Global Services S.A.",
+            description="Servicios financieros y auditoría",
+            industry="Finanzas",
+            size="grande",
+        )
+        session.add(client2)
+        created["clients"] += 1
+
+        user1 = User(
+            id=str(uuid.uuid4()),
+            email="evaluador@demo.local",
+            password_hash=hash_password("demo123"),
+            full_name="Juan Pérez",
+            role=UserRole.EVALUADOR,
+            client_id=client1_id,
+            is_active=True,
+        )
+        session.add(user1)
+        created["users"] += 1
+
+        user2 = User(
+            id=str(uuid.uuid4()),
+            email="admin2@demo.local",
+            password_hash=hash_password("demo123"),
+            full_name="María García",
+            role=UserRole.ADMIN_CLIENTE,
+            client_id=client1_id,
+            is_active=True,
+        )
+        session.add(user2)
+        created["users"] += 1
+
+        user3 = User(
+            id=str(uuid.uuid4()),
+            email="admin@global.local",
+            password_hash=hash_password("demo123"),
+            full_name="Carlos López",
+            role=UserRole.ADMIN_CLIENTE,
+            client_id=client2_id,
+            is_active=True,
+        )
+        session.add(user3)
+        created["users"] += 1
+
+        eval1_id = str(uuid.uuid4())
+        eval1 = Evaluation(
+            id=eval1_id,
+            name="Auditoría ISO 27001:2022 - Q1 2026",
+            client_id=client1_id,
+            created_by=user1.id,
+            status="in_progress",
+            created_at=datetime.utcnow(),
+        )
+        session.add(eval1)
+        created["evaluations"] += 1
+
+        eval2_id = str(uuid.uuid4())
+        eval2 = Evaluation(
+            id=eval2_id,
+            name="Evaluación ISO 9001 - Global Services",
+            client_id=client2_id,
+            created_by=user3.id,
+            status="completed",
+            created_at=datetime.utcnow(),
+        )
+        session.add(eval2)
+        created["evaluations"] += 1
+
+        session.commit()
+
+    return JSONResponse(
+        status_code=200,
+        content={
+            "success": True,
+            "message": "Datos de prueba creados",
+            "data": created,
+        },
+    )
