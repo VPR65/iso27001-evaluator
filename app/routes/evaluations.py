@@ -122,8 +122,13 @@ async def create_evaluation(request: Request):
     description = form_data.get("description", "")
     client_id = form_data.get("client_id")
     norma_id = form_data.get("norma_id")
+
+    if not name or not name.strip():
+        raise HTTPException(status_code=400, detail="El nombre es requerido")
     if not norma_id:
         raise HTTPException(status_code=400, detail="Debe seleccionar una norma")
+    if not client_id:
+        raise HTTPException(status_code=400, detail="Debe seleccionar un cliente")
     with Session(engine) as session:
         if user.role != UserRole.SUPERADMIN and user.client_id != client_id:
             raise HTTPException(status_code=403)
