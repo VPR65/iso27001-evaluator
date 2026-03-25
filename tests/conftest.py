@@ -3,14 +3,17 @@ import re
 from fastapi.testclient import TestClient
 from app.main import app
 from app.database import engine, get_session
-from app.models import SQLModel, Session as UserSession
+from app.models import SQLModel, Session as UserSession, Norma
+from app.seed import seed_data
 from sqlalchemy import select
 
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_database():
-    """Create tables before all tests"""
+    """Create tables and seed data before all tests"""
+    SQLModel.metadata.drop_all(engine)
     SQLModel.metadata.create_all(engine)
+    seed_data()
     yield
 
 
