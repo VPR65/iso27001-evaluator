@@ -5,6 +5,35 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 
 ---
 
+## [v1.4.0] - 2026-03-25
+
+### Agregado
+- **ITIL v4 Framework** - Nueva norma evaluable con 34 practicas de gestion de servicios TI
+  - Service Value System (SVS)
+  - Four Dimensions Model
+  - Governance (Direct, Plan, Improve)
+  - Value Streams and Pathways
+  - Operational Practices (Change, Incident, Problem, Service Request, IT Assets)
+  - Improvement Practices (Continual Improvement, Measurement & Reporting)
+  - Relationship Practices (Business Analysis, Portfolio, Relationship)
+  - Supply Practices (Supplier, Service Level, Configuration)
+  - Technical Practices (Deployment, Infrastructure, Software, Security)
+
+### Agregado
+- **Panel Admin - Clientes** - Gestion completa de clientes:
+  - Lista de clientes con contadores de usuarios y evaluaciones
+  - Crear nuevo cliente con modal
+  - Eliminar cliente con confirmacion de password obligatoria
+  - Eliminacion en cascada (usuarios, evaluaciones, sesiones)
+
+### Agregado
+- **RFC-0012** - Documento RFC formal para esta implementacion
+
+### Tests
+- **55 tests automatizados** - Suite completa de tests para todas las funcionalidades
+
+---
+
 ## [v1.3.0] - 2026-03-24
 
 ### Agregado

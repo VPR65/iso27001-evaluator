@@ -1,6 +1,6 @@
 # ARQUITECTURA TECNICA - ISO 27001 Evaluator
 
-> Version: 1.1.0 | Ultima actualizacion: 2026-03-22
+> Version: 1.4.0 | Ultima actualizacion: 2026-03-25
 
 ---
 
@@ -127,8 +127,9 @@ Client (1) ─────┬───── (*) User
 | `clients`           | Empresas/clientes multi-tenant                  | 1:N users, evaluations |
 | `users`             | Usuarios con roles                             | N:1 client         |
 | `sessions`           | Sesiones de autenticacion                     | N:1 user           |
-| `control_definitions` | Los 93 controles ISO 27001:2022              | 1:N responses     |
-| `evaluations`       | Evaluaciones de un cliente                     | N:1 client, 1:N responses |
+| `normas`            | Normas disponibles (ISO 27001, ITIL4, etc)   | 1:N control_definitions |
+| `control_definitions` | Controles de normas (187 total: 93+25+17+18+34) | 1:N responses     |
+| `evaluations`       | Evaluaciones de un cliente                     | N:1 client, N:1 norma, 1:N responses |
 | `control_responses` | Respuesta de un control en una evaluacion     | N:1 evaluation, N:1 control, 1:N evidence |
 | `evidence_files`     | Archivos de evidencia subidos                  | N:1 response       |
 | `documents`         | Documentos versionados                         | 1:N versions       |
@@ -138,6 +139,18 @@ Client (1) ─────┬───── (*) User
 | `backlog_items`     | Items del backlog                              | N:1 sprint, N:1 client |
 | `sprint_tasks`      | Tareas dentro de un backlog item              | N:1 backlog_item   |
 | `audit_logs`        | Log de auditoria de todas las acciones         | N:1 user          |
+
+### 3.3 Normas Disponibles
+
+| Norma | Version | Controles | Descripcion |
+|-------|---------|-----------|-------------|
+| ISO/IEC 27001 | 2022 | 93 | Sistema de Gestion de Seguridad de la Informacion |
+| ISO 9001 | 2015 | 25 | Sistema de Gestion de la Calidad |
+| ISO/IEC 20000-1 | 2018 | 17 | Sistema de Gestion de Servicios de TI |
+| ISO 22301 | 2019 | 18 | Sistema de Gestion de Continuidad del Negocio |
+| ITIL v4 | 4.0 | 34 | Framework de Gestion de Servicios de TI |
+
+**Total: 187 controles/practicas**
 
 ---
 

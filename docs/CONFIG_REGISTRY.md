@@ -1,6 +1,6 @@
 # REGISTRO DE CONFIGURACION - ISO 27001 Evaluator
 
-> Version: 1.3.0 | Fecha: 2026-03-25
+> Version: 1.4.0 | Fecha: 2026-03-25
 
 ---
 
