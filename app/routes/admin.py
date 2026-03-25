@@ -238,16 +238,39 @@ def debug_seed_test_data(request: Request):
                 content={"error": "No se encontro ISO27001, ejecutar seed primero"},
             )
 
-        client1_id = str(uuid.uuid4())
-        client1 = Client(
-            id=client1_id,
-            name="Acme Corporation",
-            description="Empresa de tecnología y consultoría",
-            industry="Tecnología",
-            size="mediana",
-        )
-        session.add(client1)
-        created["clients"] += 1
+        existing_acme = session.exec(
+            select(Client).where(Client.name == "Acme Corporation")
+        ).first()
+        if not existing_acme:
+            client1_id = str(uuid.uuid4())
+            client1 = Client(
+                id=client1_id,
+                name="Acme Corporation",
+                description="Empresa de tecnología y consultoría",
+                industry="Tecnología",
+                size="mediana",
+            )
+            session.add(client1)
+            created["clients"] += 1
+        else:
+            client1_id = existing_acme.id
+
+        existing_global = session.exec(
+            select(Client).where(Client.name == "Global Services S.A.")
+        ).first()
+        if not existing_global:
+            client2_id = str(uuid.uuid4())
+            client2 = Client(
+                id=client2_id,
+                name="Global Services S.A.",
+                description="Servicios financieros y auditoría",
+                industry="Finanzas",
+                size="grande",
+            )
+            session.add(client2)
+            created["clients"] += 1
+        else:
+            client2_id = existing_global.id
 
         client2_id = str(uuid.uuid4())
         client2 = Client(
@@ -260,43 +283,59 @@ def debug_seed_test_data(request: Request):
         session.add(client2)
         created["clients"] += 1
 
-        user1 = User(
-            id=str(uuid.uuid4()),
-            email="evaluador@demo.local",
-            password_hash=hash_password("demo123"),
-            name="Juan Pérez",
-            role=UserRole.EVALUADOR,
-            client_id=client1_id,
-            is_active=True,
-        )
-        session.add(user1)
-        created["users"] += 1
+        if not session.exec(
+            select(User).where(User.email == "evaluador@demo.local")
+        ).first():
+            user1 = User(
+                id=str(uuid.uuid4()),
+                email="evaluador@demo.local",
+                password_hash=hash_password("demo123"),
+                name="Juan Pérez",
+                role=UserRole.EVALUADOR,
+                client_id=client1_id,
+                is_active=True,
+            )
+            session.add(user1)
+            created["users"] += 1
 
-        user2 = User(
-            id=str(uuid.uuid4()),
-            email="admin2@demo.local",
-            password_hash=hash_password("demo123"),
-            name="María García",
-            role=UserRole.ADMIN_CLIENTE,
-            client_id=client1_id,
-            is_active=True,
-        )
-        session.add(user2)
-        created["users"] += 1
+        if not session.exec(
+            select(User).where(User.email == "admin2@demo.local")
+        ).first():
+            user2 = User(
+                id=str(uuid.uuid4()),
+                email="admin2@demo.local",
+                password_hash=hash_password("demo123"),
+                name="María García",
+                role=UserRole.ADMIN_CLIENTE,
+                client_id=client1_id,
+                is_active=True,
+            )
+            session.add(user2)
+            created["users"] += 1
 
-        user3 = User(
-            id=str(uuid.uuid4()),
-            email="admin@global.local",
-            password_hash=hash_password("demo123"),
-            name="Carlos López",
-            role=UserRole.ADMIN_CLIENTE,
-            client_id=client2_id,
-            is_active=True,
-        )
-        session.add(user3)
-        created["users"] += 1
+        if not session.exec(
+            select(User).where(User.email == "admin@global.local")
+        ).first():
+            user3 = User(
+                id=str(uuid.uuid4()),
+                email="admin@global.local",
+                password_hash=hash_password("demo123"),
+                name="Carlos López",
+                role=UserRole.ADMIN_CLIENTE,
+                client_id=client2_id,
+                is_active=True,
+            )
+            session.add(user3)
+            created["users"] += 1
 
         session.flush()
+
+        user1 = session.exec(
+            select(User).where(User.email == "evaluador@demo.local")
+        ).first()
+        user3 = session.exec(
+            select(User).where(User.email == "admin@global.local")
+        ).first()
 
         eval1_id = str(uuid.uuid4())
         eval1 = Evaluation(
@@ -304,7 +343,7 @@ def debug_seed_test_data(request: Request):
             name="Auditoría ISO 27001:2022 - Q1 2026",
             client_id=client1_id,
             norma_id=iso27001.id,
-            created_by=user1.id,
+            created_by=user1.id if user1 else None,
             status="in_progress",
             created_at=datetime.utcnow(),
         )
@@ -317,7 +356,7 @@ def debug_seed_test_data(request: Request):
             name="Evaluación ISO 9001 - Global Services",
             client_id=client2_id,
             norma_id=iso9001.id if iso9001 else iso27001.id,
-            created_by=user3.id,
+            created_by=user3.id if user3 else None,
             status="completed",
             created_at=datetime.utcnow(),
         )

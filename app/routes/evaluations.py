@@ -83,90 +83,6 @@ def list_evaluations(request: Request):
     return render(request, "evaluations/list.html", evaluations=data)
 
 
-@router.get("/{evaluation_id}", response_class=HTMLResponse)
-def view_evaluation(request: Request, evaluation_id: str):
-    session_id = request.cookies.get("session_id")
-    user = get_current_user(session_id)
-    if not user:
-        return RedirectResponse(url="/login")
-
-    with Session(engine) as session:
-        evaluation = session.get(Evaluation, evaluation_id)
-        if not evaluation:
-            raise HTTPException(status_code=404, detail="Evaluacion no encontrada")
-        if user.role != UserRole.SUPERADMIN and evaluation.client_id != user.client_id:
-            raise HTTPException(
-                status_code=403, detail="No tienes permiso para ver esta evaluacion"
-            )
-
-        client = (
-            session.get(Client, evaluation.client_id) if evaluation.client_id else None
-        )
-        all_controls = session.exec(select(ControlDefinition)).all()
-        responses = session.exec(
-            select(ControlResponse).where(
-                ControlResponse.evaluation_id == evaluation_id
-            )
-        ).all()
-        resp_map = {r.control_id: r for r in responses}
-
-        total = len(all_controls)
-        applicable_total = sum(1 for r in responses if not r.not_applicable)
-        na_count = sum(1 for r in responses if r.not_applicable)
-
-        answered = sum(1 for r in responses if r.maturity > 0 and not r.not_applicable)
-        progress = (
-            int((answered / applicable_total) * 100) if applicable_total > 0 else 0
-        )
-
-        score_sum = sum(r.maturity for r in responses if not r.not_applicable)
-        score = score_sum / applicable_total if applicable_total > 0 else 0
-
-        domains = {}
-        for ctrl in all_controls:
-            domain = ctrl.domain
-            if domain not in domains:
-                domains[domain] = {
-                    "controls": [],
-                    "answered": 0,
-                    "total": 0,
-                    "na_count": 0,
-                    "sum": 0,
-                }
-            resp = resp_map.get(ctrl.id)
-            domains[domain]["controls"].append({"ctrl": ctrl, "response": resp})
-            domains[domain]["total"] += 1
-            if resp and resp.not_applicable:
-                domains[domain]["na_count"] += 1
-            elif resp and resp.maturity > 0:
-                domains[domain]["answered"] += 1
-                domains[domain]["sum"] += resp.maturity
-
-        for domain, info in domains.items():
-            applicable = info["total"] - info["na_count"]
-            info["pct"] = (
-                int((info["answered"] / applicable) * 100) if applicable > 0 else 0
-            )
-            info["avg"] = (
-                round(info["sum"] / info["total"], 2) if info["total"] > 0 else 0
-            )
-
-    return render(
-        request,
-        "evaluations/detail.html",
-        evaluation=evaluation,
-        client=client,
-        controls=all_controls,
-        responses=resp_map,
-        answered=answered,
-        total=total,
-        progress=progress,
-        score=round(score, 2),
-        domains=domains,
-        user=user,
-    )
-
-
 @router.get("/new", response_class=HTMLResponse)
 def new_evaluation_form(request: Request):
     session_id = request.cookies.get("session_id")
@@ -251,6 +167,7 @@ async def create_evaluation(request: Request):
     return RedirectResponse(url=f"/evaluations/{evaluation.id}", status_code=302)
 
 
+@router.get("/{evaluation_id}", response_class=HTMLResponse)
 def view_evaluation(request: Request, evaluation_id: str):
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
@@ -260,15 +177,16 @@ def view_evaluation(request: Request, evaluation_id: str):
     with Session(engine) as session:
         evaluation = session.get(Evaluation, evaluation_id)
         if not evaluation:
-            raise HTTPException(status_code=404)
+            raise HTTPException(status_code=404, detail="Evaluacion no encontrada")
         if user.role != UserRole.SUPERADMIN and evaluation.client_id != user.client_id:
-            raise HTTPException(status_code=403)
-        client = session.get(Client, evaluation.client_id)
-        all_controls = session.exec(
-            select(ControlDefinition).where(
-                ControlDefinition.norma_id == evaluation.norma_id
+            raise HTTPException(
+                status_code=403, detail="No tienes permiso para ver esta evaluacion"
             )
-        ).all()
+
+        client = (
+            session.get(Client, evaluation.client_id) if evaluation.client_id else None
+        )
+        all_controls = session.exec(select(ControlDefinition)).all()
         responses = session.exec(
             select(ControlResponse).where(
                 ControlResponse.evaluation_id == evaluation_id
@@ -276,51 +194,61 @@ def view_evaluation(request: Request, evaluation_id: str):
         ).all()
         resp_map = {r.control_id: r for r in responses}
 
+        total = len(all_controls)
+        applicable_total = sum(1 for r in responses if not r.not_applicable)
+        na_count = sum(1 for r in responses if r.not_applicable)
+
+        answered = sum(1 for r in responses if r.maturity > 0 and not r.not_applicable)
+        progress = (
+            int((answered / applicable_total) * 100) if applicable_total > 0 else 0
+        )
+
+        score_sum = sum(r.maturity for r in responses if not r.not_applicable)
+        score = score_sum / applicable_total if applicable_total > 0 else 0
+
         domains = {}
         for ctrl in all_controls:
-            r = resp_map.get(ctrl.id)
             domain = ctrl.domain
             if domain not in domains:
                 domains[domain] = {
                     "controls": [],
-                    "total": 0,
-                    "count": 0,
                     "answered": 0,
+                    "total": 0,
+                    "na_count": 0,
+                    "sum": 0,
                 }
-            domains[domain]["controls"].append({"ctrl": ctrl, "response": r})
+            resp = resp_map.get(ctrl.id)
+            domains[domain]["controls"].append({"ctrl": ctrl, "response": resp})
             domains[domain]["total"] += 1
-            if r and r.maturity > 0:
+            if resp and resp.not_applicable:
+                domains[domain]["na_count"] += 1
+            elif resp and resp.maturity > 0:
                 domains[domain]["answered"] += 1
-            if r:
-                domains[domain]["count"] += r.maturity
+                domains[domain]["sum"] += resp.maturity
 
-        for d in domains:
-            cnt = sum(1 for c in domains[d]["controls"] if resp_map.get(c["ctrl"].id))
-            domains[d]["avg"] = round(domains[d]["count"] / cnt, 2) if cnt else 0
-            domains[d]["pct"] = (
-                round(domains[d]["answered"] / domains[d]["total"] * 100, 1)
-                if domains[d]["total"]
-                else 0
+        for domain, info in domains.items():
+            applicable = info["total"] - info["na_count"]
+            info["pct"] = (
+                int((info["answered"] / applicable) * 100) if applicable > 0 else 0
+            )
+            info["avg"] = (
+                round(info["sum"] / info["total"], 2) if info["total"] > 0 else 0
             )
 
-        total = len(all_controls)
-        answered = sum(1 for r in responses if r.maturity > 0)
-        score = (
-            round(sum(r.maturity for r in responses) / answered, 2) if answered else 0
-        )
-        progress = round(answered / total * 100, 1) if total else 0
-
-        return render(
-            request,
-            "evaluations/detail.html",
-            evaluation=evaluation,
-            client=client,
-            domains=domains,
-            total=total,
-            answered=answered,
-            score=score,
-            progress=progress,
-        )
+    return render(
+        request,
+        "evaluations/detail.html",
+        evaluation=evaluation,
+        client=client,
+        controls=all_controls,
+        responses=resp_map,
+        answered=answered,
+        total=total,
+        progress=progress,
+        score=round(score, 2),
+        domains=domains,
+        user=user,
+    )
 
 
 @router.post("/{evaluation_id}/start")
