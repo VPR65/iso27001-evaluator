@@ -129,12 +129,15 @@ async def create_evaluation(request: Request):
         raise HTTPException(status_code=400, detail="Debe seleccionar una norma")
     if not client_id:
         raise HTTPException(status_code=400, detail="Debe seleccionar un cliente")
+
     with Session(engine) as session:
         if user.role != UserRole.SUPERADMIN and user.client_id != client_id:
             raise HTTPException(status_code=403)
         norma = session.get(Norma, norma_id)
         if not norma:
             raise HTTPException(status_code=400, detail="Norma no encontrada")
+        norma_name = norma.name
+
         evaluation = Evaluation(
             name=name,
             description=description,
@@ -144,32 +147,33 @@ async def create_evaluation(request: Request):
             status=EvaluationStatus.DRAFT,
         )
         session.add(evaluation)
-        session.commit()
-        session.refresh(evaluation)
+        session.flush()
+        evaluation_id = evaluation.id
+
         all_controls = session.exec(
             select(ControlDefinition).where(ControlDefinition.norma_id == norma_id)
         ).all()
         for ctrl in all_controls:
             resp = ControlResponse(
-                evaluation_id=evaluation.id,
+                evaluation_id=evaluation_id,
                 control_id=ctrl.id,
                 maturity=0,
                 created_by=user.id,
             )
             session.add(resp)
-        session.commit()
-        norma_name = norma.name
+
         session.add(
             AuditLog(
                 user_id=user.id,
                 action="EVALUATION_CREATED",
                 entity_type="evaluation",
-                entity_id=evaluation.id,
-                details=f"Evaluacion creada: {name} ({norma_name}) (ID: {evaluation.id})",
+                entity_id=evaluation_id,
+                details=f"Evaluacion creada: {name} ({norma_name}) (ID: {evaluation_id})",
             )
         )
         session.commit()
-    return RedirectResponse(url=f"/evaluations/{evaluation.id}", status_code=302)
+
+    return RedirectResponse(url=f"/evaluations/{evaluation_id}", status_code=302)
 
 
 @router.get("/{evaluation_id}", response_class=HTMLResponse)
