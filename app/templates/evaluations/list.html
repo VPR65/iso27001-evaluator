@@ -7,8 +7,8 @@
     <div class="section-header">
         <h3><i class="fa-solid fa-list"></i> Evaluaciones ISO 27001</h3>
         <div style="display:flex;gap:0.5rem;">
-            <a href="/import-export/import" class="btn btn-outline btn-sm"><i class="fa-solid fa-file-import"></i> Importar</a>
-            <a href="/evaluations/new" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Nueva</a>
+            <a href="/import-export/import" class="btn btn-outline btn-sm" title="Importar evaluaciones desde archivo Excel"><i class="fa-solid fa-file-import"></i> Importar</a>
+            <a href="/evaluations/new" class="btn btn-primary btn-sm" title="Crear una nueva evaluacion"><i class="fa-solid fa-plus"></i> Nueva</a>
         </div>
     </div>
     <div class="section-body">
@@ -47,9 +47,9 @@
                     </td>
                     <td><i class="fa-regular fa-calendar" style="color:var(--text-secondary)"></i> {{ item.eval.created_at.strftime('%d/%m/%Y') }}</td>
                     <td>
-                        <a href="/evaluations/{{ item.eval.id }}" class="btn btn-secondary btn-sm"><i class="fa-solid fa-eye"></i></a>
-                        <a href="/stats/{{ item.eval.id }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-chart-pie"></i></a>
-                        <a href="/import-export/export/{{ item.eval.id }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-download"></i></a>
+                        <a href="/evaluations/{{ item.eval.id }}" class="btn btn-secondary btn-sm" title="Ver / Continuar evaluacion"><i class="fa-solid fa-eye"></i></a>
+                        <a href="/stats/{{ item.eval.id }}" class="btn btn-outline btn-sm" title="Ver estadisticas"><i class="fa-solid fa-chart-pie"></i></a>
+                        <a href="/import-export/export/{{ item.eval.id }}" class="btn btn-outline btn-sm" title="Exportar a Excel"><i class="fa-solid fa-download"></i></a>
                     </td>
                 </tr>
                 {% endfor %}
