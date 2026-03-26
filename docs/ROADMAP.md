@@ -1,183 +1,235 @@
-# ROADMAP - Plan de Implementacion de Funcionalidades
+# ROADMAP - ISO 27001 Evaluator
 
-> Version: 1.1.0 | Fecha: 2026-03-24
-
----
-
-## Estado Actual
-
-**ISO 27001 Evaluator v1.3.0** esta funcionando con:
-- 4 normas ISO (27001, 9001, 20000-1, 22301)
-- 153 controles en total
-- Evaluaciones, evidencias, biblioteca
-- Dashboard, estadisticas, import/export
-- N/A con justificacion
-- Multi-tenant, roles (incl VISTA_SOLO), auditlog
+**Última actualización:** 2026-03-26  
+**Versión Actual:** v1.4.1
 
 ---
 
-## Funcionalidades Implementadas
+## 📋 Estado Actual (v1.4.1)
 
-### FASE 1: Mejoras Inmediatas (COMPLETADO)
-
-| # | Modulo | Descripcion | Estado | Version |
-|---|--------|-------------|--------|---------|
-| 1.1 | N/A con Justificacion | Opcion N/A en madurez con campo de justificacion | COMPLETADO | v1.2.0 |
-| 1.2 | Recalculo de Score | Excluir N/A del denominador | COMPLETADO | v1.2.0 |
-| 1.3 | Indicador de progreso | % de evaluacion en lista | COMPLETADO | v1.2.0 |
-
-### FASE 2: Multi-Norma (COMPLETADO)
-
-| # | Modulo | Descripcion | Estado | Version |
-|---|--------|-------------|--------|---------|
-| 2.1 | Selector de Norma | Elegir ISO 27001, 9001, 20000-1, 22301 | COMPLETADO | v1.3.0 |
-| 2.2 | Controles ISO 9001:2015 | 25 clausulas | COMPLETADO | v1.3.0 |
-| 2.3 | Controles ISO 20000-1 | 17 controles | COMPLETADO | v1.3.0 |
-| 2.4 | Controles ISO 22301 | 18 controles | COMPLETADO | v1.3.0 |
-
-### FASE 3: Modulos Avanzados
-
-| # | Modulo | Descripcion | Estado |
-|---|--------|-------------|--------|
-| 3.1 | Catalogo de Servicios | CRUD servicios + SLAs | PENDIENTE |
-| 3.2 | BIA | Analisis de Impacto al Negocio | PENDIENTE |
-| 3.3 | SoA Automatizada | Declaracion de Aplicabilidad | PENDIENTE |
-| 3.4 | No Conformidades | Registro y seguimiento de NCs | PENDIENTE |
-| 3.5 | Mapa de Procesos | Diagrama visual de procesos | PENDIENTE |
-| 3.6 | DAFO/PESTEL | Analisis de contexto | PENDIENTE |
-| 3.2 | BIA | Analisis de Impacto al Negocio | PENDIENTE |
-| 3.3 | SoA Automatizada | Declaracion de Aplicabilidad | PENDIENTE |
-| 3.4 | No Conformidades | Registro y seguimiento de NCs | PENDIENTE |
-| 3.5 | Mapa de Procesos | Diagrama visual de procesos | PENDIENTE |
-| 3.6 | DAFO/PESTEL | Analisis de contexto | PENDIENTE |
-
-### FASE 4: Mejoras de UX/UI
-
-| # | Modulo | Descripcion | Estado |
-|---|--------|-------------|--------|
-| 4.1 | Dashboard Ejecutivo | Resumen para direccion | PENDIENTE |
-| 4.2 | Reportes PDF | Generar reportes | PENDIENTE |
-| 4.3 | Notificaciones | Alertas de vencimiento | PENDIENTE |
-| 4.4 | Dashboard del Cliente | Vista limitada por cliente | PENDIENTE |
+### ✅ Completado
+- [x] Arquitectura FastAPI + PostgreSQL (Neon.tech)
+- [x] Multi-norma: ISO 27001:2022 (93 controles), ITIL v4 (34 prácticas), ISO 9001, 20000, 22301
+- [x] Panel Admin completo (clientes, usuarios, evaluaciones)
+- [x] Barra de progreso visual en evaluaciones
+- [x] Dashboard con explicación del Score de Madurez
+- [x] Validación automática de documentación
+- [x] 70+ tests automatizados
+- [x] Deploy QA/Prod en Render.com
+- [x] Integración NVIDIA NIM (código base, sin API Key configurada)
 
 ---
 
-## Detalle Tecnico
+## 🎯 PRIORIDAD ALTA (En Desarrollo - Sprint Actual)
 
-### N/A con Justificacion
+Estas funcionalidades están en curso y son el foco del desarrollo activo.
 
-**Objetivo:** Permitir marcar un control como "No Aplica" con justificacion.
+### 3. Módulo de Evaluación Avanzada
+**Estado:** 🔄 En desarrollo  
+**Archivos:** `app/routes/evaluations.py`, `app/templates/evaluate/`
 
-**Cambios requeridos:**
-1. Modificar modelo `ControlResponse` - agregar campo `justification`
-2. Modificar template de evaluacion - agregar opcion N/A + campo justificacion
-3. Modificar calculo de score - excluir N/A del denominador
+#### 3.1 Carga Múltiple de Evidencias
+- [ ] Permitir subir 3+ archivos por control
+- [ ] Previsualización de archivos adjuntos
+- [ ] Eliminar evidencias individuales
+- [ ] Soportar: PDF, DOCX, XLSX, PNG, JPG
 
-### Multi-Norma
+#### 3.2 Historial de Cambios (Auditoría)
+- [ ] Log de cada modificación en respuestas
+- [ ] Mostrar versión anterior y nueva
+- [ ] Timestamp y usuario que modificó
+- [ ] Vista de "quién cambió qué y cuándo"
 
-**Objetivo:** Soportar ISO 9001, 20000-1, 22301 ademas de 27001.
-
-**Cambios requeridos:**
-1. Agregar tabla `Norma` (id, nombre, version, descripcion)
-2. Modificar `ControlDefinition` - agregar campo `norma_id`
-3. Modificar `Evaluation` - agregar campo `norma_id`
-4. Crear seeds para cada norma
-
-### Catalogo de Servicios (ISO 20000)
-
-**Objetivo:** Gestionar servicios y sus SLAs.
-
-**Modelo:**
-```
-Servicio:
-  - id
-  - client_id
-  - nombre
-  - descripcion
-  - tipo (interno/externo)
-  - estado (activo/inactivo)
-
-SLA:
-  - id
-  - servicio_id
-  - nombre
-  - metricas
-  - objetivo (%)
-  - peso
-
-Incidente:
-  - id
-  - servicio_id
-  - descripcion
-  - fecha_inicio
-  - fecha_resolucion
-  - estado
-```
-
-### BIA (ISO 22301)
-
-**Objetivo:** Analisis de Impacto al Negocio.
-
-**Modelo:**
-```
-ProcesoNegocio:
-  - id
-  - client_id
-  - nombre
-  - descripcion
-  - rto (Recovery Time Objective)
-  - rpo (Recovery Point Objective)
-  - impacto (critico/alto/medio/bajo)
-
-Activo:
-  - id
-  - proceso_id
-  - nombre
-  - tipo
-  - ubicacion
-```
-
-### No Conformidades
-
-**Objetivo:** Registrar y seguir NCs.
-
-**Modelo:**
-```
-NoConformidad:
-  - id
-  - evaluation_id
-  - control_id (nullable)
-  - tipo (mayor/menor/observacion)
-  - descripcion
-  - causa_raiz
-  - accion_correctiva
-  - responsable_id
-  - fecha_limite
-  - estado (abierta/cerrada)
-  - evidencia_cierre
-```
+#### 3.3 Plantillas de Respuestas Predefinidas
+- [ ] Crear biblioteca de respuestas estándar
+- [ ] Aplicar plantilla a múltiples controles
+- [ ] Personalizar plantillas por cliente
+- [ ] Ejemplos: "Política documentada", "Sin evidencia", "Parcial"
 
 ---
 
-## Orden de Implementacion Sugerido
+### 4. Módulo de Reportes y Dashboard Avanzado
+**Estado:** 🔄 En desarrollo  
+**Archivos:** `app/routes/stats.py`, `app/templates/stats/`
 
-1. **N/A con justificacion** - Mejora inmediata de usabilidad
-2. **Selector de Norma** - Base para multi-norma
-3. **Controles ISO 9001** - Siguiente norma mas comun
-4. **Catalogo de Servicios** - Valor agregado para ITIL
-5. **No Conformidades** - Completa el ciclo de evaluacion
-6. **BIA** - Para ISO 22301
+#### 4.1 Dashboard de Cumplimiento por Cliente
+- [ ] Score por norma (ISO 27001, ITIL v4, etc.)
+- [ ] Comparativa entre períodos
+- [ ] Top 5 controles más críticos
+- [ ] Gráfico de radar por dominios
+
+#### 4.2 Comparativa de Evaluaciones
+- [ ] Seleccionar 2+ evaluaciones de misma norma
+- [ ] Ver progreso/retroceso por control
+- [ ] Gráfico de líneas de evolución
+- [ ] Exportar comparativa a PDF
+
+#### 4.3 Exportación Avanzada a Excel
+- [ ] Reporte ejecutivo con logo de empresa
+- [ ] Múltiples pestañas (resumen, por dominio, hallazgos)
+- [ ] Gráficos incrustados
+- [ ] Formato profesional con colores
 
 ---
 
-## Recursos Requeridos
+### 5. Mejoras de Seguridad
+**Estado:** 🔄 En desarrollo  
+**Archivos:** `app/auth.py`, `app/models.py`, `app/security.py`
 
-- **Desarrollador(es):** 1-2
-- **Tiempo estimado FASE 1:** 1-2 dias
-- **Tiempo estimado FASE 2:** 1-2 semanas
-- **Tiempo estimado FASE 3:** 2-4 semanas
-- **Tiempo estimado FASE 4:** 2-3 semanas
+#### 5.1 Autenticación en Dos Factores (2FA)
+- [ ] Soporte para TOTP (Google Authenticator)
+- [ ] Códigos de recuperación
+- [ ] Habilitar/deshabilitar por usuario
+- [ ] Forzar 2FA para roles admin
+
+#### 5.2 Auditoría de Logs de Acceso
+- [ ] Registrar cada login (exitoso/fallido)
+- [ ] IP de origen, navegador, hora
+- [ ] Alerta por múltiples intentos fallidos
+- [ ] Vista de "actividad reciente" para usuarios
+
+#### 5.3 Encriptación de Evidencias
+- [ ] Encriptar archivos subidos (AES-256)
+- [ ] Desencriptar solo al visualizar
+- [ ] Clave por cliente
+- [ ] Backup de claves en vault
 
 ---
 
-*Roadmap vivo - se actualiza segun avance del proyecto.*
+### 6. Integración ITIL v4 Avanzada
+**Estado:** 🔄 En desarrollo  
+**Archivos:** `app/routes/itil.py`, `app/templates/itil/`
+
+#### 6.1 Vincular ISO con ITIL
+- [ ] Mapeo automático: Control ISO → Práctica ITIL
+- [ ] Ejemplo: A.5.8 (Gestión de proyectos) → Change Enablement
+- [ ] Sugerir prácticas ITIL para controles no conformes
+
+#### 6.2 Generar RFCs desde Hallazgos
+- [ ] Detectar controles no conformes
+- [ ] Crear RFC borrador automáticamente
+- [ ] Sugerir prioridad basada en impacto
+- [ ] Vincular RFC con evaluación original
+
+#### 6.3 Dashboard de Prácticas ITIL
+- [ ] Evaluar madurez de 34 prácticas
+- [ ] Comparar con benchmark ISO 27001
+- [ ] Identificar brechas de gobernanza
+- [ ] Reporte de alineación ISO-ITIL
+
+---
+
+## 📦 PENDIENTES (Backlog - Futuro)
+
+Estas funcionalidades quedan postergadas pero documentadas para retomar en sprints futuros.
+
+### 1. Activar IA con NVIDIA NIM
+**Estado:** ⏸️ Pendiente - Requiere API Key  
+**Archivos:** `app/ai_service.py`, `app/routes/ai_routes.py`
+
+#### Tareas Pendientes:
+- [ ] Configurar variable `NVIDIA_API_KEY` en Render (QA y Prod)
+- [ ] Habilitar endpoint `/api/ai/analyze-control` en UI
+- [ ] Crear componente HTMX para análisis en tiempo real
+- [ ] Mostrar sugerencias de IA en vista de evaluación
+- [ ] Botón "Generar recomendaciones con IA"
+- [ ] Exportar resumen ejecutivo generado por IA
+
+**Dependencias:**
+- API Key de NVIDIA (gestión segura)
+- Testing con datos reales
+- Validar costo/uso de API
+
+---
+
+### 2. Mejoras en Panel de Administración
+**Estado:** ⏸️ Pendiente  
+**Archivos:** `app/routes/admin.py`, `app/templates/admin/`
+
+#### 2.1 Estadísticas Avanzadas
+- [ ] Gráfico de tendencia temporal
+- [ ] Top usuarios que más evalúan
+- [ ] Tiempo promedio por evaluación
+- [ ] Controles más fallados (ranking)
+
+#### 2.2 Gestión Masiva de Usuarios
+- [ ] Importar desde Excel/CSV
+- [ ] Asignar rol por defecto
+- [ ] Notificar credenciales por email
+- [ ] Baja masiva (soft delete)
+
+#### 2.3 Reporte de Auditoría
+- [ ] Listar todos los logs de los últimos 30 días
+- [ ] Filtrar por usuario, acción, fecha
+- [ ] Exportar logs a CSV
+- [ ] Alertas de actividad sospechosa
+
+---
+
+### 3. Funcionalidades de Evaluación (Backlog Secundario)
+**Estado:** ⏸️ Pendiente
+
+#### 3.1 Evaluación Colaborativa
+- [ ] Múltiples usuarios en misma evaluación
+- [ ] Asignar controles por usuario
+- [ ] Comentarios en cada control
+- [ ] Notificaciones de cambios
+
+#### 3.2 Plantillas de Evaluación
+- [ ] Crear evaluación desde plantilla
+- [ ] Personalizar preguntas por cliente
+- [ ] Versión de plantillas
+- [ ] Compartir plantillas entre clientes
+
+#### 3.3 Recordatorios Automáticos
+- [ ] Configurar fecha de vencimiento
+- [ ] Email recordatorio 7 días antes
+- [ ] Notificar evaluaciones incompletas
+- [ ] Reporte de estado semanal
+
+---
+
+## 📊 Planificación por Sprints
+
+### Sprint 1 (Actual) - v1.5.0
+**Enfoque:** Módulo de Evaluación Avanzada
+- Carga múltiple de evidencias
+- Historial de cambios
+- Plantillas de respuesta
+
+### Sprint 2 - v1.6.0
+**Enfoque:** Reportes y Dashboard
+- Dashboard de cumplimiento
+- Comparativa de evaluaciones
+- Exportación Excel avanzada
+
+### Sprint 3 - v1.7.0
+**Enfoque:** Seguridad
+- 2FA (TOTP)
+- Auditoría de logs
+- Encriptación de evidencias
+
+### Sprint 4 - v1.8.0
+**Enfoque:** Integración ITIL v4
+- Mapeo ISO-ITIL
+- Generación de RFCs
+- Dashboard ITIL
+
+### Sprint 5 - v2.0.0
+**Enfoque:** IA y Automatización
+- Activar NVIDIA NIM
+- Análisis automático
+- Recomendaciones inteligentes
+
+---
+
+## 📝 Control de Cambios del Roadmap
+
+| Fecha | Versión | Cambio |
+|-------|---------|--------|
+| 2026-03-24 | v1.0 | Documento inicial creado |
+| 2026-03-26 | v1.1 | Reestructuración completa: prioridades 3-6 activas, 1-2 en backlog |
+
+---
+
+> **Nota:** Este documento es dinámico y debe actualizarse al finalizar cada sprint o cuando cambien las prioridades del proyecto.
