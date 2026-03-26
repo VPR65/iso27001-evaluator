@@ -237,7 +237,7 @@ python scripts/backup.py restore backups/backup_ULTIMO.zip
 | Tipo        | Contenido                        | Frecuencia  | Retencion |
 |-------------|----------------------------------|-------------|-----------|
 | Completo    | DB + uploads                    | Diario (auto) | 7 dias    |
-| Base de datos | Solo DB SQLite                  | Cada cambio  | 30 dias   |
+| Base de datos | Solo DB PostgreSQL                  | Cada cambio  | 30 dias   |
 | Semanal     | DB + uploads                    | Semanal     | 4 semanas |
 | Manual       | Antes de cada despliegue          | A demanda   | Indefinida |
 

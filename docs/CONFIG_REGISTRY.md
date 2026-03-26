@@ -26,22 +26,21 @@ C:\Users\vpalma\Documents\Desarrollo\OpenCode_Antigravity\ISO27001_ITIL_segurida
 ### Estructura de carpetas desarrollo (F:):
 ```
 ISO27001_ITIL_seguridad/
-├── app/                    # Codigo fuente de la app
-│   ├── main.py           # Entry point de FastAPI
-│   ├── models.py         # Modelos SQLModel
-│   ├── auth.py           # Autenticacion
-│   ├── database.py       # Configuracion PostgreSQL/SQLite
-│   ├── seed.py          # Datos iniciales (153 controles ISO)
-│   ├── routes/          # Endpoints de la API
-│   ├── templates/       # Plantillas HTML Jinja2
-│   └── static/          # CSS y archivos estaticos
-├── docs/                 # Documentacion del proyecto
-├── scripts/              # Backup y rollback
-├── uploads/              # Archivos de evidencia
-├── iso27001.db          # Base de datos SQLite (local)
-├── requirements.txt      # Dependencias Python
-├── Dockerfile           # Imagen Docker
-└── docker-compose.yml   # Configuracion Docker
+├── app/ # Codigo fuente de la app
+│ ├── main.py # Entry point de FastAPI
+│ ├── models.py # Modelos SQLModel
+│ ├── auth.py # Autenticacion
+│ ├── database.py # Configuracion PostgreSQL (Neon.tech)
+│ ├── seed.py # Datos iniciales (93 controles ISO27001:2022 + ITIL4)
+│ ├── routes/ # Endpoints de la API
+│ ├── templates/ # Plantillas HTML Jinja2
+│ └── static/ # CSS y archivos estaticos
+├── docs/ # Documentacion del proyecto
+├── scripts/ # Backup y rollback
+├── uploads/ # Archivos de evidencia
+├── requirements.txt # Dependencias Python
+├── Dockerfile # Imagen Docker
+└── docker-compose.yml # Configuracion Docker
 ```
 
 ### Comandos de desarrollo (F:):
@@ -92,7 +91,7 @@ git status
 |---------|-----|--------|----------|--------------|-------|
 | Produccion | `https://iso27001-prod.onrender.com` | Activo | `production` | Neon PostgreSQL | Prod real |
 | QA/Pruebas | `https://iso27001-qa.onrender.com` | Activo | `main` | Neon PostgreSQL | Testing |
-| Desarrollo local | `http://localhost:8000` | Activo | - | SQLite local | Tu PC |
+| Desarrollo local | `http://localhost:8000` | Activo | - | Neon PostgreSQL (local) | Tu PC con DB local opcional |
 
 ---
 
@@ -128,11 +127,11 @@ postgresql://neondb_owner:npg_PhU0gVlXJ5yW@ep-cold-forest-acp1td9k-pooler.sa-eas
 
 ### Limites para 5 clientes + 10 usuarios
 - **0.5 GB gratuito** es suficiente para:
-  - ~5 clientes
-  - ~10 usuarios
-  - ~153 controles ISO
-  - ~100 evaluaciones
-  - Logs de auditoria (6 meses)
+- ~5 clientes
+- ~10 usuarios
+- ~93 controles ISO 27001:2022 + 34 ITIL v4
+- ~100 evaluaciones
+- Logs de auditoria (6 meses)
 - **No exceder:** ~500MB de datos aproximadamente
 
 ---

@@ -13,7 +13,7 @@
 | Proposito          | Sistema web para evaluar cumplimiento ISO 27001:2022        |
 | Metodologia        | ITIL v4 + Agile Scrum                                      |
 | Alcance            | Multi-tenant, 93 controles ISO 27001, multi-idioma       |
-| Tecnologias        | FastAPI, SQLModel, SQLite, Jinja2, HTMX, Chart.js         |
+| Tecnologias        | FastAPI, SQLModel, PostgreSQL, Jinja2, HTMX, Chart.js         |
 | Autor              | Equipo de Desarrollo                                       |
 | Fecha de inicio    | 2026-03-22                                               |
 
@@ -130,7 +130,7 @@ Todo cambio en el codigo sigue este proceso:
 ## 9. ROADMAP
 
 ### Fase 1 - Fundacion (Completada v1.0.0 - v1.1.0)
-- [x] Arquitectura base FastAPI + SQLite
+- [x] Arquitectura base FastAPI + PostgreSQL
 - [x] Autenticacion y autorizacion (4 roles)
 - [x] 93 controles ISO 27001:2022 seedeados
 - [x] Evaluaciones con madurez CMMI

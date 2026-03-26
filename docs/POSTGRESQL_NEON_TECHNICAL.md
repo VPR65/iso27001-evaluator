@@ -26,10 +26,10 @@
 ## 1. RESUMEN EJECUTIVO
 
 ### Objetivo
-Implementar persistencia de datos real para los entornos QA y Producción de la aplicación ISO 27001 Evaluator, eliminando la pérdida de datos que ocurría con SQLite en el filesystem efímero de Render.
+Implementar persistencia de datos real para los entornos QA y Producción de la aplicación ISO 27001 Evaluator, eliminando la pérdida de datos que ocurría con PostgreSQL en el filesystem efímero de Render.
 
 ### Decision Tomada
-Migrar de SQLite (almacenamiento local) a PostgreSQL en Neon.tech (base de datos administrada en la nube).
+Migrar de PostgreSQL (almacenamiento local) a PostgreSQL en Neon.tech (base de datos administrada en la nube).
 
 ### Beneficios Obtenidos
 - **Persistencia real**: Los datos no se pierden al reiniciar la instancia
@@ -53,7 +53,7 @@ En el entorno gratuito de Render, las instancias "duermen" después de 15 minuto
             |                                    |
             v                                    v
     +---------------+                  +--------------------+
-    | SQLite DB     |    =======>       |  Base de datos    |
+    | PostgreSQL (Neon)     |    =======>       |  Base de datos    |
     | iso27001.db   |      RESETEADO    |  VACIA o con      |
     | (en /app)     |                  |  datos iniciales  |
     +---------------+                  +--------------------+
@@ -83,7 +83,7 @@ Al reiniciar el contenedor, el filesystem vuelve a su estado inicial.
 
 ### 3.1 Opcion Seleccionada: Neon PostgreSQL
 
-| Criterio | SQLite Local | Neon PostgreSQL | Render Disk |
+| Criterio | PostgreSQL Local | Neon PostgreSQL | Render Disk |
 |----------|--------------|----------------|-------------|
 | Persistencia | ❌ No | ✅ Si | ✅ Si |
 | Multi-instancia | ❌ No | ✅ Si | ❌ No |

@@ -27,23 +27,23 @@
 │  │  /sprints   │  │             │  │                 │    │
 │  └─────────────┘  └─────────────┘  └─────────────────┘    │
 │                                                              │
-│  ┌─────────────────────────────────────────────────────┐  │
-│  │                    SQLModel                           │  │
-│  │  Client | User | Session | Evaluation | Control | RFC |  │
-│  │  Document | Sprint | BacklogItem | AuditLog          │  │
-│  └──────────────────────┬──────────────────────────────┘  │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │ SQLModel │ │
+│ │ Client | User | Session | Evaluation | Control | RFC | │
+│ │ Document | Sprint | BacklogItem | AuditLog │ │
+│ └──────────────────────┬──────────────────────────────┘ │
 └──────────────────────────┼──────────────────────────────────┘
-                           │ SQLite
-                           ▼
+│ PostgreSQL (Neon.tech)
+▼
 ┌─────────────────────────────────────────────────────────────┐
-│                   BASE DE DATOS                             │
-│                      SQLite                                  │
-│               (app/database.db)                             │
-│                                                              │
-│  15 tablas: clients, users, sessions,                       │
-│  control_definitions, evaluations, control_responses,        │
-│  evidence_files, documents, document_versions,               │
-│  rfcs, sprints, backlog_items, sprint_tasks, audit_logs      │
+│ BASE DE DATOS │
+│ PostgreSQL 15 (Neon.tech - AWS) │
+│ (Conexión segura SSL) │
+│ │
+│ 15 tablas: clients, users, sessions, │
+│ control_definitions, evaluations, control_responses, │
+│ evidence_files, documents, document_versions, │
+│ rfcs, sprints, backlog_items, sprint_tasks, audit_logs │
 └─────────────────────────────────────────────────────────────┘
                            │
                            │ Archivos

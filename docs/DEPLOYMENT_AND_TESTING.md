@@ -16,7 +16,7 @@
 │  │   (localhost)   │ ───► │   (Render.com)   │ ───► │   (Render.com)   │ │
 │  │                 │ push │                  │ push │                  │ │
 │  │  Puerto: 8000   │      │  iso27001-qa     │      │ iso27001-prod    │ │
-│  │  SQLite local   │      │  Branch: main    │      │ Branch: prod     │ │
+│  │  PostgreSQL local   │      │  Branch: main    │      │ Branch: prod     │ │
 │  └──────────────────┘      └──────────────────┘      └──────────────────┘ │
 │                                                                             │
 │  ┌────────────────────────────────────────────────────────────────────┐   │

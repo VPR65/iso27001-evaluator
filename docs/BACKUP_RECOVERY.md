@@ -9,7 +9,7 @@
 Este documento establece los procedimientos de respaldo (backup) y recuperacion para el sistema ISO 27001 Evaluator, cubriendo:
 
 - **Codigo fuente**: Repositorio GitHub + archivos locales
-- **Base de datos**: SQLite (evaluaciones, usuarios, configuraciones)
+- **Base de datos**: PostgreSQL (Neon.tech) - evaluaciones, usuarios, configuraciones
 - **Archivos**: Evidencias cargadas por usuarios (uploads)
 - **Documentacion**: Todos los archivos MD del proyecto
 

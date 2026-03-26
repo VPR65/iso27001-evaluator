@@ -18,7 +18,7 @@
 │                                │ push/pull               │ uvicorn          │
 │                                ▼                           ▼                 │
 │                         ┌──────────────┐     ┌──────────────────────┐    │
-│                         │  GitHub      │     │  SQLite DB           │    │
+│                         │  GitHub      │     │  PostgreSQL (Neon)           │    │
 │                         │  Repository   │     │  (database.db)       │    │
 │                         └──────┬───────┘     └──────────────────────┘    │
 │                                │                                            │
@@ -37,7 +37,7 @@
 │                                                          │                 │
 │                                                          ▼                 │
 │                                                 ┌──────────────────┐        │
-│                                                 │  SQLite DB        │        │
+│                                                 │  PostgreSQL (Neon)        │        │
 │                                                 │  (production.db)  │        │
 │                                                 └──────────────────┘        │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -49,7 +49,7 @@
 │   URL: Tu dominio personalizado o tunombre.onrender.com                    │
 │                                                                              │
 │   ┌──────────────┐     �──────────────┐     ┌──────────────────────┐    │
-│   │  Usuarios    │────►│  FastAPI      │────►│  SQLite DB           │    │
+│   │  Usuarios    │────►│  FastAPI      │────►│  PostgreSQL (Neon)           │    │
 │   │  Reales      │     │  + Uvicorn    │     │  (database.db)       │    │
 │   └──────────────┘     └───────────────┘     └──────────────────────┘    │
 │                                                                              │
@@ -63,7 +63,7 @@
 
 ### 2.1 Resumen Comparativo
 
-| Plataforma         | Uso                  | Costo | Python | SQLite | SSL | Dominio       |
+| Plataforma         | Uso                  | Costo | Python | PostgreSQL | SSL | Dominio       |
 |-------------------|----------------------|-------|--------|--------|-----|---------------|
 | Tu PC local        | Desarrollo           | $0    | Si     | Si     | No  | localhost     |
 | GitHub             | Control de versiones | $0    | -      | -      | -   | github.com    |
@@ -408,7 +408,7 @@ Cada vez que hagas `git push origin main`, Render detecta el cambio y hace deplo
 |-------------------------|----------------------------------------|
 | Render free: duerme 15min | Aceptable para uso interno ISO 27001  |
 | 750 horas/mes          | Suficiente para 1 app de evaluacion   |
-| SQLite en disco 1GB    | Suficiente para miles de evaluaciones |
+| PostgreSQL Neon 0.5GB    | Suficiente para miles de evaluaciones |
 | Sin dominio propio      | Usar .onrender.com (o comprar uno)  |
 | Sin email integrado     | Usar email externo (Gmail, etc.)     |
 | Sin cron jobs automaticos| Ejecutar manualmente o usar Render Cron |

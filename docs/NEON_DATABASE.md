@@ -39,7 +39,7 @@ postgresql://neondb_owner:npg_PhU0gVlXJ5yW@ep-cold-forest-acp1td9k-pooler.sa-eas
 
 ### Variables de Entorno (Environment Variables)
 
-Para que la aplicacion use Neon PostgreSQL en lugar de SQLite local:
+Para que la aplicacion use Neon PostgreSQL en lugar de PostgreSQL local:
 
 1. Ir a Render Dashboard: https://dashboard.render.com
 2. Seleccionar el servicio (`iso27001-qa` o `iso27001-prod`)
@@ -50,7 +50,7 @@ Para que la aplicacion use Neon PostgreSQL en lugar de SQLite local:
 |------|-------|
 | DATABASE_URL | `postgresql://neondb_owner:***@ep-cold-forest-acp1td9k-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require` |
 
-**NOTA:** La aplicacion automaticamente detecta `postgresql://` y usa PostgreSQL en lugar de SQLite.
+**NOTA:** La aplicacion automaticamente detecta la URL de Neon y configura PostgreSQL correctamente.
 
 ---
 

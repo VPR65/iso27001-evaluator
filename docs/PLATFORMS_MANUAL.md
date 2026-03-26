@@ -38,7 +38,7 @@
 
 ### 1.6 Acceder a la Base de Datos (Limitado en Free Tier)
 
-**Importante:** El plan gratuito de Render NO permite acceso directo a PostgreSQL/SQLite.
+**Importante:** El plan gratuito de Render NO permite acceso directo a PostgreSQL/PostgreSQL.
 
 **Alternativas:**
 - Usar el endpoint `/admin/debug/users` en la app

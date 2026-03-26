@@ -15,6 +15,11 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
   - Calculo automatico de porcentaje basado en total de controles
 
 ### Corregido
+- **Documentacion** - Eliminadas todas las referencias obsoletas a SQLite
+  - Actualizado a PostgreSQL/Neon.tech en todos los docs
+  - Arquitectura 100% PostgreSQL
+
+### Corregido
 - **Eliminacion de clientes/usuarios/evaluaciones** - Cambiado de modal a formularios inline con confirmacion via prompt()
   - Resuelve error "405 Method Not Allowed" que ocurria con los modales
   - Confirmacion de password obligatoria antes de eliminar
