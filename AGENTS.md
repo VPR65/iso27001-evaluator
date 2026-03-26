@@ -142,11 +142,43 @@ Antes de hacer commit, verificar:
 - [ ] Backup creado antes de migrar DB
 - [ ] Tests basicos funcionan
 - [ ] Mensaje de commit con prefijo correcto
+- [ ] **Documentacion actualizada** (version y sin referencias obsoletas)
+- [ ] **CHANGELOG.md** actualizado con los cambios
+- [ ] Ejecutar `python scripts/validate_docs.py` para validar documentacion
 
 ## Estructura de Archivos
 
 No cambiar la estructura de carpetas sin discutirlo antes.
 Mantener rutas relativas para facilitar el deploy.
+
+## Control de Versiones de Documentacion
+
+Para asegurar que la documentacion este siempre actualizada:
+
+1. **Version sincronizada**: Todos los docs criticols (ARCHITECTURE.md, CONFIG_REGISTRY.md) deben tener la misma version que CHANGELOG.md
+2. **Validacion automatica**: Ejecutar `python scripts/validate_docs.py` antes de cada commit
+3. **Check de SQLite**: El script valida que no queden referencias obsoletas a SQLite
+4. **CHANGELOG primero**: Todo cambio debe registrarse en CHANGELOG.md antes de hacer commit
+
+### Flujo de actualizacion de documentacion
+
+```bash
+# 1. Hacer los cambios de codigo
+git add app/...
+
+# 2. Actualizar CHANGELOG.md con los cambios
+
+# 3. Actualizar version en docs (si corresponde)
+#    - ARCHITECTURE.md
+#    - CONFIG_REGISTRY.md
+#    - MASTER_DIAGRAM.md
+
+# 4. Validar documentacion
+python scripts/validate_docs.py
+
+# 5. Si todo OK, hacer commit
+git commit -m "feat: descripcion del cambio"
+```
 
 ## Referencias de Documentacion
 
