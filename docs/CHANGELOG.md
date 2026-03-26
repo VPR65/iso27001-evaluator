@@ -5,6 +5,33 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 
 ---
 
+## [v1.4.1] - 2026-03-26
+
+### Agregado
+- **Panel Admin - Evaluaciones** - Mejoras en la tabla de gestion:
+  - Columna "% Avance" con barra de progreso visual (colores segun nivel)
+  - Formato "X/Y" en columna de respuestas
+  - Boton verde "play" para retomar/reanudar evaluaciones
+  - Calculo automatico de porcentaje basado en total de controles
+
+### Corregido
+- **Eliminacion de clientes/usuarios/evaluaciones** - Cambiado de modal a formularios inline con confirmacion via prompt()
+  - Resuelve error "405 Method Not Allowed" que ocurria con los modales
+  - Confirmacion de password obligatoria antes de eliminar
+
+### Corregido
+- **ISO 27001:2022 Controles** - Separacion en 4 grupos segun normativa actualizada:
+  - Controles Organizacionales (A.5): 37 controles
+  - Controles de Personas (A.6): 8 controles
+  - Controles Físicos (A.7): 14 controles
+  - Controles Tecnológicos (A.8): 34 controles
+  - Total: 93 controles (ISO/IEC 27001:2022)
+
+### Tests
+- **70 tests automatizados** - Suite completa pasando
+
+---
+
 ## [v1.4.0] - 2026-03-25
 
 ### Agregado

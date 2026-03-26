@@ -1,6 +1,6 @@
 # ARQUITECTURA TECNICA - ISO 27001 Evaluator
 
-> Version: 1.4.0 | Ultima actualizacion: 2026-03-25
+> Version: 1.4.1 | Ultima actualizacion: 2026-03-26
 
 ---
 
