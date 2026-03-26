@@ -36,7 +36,7 @@
 
 {% if score is not none %}
 <div class="score-section">
-    <h2><i class="fa-solid fa-chart-simple"></i> Score de Madurez Promedio</h2>
+    <h2 class="score-title"><i class="fa-solid fa-chart-simple"></i> Score de Madurez Promedio</h2>
     <div class="score-display">
         <div class="score-number" style="color: {% if score >= 4 %}#10b981{% elif score >= 2.5 %}#f59e0b{% else %}#ef4444{% endif %}">{{ score }}</div>
         <div class="score-max">/ 5.0</div>
@@ -46,28 +46,56 @@
     </div>
     
     <div class="score-note">
-        <h4><i class="fa-solid fa-info-circle"></i> Acerca del Score de Madurez</h4>
-        <p><strong>¿Cómo se calcula?</strong><br>
-        El Score de Madurez es el <strong>promedio de madurez</strong> de TODOS los controles evaluados en TODAS las evaluaciones del sistema.</p>
+        <h4 class="note-title"><i class="fa-solid fa-circle-info"></i> Acerca del Score de Madurez</h4>
         
-        <p><strong>Escala de Madurez (CMMI):</strong></p>
-        <ul>
-            <li><strong>0</strong> - Sin evaluar o sin respuesta</li>
-            <li><strong>1</strong> - Inicial: Proceso inexistente o ad-hoc</li>
-            <li><strong>2</strong> - Gestionado: Proceso informal pero existente</li>
-            <li><strong>3</strong> - Definido: Proceso documentado y estandarizado</li>
-            <li><strong>4</strong> - Cuantitativamente gestionado: Proceso medido y controlado</li>
-            <li><strong>5</strong> - Optimizado: Mejora continua y optimizacion</li>
-        </ul>
+        <div class="note-block">
+            <h5><i class="fa-solid fa-calculator"></i> ¿Cómo se calcula?</h5>
+            <p>El Score de Madurez es el <strong>promedio de madurez</strong> de TODOS los controles evaluados en TODAS las evaluaciones del sistema.</p>
+        </div>
         
-        <p><strong>Interpretacion del score:</strong></p>
-        <ul>
-            <li><span style="color:#ef4444"><strong>&lt; 2.0</strong></span> - Madurez baja. Requiere atencion inmediata y implementacion de controles basicos.</li>
-            <li><span style="color:#f59e0b"><strong>2.0 - 3.9</strong></span> - Madurez media. Procesos en desarrollo, requiere fortalecer documentacion y controles.</li>
-            <li><span style="color:#10b981"><strong>&gt;= 4.0</strong></span> - Madurez alta. Procesos maduros con medicion y mejora continua.</li>
-        </ul>
+        <div class="note-block">
+            <h5><i class="fa-solid fa-scale-balanced"></i> Escala de Madurez (CMMI)</h5>
+            <div class="scale-grid">
+                <div class="scale-item"><span class="scale-num">0</span><span>Sin evaluar o sin respuesta</span></div>
+                <div class="scale-item"><span class="scale-num">1</span><span>Inicial: Proceso inexistente o ad-hoc</span></div>
+                <div class="scale-item"><span class="scale-num">2</span><span>Gestionado: Proceso informal pero existente</span></div>
+                <div class="scale-item"><span class="scale-num">3</span><span>Definido: Proceso documentado y estandarizado</span></div>
+                <div class="scale-item"><span class="scale-num">4</span><span>Cuantitativamente gestionado: Proceso medido y controlado</span></div>
+                <div class="scale-item"><span class="scale-num">5</span><span>Optimizado: Mejora continua y optimizacion</span></div>
+            </div>
+        </div>
         
-        <p><em><i class="fa-solid fa-lightbulb"></i> Este score representa el estado general de la madurez en seguridad de la informacion de su organizacion basado en las evaluaciones realizadas.</em></p>
+        <div class="note-block">
+            <h5><i class="fa-solid fa-chart-line"></i> Interpretacion del Score</h5>
+            <div class="interpret-grid">
+                <div class="interpret-item low">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <div>
+                        <strong>&lt; 2.0 - Madurez Baja</strong>
+                        <p>Requiere atencion inmediata y implementacion de controles basicos.</p>
+                    </div>
+                </div>
+                <div class="interpret-item medium">
+                    <i class="fa-solid fa-exclamation-circle"></i>
+                    <div>
+                        <strong>2.0 - 3.9 - Madurez Media</strong>
+                        <p>Procesos en desarrollo, requiere fortalecer documentacion y controles.</p>
+                    </div>
+                </div>
+                <div class="interpret-item high">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <div>
+                        <strong>&gt;= 4.0 - Madurez Alta</strong>
+                        <p>Procesos maduros con medicion y mejora continua.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="note-tip">
+            <i class="fa-solid fa-lightbulb"></i>
+            <p>Este score representa el estado general de la madurez en seguridad de la informacion de su organizacion basado en las evaluaciones realizadas.</p>
+        </div>
     </div>
 </div>
 {% endif %}
@@ -128,50 +156,168 @@
 </div>
 
 <style>
-.score-note {
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-top: 1.5rem;
-    font-size: 0.9rem;
+.score-title {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #1e293b;
 }
 
-.score-note h4 {
-    margin: 0 0 1rem 0;
+.score-section .score-note {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-top: 1.5rem;
+    text-align: left;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.note-title {
+    text-align: left;
+    margin: 0 0 1.5rem 0;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e2e8f0;
     color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.25rem;
+}
+
+.note-title i {
+    color: #3b82f6;
+}
+
+.note-block {
+    margin-bottom: 1.5rem;
+}
+
+.note-block h5 {
+    margin: 0 0 0.75rem 0;
+    color: #1e293b;
+    font-size: 1rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }
 
-.score-note h4 i {
-    color: #3b82f6;
-}
-
-.score-note p {
-    margin: 0.75rem 0;
-    color: #475569;
-    line-height: 1.6;
-}
-
-.score-note ul {
-    margin: 0.5rem 0;
-    padding-left: 1.5rem;
-}
-
-.score-note li {
-    margin: 0.35rem 0;
-    color: #475569;
-}
-
-.score-note strong {
-    color: #1e293b;
-}
-
-.score-note em {
+.note-block h5 i {
     color: #64748b;
+}
+
+.note-block p {
+    margin: 0;
+    color: #475569;
+    line-height: 1.7;
+}
+
+.scale-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.scale-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    border-left: 3px solid #3b82f6;
+}
+
+.scale-item span {
+    color: #475569;
+}
+
+.scale-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: #3b82f6;
+    color: white;
+    border-radius: 50%;
+    font-weight: 700;
     font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.interpret-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.interpret-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 10px;
+    border-left: 4px solid;
+}
+
+.interpret-item i {
+    font-size: 1.25rem;
+    margin-top: 0.25rem;
+}
+
+.interpret-item strong {
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.interpret-item p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.interpret-item.low {
+    background: #fef2f2;
+    border-color: #ef4444;
+}
+
+.interpret-item.low i { color: #ef4444; }
+
+.interpret-item.medium {
+    background: #fffbeb;
+    border-color: #f59e0b;
+}
+
+.interpret-item.medium i { color: #f59e0b; }
+
+.interpret-item.high {
+    background: #ecfdf5;
+    border-color: #10b981;
+}
+
+.interpret-item.high i { color: #10b981; }
+
+.note-tip {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: #eff6ff;
+    border-radius: 10px;
+    margin-top: 1rem;
+}
+
+.note-tip i {
+    color: #3b82f6;
+    font-size: 1.1rem;
+    margin-top: 0.2rem;
+}
+
+.note-tip p {
+    margin: 0;
+    color: #1e40af;
+    font-size: 0.9rem;
 }
 </style>
 {% endblock %}
