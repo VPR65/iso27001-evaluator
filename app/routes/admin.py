@@ -902,13 +902,13 @@ def debug_reset_all(request: Request):
     try:
         from app.models import (
             AuditLog,
-            BibliotecaDocument,
             SprintTask,
             Sprint,
             RFC,
             DocumentVersion,
             Document,
             ControlResponse,
+            EvidenceFile,
             Evaluation,
             User,
             Client,
@@ -919,7 +919,7 @@ def debug_reset_all(request: Request):
         with Session(engine) as session:
             # Borrar todo en orden (por FK)
             session.query(AuditLog).delete()
-            session.query(BibliotecaDocument).delete()
+            session.query(EvidenceFile).delete()
             session.query(SprintTask).delete()
             session.query(Sprint).delete()
             session.query(RFC).delete()
