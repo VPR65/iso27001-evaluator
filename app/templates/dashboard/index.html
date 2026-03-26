@@ -156,168 +156,166 @@
 </div>
 
 <style>
-.score-title {
-    text-align: center;
-    margin-bottom: 1.5rem;
-    color: #1e293b;
+.score-section {
+    max-width: 900px;
+    margin: 0 auto;
 }
 
-.score-section .score-note {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 2rem;
+.score-title {
+    text-align: center !important;
+    margin-bottom: 1.5rem;
+    color: #1e293b;
+    font-size: 1.5rem;
+}
+
+.score-note {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 16px !important;
+    padding: 2rem !important;
     margin-top: 1.5rem;
-    text-align: left;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    text-align: left !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
 }
 
 .note-title {
-    text-align: left;
-    margin: 0 0 1.5rem 0;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #e2e8f0;
-    color: #334155;
-    display: flex;
-    align-items: center;
+    text-align: left !important;
+    margin: 0 0 1.5rem 0 !important;
+    padding-bottom: 1rem !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+    color: #334155 !important;
+    display: flex !important;
+    align-items: center !important;
     gap: 0.75rem;
-    font-size: 1.25rem;
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
 }
 
-.note-title i {
-    color: #3b82f6;
-}
+.note-title i { color: #3b82f6 !important; }
 
 .note-block {
     margin-bottom: 1.5rem;
+    text-align: left !important;
 }
 
 .note-block h5 {
-    margin: 0 0 0.75rem 0;
-    color: #1e293b;
-    font-size: 1rem;
-    display: flex;
-    align-items: center;
+    margin: 0 0 0.75rem 0 !important;
+    color: #1e293b !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
     gap: 0.5rem;
+    text-align: left !important;
 }
 
-.note-block h5 i {
-    color: #64748b;
-}
+.note-block h5 i { color: #64748b !important; }
 
-.note-block p {
-    margin: 0;
-    color: #475569;
+.note-block > p {
+    margin: 0 0 1rem 0 !important;
+    color: #475569 !important;
     line-height: 1.7;
+    text-align: left !important;
 }
 
 .scale-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 0.75rem;
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+    gap: 0.75rem !important;
     margin-top: 0.75rem;
+    text-align: left !important;
 }
 
 .scale-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.75rem 1rem;
-    background: #f8fafc;
-    border-radius: 8px;
-    border-left: 3px solid #3b82f6;
+    display: flex !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    padding: 0.75rem 1rem !important;
+    background: #f8fafc !important;
+    border-radius: 8px !important;
+    border-left: 4px solid #3b82f6 !important;
+    text-align: left !important;
 }
 
-.scale-item span {
-    color: #475569;
-}
+.scale-item span { color: #475569 !important; }
 
 .scale-num {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    background: #3b82f6;
-    color: white;
-    border-radius: 50%;
-    font-weight: 700;
-    font-size: 0.85rem;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 32px !important;
+    height: 32px !important;
+    background: #3b82f6 !important;
+    color: white !important;
+    border-radius: 50% !important;
+    font-weight: 700 !important;
+    font-size: 0.9rem !important;
     flex-shrink: 0;
 }
 
 .interpret-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.75rem !important;
     margin-top: 0.75rem;
+    text-align: left !important;
 }
 
 .interpret-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-    padding: 1rem;
-    border-radius: 10px;
-    border-left: 4px solid;
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 1rem !important;
+    padding: 1rem !important;
+    border-radius: 10px !important;
+    border-left: 5px solid !important;
+    text-align: left !important;
 }
 
-.interpret-item i {
-    font-size: 1.25rem;
-    margin-top: 0.25rem;
-}
+.interpret-item i { font-size: 1.5rem !important; margin-top: 0.25rem; }
+
+.interpret-item div { text-align: left !important; }
 
 .interpret-item strong {
-    display: block;
-    margin-bottom: 0.25rem;
+    display: block !important;
+    margin-bottom: 0.25rem !important;
+    text-align: left !important;
 }
 
-.interpret-item p {
-    margin: 0;
-    font-size: 0.9rem;
-}
+.interpret-item p { margin: 0 !important; font-size: 0.9rem !important; }
 
 .interpret-item.low {
-    background: #fef2f2;
-    border-color: #ef4444;
+    background: #fef2f2 !important;
+    border-color: #ef4444 !important;
 }
 
-.interpret-item.low i { color: #ef4444; }
+.interpret-item.low i { color: #ef4444 !important; }
 
 .interpret-item.medium {
-    background: #fffbeb;
-    border-color: #f59e0b;
+    background: #fffbeb !important;
+    border-color: #f59e0b !important;
 }
 
-.interpret-item.medium i { color: #f59e0b; }
+.interpret-item.medium i { color: #f59e0b !important; }
 
 .interpret-item.high {
-    background: #ecfdf5;
-    border-color: #10b981;
+    background: #ecfdf5 !important;
+    border-color: #10b981 !important;
 }
 
-.interpret-item.high i { color: #10b981; }
+.interpret-item.high i { color: #10b981 !important; }
 
 .note-tip {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    padding: 1rem;
-    background: #eff6ff;
-    border-radius: 10px;
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+    padding: 1rem !important;
+    background: #eff6ff !important;
+    border-radius: 10px !important;
     margin-top: 1rem;
 }
 
-.note-tip i {
-    color: #3b82f6;
-    font-size: 1.1rem;
-    margin-top: 0.2rem;
-}
+.note-tip i { color: #3b82f6 !important; font-size: 1.25rem !important; margin-top: 0.2rem; }
 
-.note-tip p {
-    margin: 0;
-    color: #1e40af;
-    font-size: 0.9rem;
-}
+.note-tip p { margin: 0 !important; color: #1e40af !important; font-size: 0.9rem !important; }
 </style>
 {% endblock %}
