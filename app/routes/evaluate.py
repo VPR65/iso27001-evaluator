@@ -115,34 +115,126 @@ async def save_control(
             raise HTTPException(status_code=403)
         from datetime import datetime
 
+    resp = session.exec(
+        select(ControlResponse).where(
+            ControlResponse.evaluation_id == evaluation_id,
+            ControlResponse.control_id == control_id,
+        )
+    ).first()
+    if resp:
+        # Guardar valores anteriores para auditoría
+        old_maturity = resp.maturity
+        old_notes = resp.notes
+        old_justification = resp.justification
+
+        # Actualizar valores
+        resp.maturity = maturity
+        resp.not_applicable = not_applicable
+        resp.justification = justification if not_applicable else None
+        resp.notes = notes
+        resp.updated_at = datetime.utcnow()
+        session.add(resp)
+
+        ctrl = session.get(ControlDefinition, control_id)
+
+        # Crear log de auditoría con detalles del cambio
+        change_details = f"Control {ctrl.code}: "
+        if old_maturity != maturity:
+            change_details += f"Madurez {old_maturity} -> {maturity}. "
+        if old_notes != notes:
+            change_details += f"Notas actualizadas. "
+        if not_applicable and justification != old_justification:
+            change_details += f"Justificación: {justification[:50]}..."
+
+        session.add(
+            AuditLog(
+                user_id=user.id,
+                action="CONTROL_UPDATED",
+                entity_type="control_response",
+                entity_id=resp.id,
+                details=change_details,
+            )
+        )
+        session.commit()
+        return RedirectResponse(
+            url=f"/evaluate/{evaluation_id}/control/{control_id}", status_code=302
+        )
+
+
+@router.get("/control/{control_id}/history")
+def control_history(
+    request: Request,
+    evaluation_id: str,
+    control_id: str,
+):
+    """Ver historial de cambios de un control"""
+    session_id = request.cookies.get("session_id")
+    user = get_current_user(session_id)
+    require_no_vista_solo(user)
+
+    with Session(engine) as session:
+        evaluation = session.get(Evaluation, evaluation_id)
+        if not evaluation or (
+            user.role != UserRole.SUPERADMIN and evaluation.client_id != user.client_id
+        ):
+            raise HTTPException(status_code=403)
+
+        # Obtener respuesta
         resp = session.exec(
             select(ControlResponse).where(
                 ControlResponse.evaluation_id == evaluation_id,
                 ControlResponse.control_id == control_id,
             )
         ).first()
-        if resp:
-            resp.maturity = maturity
-            resp.not_applicable = not_applicable
-            resp.justification = justification if not_applicable else None
-            resp.notes = notes
-            resp.updated_at = datetime.utcnow()
-            session.add(resp)
-            ctrl = session.get(ControlDefinition, control_id)
 
-            status = "N/A" if not_applicable else f"madurez {maturity}"
-            session.add(
-                AuditLog(
-                    user_id=user.id,
-                    action="CONTROL_EVALUATED",
-                    entity_type="control_response",
-                    entity_id=resp.id,
-                    details=f"Control {ctrl.code} evaluado con {status} en evaluacion {evaluation_id}",
+        if not resp:
+            raise HTTPException(status_code=404)
+
+        # Obtener logs de auditoría para esta respuesta
+        logs = session.exec(
+            select(AuditLog)
+            .where(AuditLog.entity_id == str(resp.id))
+            .where(AuditLog.entity_type == "control_response")
+            .order_by(AuditLog.created_at.desc())
+        ).all()
+
+        # Obtener definición del control
+        ctrl = session.get(ControlDefinition, control_id)
+
+        return HTMLResponse(
+            f"""
+            <h3>Historial de Cambios - {ctrl.code}</h3>
+            <div class="history-list">
+            {
+                "".join(
+                    [
+                        f'''
+            <div class="history-item">
+                <div class="history-date">{log.created_at.strftime('%d/%m/%Y %H:%M')}</div>
+                <div class="history-user">{log.user_id}</div>
+                <div class="history-action">{log.action}</div>
+                <div class="history-details">{log.details}</div>
+            </div>
+            '''
+                        for log in logs
+                    ]
                 )
-            )
-        session.commit()
-        return RedirectResponse(
-            url=f"/evaluate/{evaluation_id}/control/{control_id}", status_code=302
+            }
+            </div>
+            <style>
+            .history-list {{ max-width: 800px; margin: 1rem 0; }}
+            .history-item {{
+                border-left: 3px solid #3b82f6;
+                padding: 1rem;
+                margin-bottom: 1rem;
+                background: #f9fafb;
+            }}
+            .history-date {{ font-size: 0.85rem; color: #6b7280; }}
+            .history-user {{ font-weight: 600; color: #1f2937; }}
+            .history-action {{ color: #3b82f6; font-weight: 500; }}
+            .history-details {{ color: #4b5563; margin-top: 0.5rem; }}
+            </style>
+            """
         )
 
 

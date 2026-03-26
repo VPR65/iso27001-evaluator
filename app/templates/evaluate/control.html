@@ -5,9 +5,47 @@
 <div class="eval-nav">
     <a href="/evaluations/{{ evaluation.id }}" class="button outline">Volver a Evaluacion</a>
     <span class="eval-progress">{{ current_idx }} / {{ total }}</span>
+    <a href="/evaluate/{{ evaluation.id }}/control/{{ ctrl.id }}/history" class="button outline" onclick="openHistory(event)">
+        <i class="fa-solid fa-clock-rotate-left"></i> Historial
+    </a>
 </div>
 
 <h1><span class="ctrl-code">{{ ctrl.code }}</span> - {{ ctrl.title }}</h1>
+
+<div id="history-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000;">
+    <div style="background:white; margin:2rem auto; max-width:800px; border-radius:8px; padding:1.5rem; max-height:80vh; overflow-y:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <h2 style="margin:0;"><i class="fa-solid fa-history"></i> Historial de Cambios</h2>
+            <button onclick="closeHistory()" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+        </div>
+        <div id="history-content">
+            <p>Cargando historial...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+function openHistory(event) {
+    event.preventDefault();
+    const modal = document.getElementById('history-modal');
+    const content = document.getElementById('history-content');
+    const url = event.currentTarget.href;
+    
+    fetch(url)
+        .then(r => r.text())
+        .then(html => {
+            content.innerHTML = html;
+            modal.style.display = 'block';
+        })
+        .catch(err => {
+            content.innerHTML = '<p>Error al cargar historial</p>';
+        });
+}
+
+function closeHistory() {
+    document.getElementById('history-modal').style.display = 'none';
+}
+</script>
 
 <div class="control-info">
     <p><strong>Dominio:</strong> {{ ctrl.domain }}</p>
@@ -48,32 +86,297 @@
         </div>
     </form>
 
-    <div class="evidence-section">
-        <h3>Archivos de Evidencia</h3>
-        {% if files %}
-        <ul class="file-list">
-            {% for file in files %}
-            <li>
-                <a href="/{{ file.filepath }}" target="_blank">{{ file.filename }}</a>
-                ({{ (file.file_size / 1024)|round(1) }} KB)
-                <form method="post" action="/evaluate/{{ evaluation.id }}/control/{{ ctrl.id }}/delete-file/{{ file.id }}" style="display:inline">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                    <button type="submit" class="outline contrast small">Eliminar</button>
-                </form>
-            </li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <p class="no-files">Sin archivos de evidencia</p>
-        {% endif %}
-
-        <form method="post" action="/evaluate/{{ evaluation.id }}/control/{{ ctrl.id }}/upload" enctype="multipart/form-data">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-            <label for="file">Subir evidencia (PDF, imagenes, documentos)</label>
-            <input type="file" id="file" name="file" accept=".pdf,.png,.jpg,.jpeg,.docx,.xlsx">
-            <button type="submit" class="outline">Subir Archivo</button>
-        </form>
+<div class="evidence-section">
+    <h3>Archivos de Evidencia ({{ files|length if files else 0 }} archivos)</h3>
+    
+    {% if files %}
+    <div class="file-grid">
+        {% for file in files %}
+        <div class="file-card">
+            <div class="file-icon">
+                {% if '.pdf' in file.filename.lower() %}
+                    <i class="fa-solid fa-file-pdf"></i>
+                {% elif '.doc' in file.filename.lower() or '.docx' in file.filename.lower() %}
+                    <i class="fa-solid fa-file-word"></i>
+                {% elif '.xls' in file.filename.lower() or '.xlsx' in file.filename.lower() %}
+                    <i class="fa-solid fa-file-excel"></i>
+                {% elif '.png' in file.filename.lower() or '.jpg' in file.filename.lower() or '.jpeg' in file.filename.lower() %}
+                    <i class="fa-solid fa-file-image"></i>
+                {% else %}
+                    <i class="fa-solid fa-file"></i>
+                {% endif %}
+            </div>
+            <div class="file-info">
+                <a href="/{{ file.filepath }}" target="_blank" class="file-name" title="{{ file.filename }}">
+                    {{ file.filename[:30] }}{% if file.filename|length > 30 %}...{% endif %}
+                </a>
+                <div class="file-meta">
+                    <span class="file-size">{{ (file.file_size / 1024)|round(1) }} KB</span>
+                    <span class="file-date">{{ file.uploaded_at.strftime('%d/%m %H:%M') }}</span>
+                </div>
+            </div>
+            <form method="post" action="/evaluate/{{ evaluation.id }}/control/{{ ctrl.id }}/delete-file/{{ file.id }}" class="file-delete">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit" class="btn-icon btn-danger" title="Eliminar archivo">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </form>
+        </div>
+        {% endfor %}
     </div>
+    {% else %}
+    <div class="no-evidence">
+        <i class="fa-solid fa-cloud-upload-alt"></i>
+        <p>No hay archivos de evidencia cargados</p>
+        <small>Sube PDFs, imágenes, documentos o spreadsheets</small>
+    </div>
+    {% endif %}
+
+    <form method="post" action="/evaluate/{{ evaluation.id }}/control/{{ ctrl.id }}/upload" enctype="multipart/form-data" class="upload-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <div class="upload-area">
+            <i class="fa-solid fa-cloud-upload-alt"></i>
+            <label for="file" class="upload-label">
+                <span class="upload-text">Haz clic para seleccionar archivos</span>
+                <span class="upload-hint">o arrastra archivos aquí</span>
+                <input type="file" id="file" name="file" multiple accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx,.txt" style="display:none">
+            </label>
+            <div class="upload-types">
+                <span class="badge">PDF</span>
+                <span class="badge">DOCX</span>
+                <span class="badge">XLSX</span>
+                <span class="badge">PNG</span>
+                <span class="badge">JPG</span>
+            </div>
+        </div>
+        <div id="file-preview" class="file-preview"></div>
+        <button type="submit" class="btn btn-primary" id="upload-btn" style="display:none;">
+            <i class="fa-solid fa-upload"></i> Subir <span id="file-count">0</span> archivo(s)
+        </button>
+    </form>
+</div>
+
+<style>
+.evidence-section {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: var(--card-bg, #fff);
+    border-radius: 12px;
+    border: 1px solid var(--border-color, #e5e7eb);
+}
+
+.evidence-section h3 {
+    margin: 0 0 1rem 0;
+    color: var(--text-color, #1f2937);
+    font-size: 1.1rem;
+}
+
+.file-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.file-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.file-card:hover {
+    background: #f3f4f6;
+    border-color: #3b82f6;
+}
+
+.file-icon {
+    font-size: 2rem;
+    color: #6b7280;
+    flex-shrink: 0;
+}
+
+.file-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.file-name {
+    display: block;
+    color: #1f2937;
+    text-decoration: none;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 0.25rem;
+}
+
+.file-meta {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.file-delete {
+    flex-shrink: 0;
+}
+
+.no-evidence {
+    text-align: center;
+    padding: 2rem;
+    color: #6b7280;
+}
+
+.no-evidence i {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #9ca3af;
+}
+
+.upload-area {
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    transition: all 0.2s;
+}
+
+.upload-area:hover, .upload-area.dragover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.upload-area i {
+    font-size: 2.5rem;
+    color: #9ca3af;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.upload-label {
+    cursor: pointer;
+    display: block;
+}
+
+.upload-text {
+    display: block;
+    color: #3b82f6;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.upload-hint {
+    display: block;
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.upload-types {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.upload-types .badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    background: #f3f4f6;
+    border-radius: 4px;
+    color: #6b7280;
+}
+
+.file-preview {
+    margin-bottom: 1rem;
+}
+
+.file-preview-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: #f9fafb;
+    border-radius: 6px;
+    margin-bottom: 0.25rem;
+}
+</style>
+
+<script>
+// Drag and drop
+const uploadArea = document.querySelector('.upload-area');
+const fileInput = document.getElementById('file');
+const uploadBtn = document.getElementById('upload-btn');
+const fileCount = document.getElementById('file-count');
+const filePreview = document.getElementById('file-preview');
+
+let selectedFiles = [];
+
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    uploadArea.addEventListener(eventName, preventDefaults, false);
+});
+
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+uploadArea.addEventListener('dragover', () => uploadArea.classList.add('dragover'));
+uploadArea.addEventListener('dragenter', () => uploadArea.classList.add('dragover'));
+uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+uploadArea.addEventListener('drop', handleDrop);
+
+function handleDrop(e) {
+    uploadArea.classList.remove('dragover');
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    handleFiles(files);
+}
+
+fileInput.addEventListener('change', (e) => {
+    handleFiles(e.target.files);
+});
+
+function handleFiles(files) {
+    selectedFiles = [...selectedFiles, ...files];
+    updatePreview();
+}
+
+function updatePreview() {
+    if (selectedFiles.length > 0) {
+        uploadBtn.style.display = 'inline-block';
+        fileCount.textContent = selectedFiles.length;
+        
+        filePreview.innerHTML = '<div style="margin-top:0.5rem">' + 
+            selectedFiles.map((file, idx) => 
+                `<div class="file-preview-item">
+                    <i class="fa-solid fa-file"></i>
+                    <span>${file.name} (${(file.size/1024).toFixed(1)} KB)</span>
+                </div>`
+            ).join('') +
+            '</div>';
+    }
+}
+
+uploadBtn.addEventListener('click', (e) => {
+    if (selectedFiles.length === 0) {
+        e.preventDefault();
+        return;
+    }
+    
+    // Add files to form
+    const dataTransfer = new DataTransfer();
+    selectedFiles.forEach(file => dataTransfer.items.add(file));
+    fileInput.files = dataTransfer.files;
+});
+</script>
 </div>
 
 <div class="eval-nav-bottom">
