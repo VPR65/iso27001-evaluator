@@ -44,6 +44,31 @@
     <div class="score-bar">
         <div class="score-bar-fill" style="width: {{ (score / 5 * 100)|round }}%; background: {% if score >= 4 %}linear-gradient(90deg, #10b981, #34d399){% elif score >= 2.5 %}linear-gradient(90deg, #f59e0b, #fbbf24){% else %}linear-gradient(90deg, #ef4444, #f87171){% endif %}"></div>
     </div>
+    
+    <div class="score-note">
+        <h4><i class="fa-solid fa-info-circle"></i> Acerca del Score de Madurez</h4>
+        <p><strong>¿Cómo se calcula?</strong><br>
+        El Score de Madurez es el <strong>promedio de madurez</strong> de TODOS los controles evaluados en TODAS las evaluaciones del sistema.</p>
+        
+        <p><strong>Escala de Madurez (CMMI):</strong></p>
+        <ul>
+            <li><strong>0</strong> - Sin evaluar o sin respuesta</li>
+            <li><strong>1</strong> - Inicial: Proceso inexistente o ad-hoc</li>
+            <li><strong>2</strong> - Gestionado: Proceso informal pero existente</li>
+            <li><strong>3</strong> - Definido: Proceso documentado y estandarizado</li>
+            <li><strong>4</strong> - Cuantitativamente gestionado: Proceso medido y controlado</li>
+            <li><strong>5</strong> - Optimizado: Mejora continua y optimizacion</li>
+        </ul>
+        
+        <p><strong>Interpretacion del score:</strong></p>
+        <ul>
+            <li><span style="color:#ef4444"><strong>&lt; 2.0</strong></span> - Madurez baja. Requiere atencion inmediata y implementacion de controles basicos.</li>
+            <li><span style="color:#f59e0b"><strong>2.0 - 3.9</strong></span> - Madurez media. Procesos en desarrollo, requiere fortalecer documentacion y controles.</li>
+            <li><span style="color:#10b981"><strong>&gt;= 4.0</strong></span> - Madurez alta. Procesos maduros con medicion y mejora continua.</li>
+        </ul>
+        
+        <p><em><i class="fa-solid fa-lightbulb"></i> Este score representa el estado general de la madurez en seguridad de la informacion de su organizacion basado en las evaluaciones realizadas.</em></p>
+    </div>
 </div>
 {% endif %}
 
@@ -101,4 +126,52 @@
         </div>
     </div>
 </div>
+
+<style>
+.score-note {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.score-note h4 {
+    margin: 0 0 1rem 0;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.score-note h4 i {
+    color: #3b82f6;
+}
+
+.score-note p {
+    margin: 0.75rem 0;
+    color: #475569;
+    line-height: 1.6;
+}
+
+.score-note ul {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+}
+
+.score-note li {
+    margin: 0.35rem 0;
+    color: #475569;
+}
+
+.score-note strong {
+    color: #1e293b;
+}
+
+.score-note em {
+    color: #64748b;
+    font-size: 0.85rem;
+}
+</style>
 {% endblock %}
