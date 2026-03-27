@@ -12,6 +12,7 @@ from app.ai_service import get_ai_service
 from app.database import engine
 from sqlmodel import Session, select
 from app.models import Evaluation, ControlResponse, ControlDefinition, Norma, Client
+from app.config import AI_MODE, AI_MODEL, AVAILABLE_MODELS, AI_LOCAL_URL, AI_LOCAL_MODEL
 
 router = APIRouter(prefix="/api/ai", tags=["ai"])
 
@@ -37,7 +38,7 @@ class GenerateSummaryRequest(BaseModel):
 
 @router.get("/status")
 def ai_status(request: Request):
-    """Check if AI service is configured and available"""
+    """Check if AI service is configured and available (legacy endpoint)"""
     require_auth(request)
     service = get_ai_service()
     return {
@@ -46,6 +47,73 @@ def ai_status(request: Request):
         if service.enabled
         else "Configure NVIDIA_API_KEY para activar IA",
     }
+
+
+@router.get("/status/detailed")
+async def ai_status_detailed(request: Request):
+    """
+    Get detailed AI availability status with fallback logic.
+    Returns current AI provider (Ollama → NVIDIA → None) with visual indicators.
+    """
+    require_auth(request)
+    service = get_ai_service()
+    status = await service.get_ai_status()
+    return status
+
+
+@router.get("/models")
+def get_available_models(request: Request):
+    """Get list of available AI models and current configuration"""
+    require_auth(request)
+    return {
+        "models": AVAILABLE_MODELS,
+        "current_model": AI_MODEL,
+        "ai_mode": AI_MODE,
+        "local_url": AI_LOCAL_URL,
+        "local_model": AI_LOCAL_MODEL,
+    }
+
+
+class SetModelRequest(BaseModel):
+    model: str
+    ai_mode: Optional[str] = None
+
+
+@router.post("/set-model")
+def set_ai_model(request_data: SetModelRequest, request: Request):
+    """Set the current AI model to use"""
+    require_auth(request)
+
+    model_id = request_data.model
+    ai_mode = request_data.ai_mode or AI_MODE
+
+    valid_models = [m["id"] for m in AVAILABLE_MODELS]
+    if model_id not in valid_models:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Modelo no válido. Modelos disponibles: {', '.join(valid_models)}",
+        )
+
+    import os
+    from dotenv import set_key
+
+    try:
+        set_key(".env", "AI_MODEL", model_id)
+        if ai_mode:
+            set_key(".env", "AI_MODE", ai_mode)
+
+        return JSONResponse(
+            content={
+                "success": True,
+                "message": f"Modelo cambiado a {model_id}. Reinicie la servidor para aplicar.",
+                "model": model_id,
+                "ai_mode": ai_mode,
+            }
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error al configurar el modelo: {str(e)}"
+        )
 
 
 @router.post("/analyze-control")

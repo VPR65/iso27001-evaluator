@@ -5,6 +5,106 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 
 ---
 
+## [v1.7.4] - 2026-03-27
+
+### Agregado - Sistema de IA On-Demand con Fallback Automático
+
+#### Detección Inteligente de IA
+- **Detección automática** de disponibilidad de Ollama y NVIDIA
+- **Fallback en cascada**: Ollama (Local) → NVIDIA (Cloud) → Sin IA
+- **Polling cada 5 segundos** para verificar estado de IA
+- **Indicadores visuales** en sidebar (siempre visible)
+- **Indicadores en páginas** de evaluación
+
+#### Estados de IA
+- **🟢 IA Local (Ollama)**: 100% local, privacidad total
+- **🟡 IA Externa (NVIDIA)**: API externa, más rápido
+- **🔴 Sin IA**: Evaluación manual, guarda para recuperar después
+
+#### Endpoints Nuevos
+- `GET /api/ai/status/detailed` - Estado detallado con fallback
+- Método asíncrono `check_ollama_availability()` - Verifica Ollama
+- Método `check_nvidia_availability()` - Verifica NVIDIA
+- Método `get_ai_status()` - Estado completo con fallback
+
+#### Archivos Nuevos
+- `app/static/js/ai_status.js` - Lógica de polling y UI
+- `app/static/css/ai_status.css` - Estilos de indicadores
+- `docs/AUDITOR_OFFLINE_GUIDE.md` - Guía para auditores
+
+### Modificado
+- **app/ai_service.py** - Agregados métodos de verificación de disponibilidad
+- **app/routes/ai_routes.py** - Endpoint `/status/detailed`
+- **app/templates/base.html** - Carga de CSS/JS de AI status
+- **docs/CHANGELOG.md** - Esta entrada
+
+### Técnico
+- Cache de 5 segundos para verificación de Ollama
+- Detección asíncrona para no bloquear la UI
+- Eventos personalizados: `ai-status-changed`
+- Fallback automático sin intervención del usuario
+
+### Documentación
+- **AUDITOR_OFFLINE_GUIDE.md** - Guía completa para modo offline
+- **CHANGELOG.md** - Esta entrada
+
+### Backup
+- Backup: `backups/backup_full_20260327_193032.zip`
+
+---
+
+## [v1.7.3] - 2026-03-27
+
+### Agregado - Configuración de IA en GUI
+
+#### Selector de Modelos de IA
+- **Nueva página de administración** `/admin/ai-config` para configuración de IA
+- **Soporte multi-proveedor**: NVIDIA NIM (cloud) y Ollama (local)
+- **8 modelos disponibles**:
+  - NVIDIA: Llama 3.1 70B, Llama 3.1 405B, Mistral Large 2, Mixtral 8x22B, Gemma 2 27B
+  - Ollama: Llama 3.2, Mistral 7B, Llama 3.1
+- **Cambio dinámico** del modelo sin reiniciar el servidor
+- **Interfaz visual** con estado del servicio y lista de modelos
+
+#### Endpoints Nuevos
+- `GET /api/ai/models` - Lista modelos disponibles y configuración actual
+- `POST /api/ai/set-model` - Configura el modelo de IA a utilizar
+- `GET /admin/ai-config` - Interfaz de administración de IA
+
+#### Configuración Flexible
+- Variables de ambiente en `.env`:
+  - `AI_MODE` - Proveedor (nvidia | ollama)
+  - `AI_MODEL` - Modelo específico a usar
+  - `AI_LOCAL_URL` - URL de Ollama local
+  - `AI_LOCAL_MODEL` - Modelo local por defecto
+- Soporte para cambio en tiempo de ejecución
+
+### Modificado
+- **app/config.py** - Agregadas configuraciones de IA multi-proveedor
+- **app/ai_service.py** - Soporte para NVIDIA y Ollama, modelo configurable
+- **app/routes/ai_routes.py** - Endpoints para gestión de modelos
+- **app/routes/admin.py** - Ruta para configuración de IA
+- **app/templates/base.html** - Enlace a "Configuración IA" en menú admin
+- **.env.example** - Documentación de variables de IA
+
+### Técnico
+- Clase `AIService` ahora soporta múltiples proveedores
+- Función `_get_model_to_use()` decide el modelo según configuración
+- Template `admin/ai_config.html` - Interfaz completa de configuración
+- Validación de modelos disponibles antes de guardar
+
+### Seguridad
+- Solo superadmin puede acceder a configuración de IA
+- CSRF protection en cambio de modelo
+- Auditoría de cambios de configuración
+
+### Documentación
+- **AI_STRATEGY.md** - Estrategia de IA actualizada
+- **PROJECT_STATUS.md** - Estado del proyecto actualizado
+- **.env.example** - Variables de IA documentadas
+
+---
+
 ## [v1.5.0] - 2026-03-26
 
 ### Agregado - Sprint 1: Módulo de Evaluación Avanzada
@@ -251,3 +351,37 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 - **Scripts de gestion** - backup.py (backup/restore/list), rollback.py (Git-based)
 - **Docker y docker-compose** - Despliegue en contenedor
 - **Documentacion inicial** - README.md, AGENTS.md
+
+## [v2.0.0] - 2026-03-27
+
+### Documentacion Maestra
+- **PROJECT_DEFINITION.md** - Documento maestro consolidado con:
+  - Los 4 ejercicios completados (Cimentacion, Evaluacion Avanzada, Reportes, Seguridad)
+  - Arquitectura hibrida multi-modo (Cloud Demo, Cloud Seguro, Hibrido, On-Premise)
+  - 4 configuraciones detalladas con variables de ambiente especificas
+  - Matriz de decision por tipo de cliente
+  - Comparativa de escenarios (Demo, Enterprise, On-Premise)
+  - Roadmap de implementacion por fases
+  - Analisis de riesgos y mitigacion
+  - Criterios de exito del proyecto
+
+
+## [v1.7.2] - 2026-03-27
+
+### Corregido
+- **Encripcion de evidencias** - Agregada funcionalidad de encriptación opcional
+  - Variable de ambiente `ENCRYPT_EVIDENCE` (default: false)
+  - Encriptación automática de archivos subidos si está habilitado
+  - Fallback automático si falla la encriptación
+  - Soporte para desencriptación bajo demanda
+
+### Documentación
+- **BACKUP_RECOVERY.md** - Actualizado con procedimientos de encriptación
+- **CONFIG_REGISTRY.md** - Agregada variable `ENCRYPT_EVIDENCE`
+- **SECURITY.md** - Documentación de encriptación de evidencias
+
+### Técnico
+- `app/encryption.py` - Servicio de encriptación Fernet
+- `app/routes/evaluate.py` - Integración con encriptación
+- Backup: `backups/backup_full_20260327_122050.zip`
+

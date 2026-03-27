@@ -1,0 +1,4 @@
+{
+  "model": "nvidia/qwen/qwen3-coder-480b-a35b-instruct",
+  "provider": "nvidia"
+}

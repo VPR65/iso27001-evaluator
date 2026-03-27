@@ -930,19 +930,35 @@ def debug_reset_all(request: Request):
             # No borrar usuarios ni clientes base (los recrea el seed)
             session.commit()
 
-        # Recrear tablas y seed
-        create_db_and_tables()
-        run_seed()
+            # Recrear tablas y seed
+            create_db_and_tables()
+            run_seed()
 
-        return JSONResponse(
-            status_code=200,
-            content={
-                "success": True,
-                "message": "Base de datos reseteada completamente. Seed ejecutado.",
-            },
-        )
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "success": True,
+                    "message": "Base de datos reseteada completamente. Seed ejecutado.",
+                },
+            )
     except Exception as e:
         return JSONResponse(
             status_code=500,
             content={"success": False, "error": str(e)},
         )
+
+
+@router.get("/ai-config", response_class=HTMLResponse)
+def ai_configuration(request: Request):
+    """Panel de configuración de Inteligencia Artificial"""
+    session_id = request.cookies.get("session_id")
+    user = get_current_user(session_id)
+    if not user:
+        return RedirectResponse(url="/login")
+    if user.role != UserRole.SUPERADMIN:
+        return RedirectResponse(url="/dashboard")
+
+    return render(
+        request,
+        "admin/ai_config.html",
+    )

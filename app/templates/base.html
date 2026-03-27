@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{{ title or 'ISO 27001 Evaluator' }}{% endblock %} | ISO27001</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/style.css">
-    <script src="https://unpkg.com/htmx.org@1.9.10/dist/htmx.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}{{ title or 'ISO 27001 Evaluator' }}{% endblock %} | ISO27001</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/style.css">
+<link rel="stylesheet" href="/static/css/ai_status.css">
+<script src="https://unpkg.com/htmx.org@1.9.10/dist/htmx.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     {% if user %}
@@ -54,21 +55,25 @@
                     <i class="fa-solid fa-layer-group"></i>
                     <span>Sprints</span>
                 </a>
-                {% if user.role.value == 'superadmin' %}
-                <div class="nav-divider"></div>
-                <a href="/admin/clients" class="nav-item {% if '/admin/clients' in request.url.path %}active{% endif %}">
-                    <i class="fa-solid fa-building"></i>
-                    <span>Clientes</span>
-                </a>
-                <a href="/admin/evaluations" class="nav-item {% if '/admin/evaluations' in request.url.path %}active{% endif %}">
-                    <i class="fa-solid fa-clipboard-check"></i>
-                    <span>Evaluaciones</span>
-                </a>
-                <a href="/admin/all-users" class="nav-item {% if '/admin/all-users' in request.url.path %}active{% endif %}">
-                    <i class="fa-solid fa-users"></i>
-                    <span>Usuarios</span>
-                </a>
-                {% endif %}
+{% if user.role.value == 'superadmin' %}
+<div class="nav-divider"></div>
+<a href="/admin/clients" class="nav-item {% if '/admin/clients' in request.url.path %}active{% endif %}">
+<i class="fa-solid fa-building"></i>
+<span>Clientes</span>
+</a>
+<a href="/admin/evaluations" class="nav-item {% if '/admin/evaluations' in request.url.path %}active{% endif %}">
+<i class="fa-solid fa-clipboard-check"></i>
+<span>Evaluaciones</span>
+</a>
+<a href="/admin/all-users" class="nav-item {% if '/admin/all-users' in request.url.path %}active{% endif %}">
+<i class="fa-solid fa-users"></i>
+<span>Usuarios</span>
+</a>
+<a href="/admin/ai-config" class="nav-item {% if '/admin/ai-config' in request.url.path %}active{% endif %}">
+<i class="fa-solid fa-robot"></i>
+<span>Configuración IA</span>
+</a>
+{% endif %}
                 <div class="nav-divider"></div>
                 <a href="/import-export/import" class="nav-item {% if '/import' in request.url.path %}active{% endif %}">
                     <i class="fa-solid fa-file-import"></i>
@@ -131,9 +136,15 @@
         updateDateTime();
         setInterval(updateDateTime, 1000);
 
-        function toggleSidebar() {
-            document.querySelector('.app-layout').classList.toggle('sidebar-collapsed');
-        }
-    </script>
+function toggleSidebar() {
+    document.querySelector('.app-layout').classList.toggle('sidebar-collapsed');
+}
+
+// Initialize AI status monitor
+if (typeof initAIStatusMonitor === 'function') {
+    // Script loaded, will auto-initialize
+}
+</script>
+<script src="/static/js/ai_status.js" defer></script>
 </body>
 </html>

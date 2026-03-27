@@ -14,9 +14,11 @@ from app.models import (
 from app.auth import get_current_user, require_no_vista_solo
 from app.database import engine
 from app.security import verify_csrf_token
+from app.encryption import encrypt_file, is_encrypted
 from pathlib import Path
 import hashlib
 import aiofiles
+import os
 
 router = APIRouter(prefix="/evaluate/{evaluation_id}", tags=["evaluate"])
 

@@ -1,30 +1,210 @@
 """
-AI Service - NVIDIA NIM Integration
+AI Service - Multi-Provider Integration (NVIDIA, Ollama, Anthropic, OpenAI)
 Provides AI-powered analysis for ISO 27001 evaluations
+Supports on-demand AI with automatic fallback: Ollama → NVIDIA → None
 """
 
 import os
 import json
-from typing import Optional
+from typing import Optional, Dict, Any
 from datetime import datetime
 
-NVIDIA_API_KEY = os.environ.get("NVIDIA_API_KEY", "")
-NVIDIA_API_URL = "https://integrate.api.nvidia.com/v1"
+from app.config import (
+    AI_MODE,
+    AI_MODEL,
+    AI_LOCAL_URL,
+    AI_LOCAL_MODEL,
+    NVIDIA_API_KEY,
+    AVAILABLE_MODELS,
+)
 
-DEFAULT_MODEL = "meta/llama-3.1-70b-instruct"
+NVIDIA_API_URL = "https://integrate.api.nvidia.com/v1"
 
 
 class AIService:
-    """Service for AI-powered evaluation analysis"""
+    """Service for AI-powered evaluation analysis with on-demand fallback"""
 
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
         self.api_key = api_key or NVIDIA_API_KEY
-        self.enabled = bool(self.api_key)
+        self.ai_mode = AI_MODE
+        self.model = model or AI_MODEL
+        self.local_url = AI_LOCAL_URL
+        self.local_model = AI_LOCAL_MODEL
+        self.enabled = bool(self.api_key) if self.ai_mode == "nvidia" else True
+        self._availability_cache = None
+        self._cache_timestamp = None
+
+    def _get_model_to_use(self, model: Optional[str] = None) -> str:
+        """Get the model to use based on AI mode"""
+        if model:
+            return model
+        if self.ai_mode == "ollama":
+            return self.local_model
+        return self.model
+
+    async def check_ollama_availability(self) -> Dict[str, Any]:
+        """
+        Check if Ollama is available and responding.
+        Returns dict with availability status, models, and error message if any.
+        Caches result for 5 seconds to avoid excessive polling.
+        """
+        import time
+
+        current_time = time.time()
+
+        # Return cached result if less than 5 seconds old
+        if (
+            self._availability_cache
+            and self._cache_timestamp
+            and current_time - self._cache_timestamp < 5
+        ):
+            return self._availability_cache
+
+        try:
+            import httpx
+
+            async with httpx.AsyncClient(timeout=2.0) as client:
+                response = await client.get(f"{self.local_url}/api/tags")
+                if response.status_code == 200:
+                    data = response.json()
+                    models = data.get("models", [])
+                    result = {
+                        "available": True,
+                        "models": models,
+                        "model_count": len(models),
+                        "error": None,
+                        "provider": "ollama",
+                    }
+                    self._availability_cache = result
+                    self._cache_timestamp = current_time
+                    return result
+                else:
+                    result = {
+                        "available": False,
+                        "models": [],
+                        "model_count": 0,
+                        "error": f"Ollama returned status {response.status_code}",
+                        "provider": "ollama",
+                    }
+                    self._availability_cache = result
+                    self._cache_timestamp = current_time
+                    return result
+        except Exception as e:
+            result = {
+                "available": False,
+                "models": [],
+                "model_count": 0,
+                "error": str(e),
+                "provider": "ollama",
+            }
+            self._availability_cache = result
+            self._cache_timestamp = current_time
+            return result
+
+    async def check_nvidia_availability(self) -> Dict[str, Any]:
+        """
+        Check if NVIDIA NIM API is available.
+        Returns dict with availability status and error message if any.
+        """
+        if not self.api_key:
+            return {
+                "available": False,
+                "error": "NVIDIA API key not configured",
+                "provider": "nvidia",
+            }
+
+        try:
+            import httpx
+
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+            }
+
+            # Simple test call to NVIDIA API
+            test_payload = {
+                "model": self.model,
+                "messages": [{"role": "user", "content": "test"}],
+                "max_tokens": 1,
+            }
+
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                response = await client.post(
+                    f"{NVIDIA_API_URL}/chat/completions",
+                    headers=headers,
+                    json=test_payload,
+                )
+
+                if response.status_code in [200, 400]:  # 400 is OK for test
+                    return {"available": True, "error": None, "provider": "nvidia"}
+                else:
+                    return {
+                        "available": False,
+                        "error": f"NVIDIA API returned status {response.status_code}",
+                        "provider": "nvidia",
+                    }
+        except Exception as e:
+            return {"available": False, "error": str(e), "provider": "nvidia"}
+
+    async def get_ai_status(self) -> Dict[str, Any]:
+        """
+        Get comprehensive AI availability status with fallback logic.
+        Priority: Ollama (Local) → NVIDIA (Cloud) → None
+
+        Returns:
+            Dict with status, icon, model, message, and privacy info
+        """
+        # Try Ollama first (local preferred)
+        ollama_status = await self.check_ollama_availability()
+        if ollama_status["available"]:
+            return {
+                "status": "local",
+                "icon": "🟢",
+                "model": self.local_model,
+                "message": "IA Local Activa",
+                "privacy": "100% local - Datos no salen",
+                "provider": "ollama",
+                "available": True,
+            }
+
+        # Try NVIDIA as fallback
+        if self.api_key:
+            nvidia_status = await self.check_nvidia_availability()
+            if nvidia_status["available"]:
+                return {
+                    "status": "nvidia",
+                    "icon": "🟡",
+                    "model": self.model,
+                    "message": "IA Externa (NVIDIA)",
+                    "privacy": "⚠️ Datos se envían a NVIDIA",
+                    "provider": "nvidia",
+                    "available": True,
+                }
+
+        # No AI available
+        return {
+            "status": "none",
+            "icon": "🔴",
+            "model": "Ninguno",
+            "message": "Sin IA disponible",
+            "privacy": "Evaluación manual",
+            "provider": "none",
+            "available": False,
+            "instructions": "Inicia Ollama con: ollama serve",
+        }
 
     def _call_nvidia_api(
-        self, messages: list[dict], model: str = DEFAULT_MODEL, temperature: float = 0.3
+        self,
+        messages: list[dict],
+        model: Optional[str] = None,
+        temperature: float = 0.3,
     ) -> str:
-        """Make a call to NVIDIA NIM API"""
+        """Make a call to NVIDIA NIM API or local Ollama"""
+        model_to_use = self._get_model_to_use(model)
+
+        if self.ai_mode == "ollama":
+            return self._call_ollama(messages, model_to_use, temperature)
+
         if not self.enabled:
             raise ValueError("NVIDIA API key not configured")
 
@@ -36,7 +216,7 @@ class AIService:
         }
 
         payload = {
-            "model": model,
+            "model": model_to_use,
             "messages": messages,
             "temperature": temperature,
             "max_tokens": 2048,
@@ -51,6 +231,28 @@ class AIService:
             response.raise_for_status()
             data = response.json()
             return data["choices"][0]["message"]["content"]
+
+    def _call_ollama(
+        self, messages: list[dict], model: str, temperature: float = 0.3
+    ) -> str:
+        """Make a call to local Ollama instance"""
+        import httpx
+
+        payload = {
+            "model": model,
+            "messages": messages,
+            "stream": False,
+            "options": {"temperature": temperature},
+        }
+
+        with httpx.Client(timeout=60.0) as client:
+            response = client.post(
+                f"{self.local_url}/api/chat",
+                json=payload,
+            )
+            response.raise_for_status()
+            data = response.json()
+            return data.get("message", {}).get("content", "")
 
     def analyze_control_response(
         self,

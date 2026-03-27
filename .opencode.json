@@ -1,0 +1,9 @@
+{
+  "model": "nvidia/qwen/qwen3-coder-480b-a35b-instruct",
+  "provider": "nvidia",
+  "models": {
+    "default": "nvidia/qwen/qwen3-coder-480b-a35b-instruct",
+    "cli": "nvidia/qwen/qwen3-coder-480b-a35b-instruct",
+    "gui": "nvidia/qwen/qwen3-coder-480b-a35b-instruct"
+  }
+}

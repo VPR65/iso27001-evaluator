@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% block title %}Configuración de IA{% endblock %}
+
+{% block content %}
+<h1><i class="fa-solid fa-robot"></i> Configuración de Inteligencia Artificial</h1>
+
+<div id="ai-status" class="section-card">
+    <div class="section-header">
+        <h3><i class="fa-solid fa-info-circle"></i> Estado del Servicio</h3>
+    </div>
+    <div class="section-body">
+        <div id="status-content">Cargando...</div>
+    </div>
+</div>
+
+<div class="section-card">
+    <div class="section-header">
+        <h3><i class="fa-solid fa-brain"></i> Modelo de IA</h3>
+    </div>
+    <div class="section-body">
+        <p>Seleccione el modelo de IA que desea utilizar para las evaluaciones:</p>
+        
+        <form id="model-form" class="create-user-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            
+            <div class="form-row-2">
+                <div>
+                    <label><strong>Proveedor de IA:</strong></label>
+                    <select id="ai-mode" name="ai_mode" required onchange="updateModelOptions()">
+                        <option value="nvidia" selected>NVIDIA NIM (Cloud)</option>
+                        <option value="ollama">Ollama (Local)</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label><strong>Modelo:</strong></label>
+                    <select id="ai-model" name="model" required>
+                        <!-- Se llena dinámicamente -->
+                    </select>
+                </div>
+            </div>
+            
+            <div style="margin-top: 1rem;">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-save"></i> Guardar Configuración
+                </button>
+            </div>
+        </form>
+        
+        <div id="save-message" style="margin-top: 1rem;"></div>
+    </div>
+</div>
+
+<div class="section-card">
+    <div class="section-header">
+        <h3><i class="fa-solid fa-book"></i> Información</h3>
+    </div>
+    <div class="section-body">
+        <h4>Modos de Operación:</h4>
+        <ul>
+            <li><strong>NVIDIA NIM:</strong> Modelos en la nube de NVIDIA. Requiere API key.</li>
+            <li><strong>Ollama:</strong> Modelos locales. Requiere Ollama instalado en el servidor.</li>
+        </ul>
+        
+        <h4>Modelos Recomendados:</h4>
+        <ul>
+            <li><strong>Para evaluación ISO 27001:</strong> Llama 3.1 70B o Mistral Large 2</li>
+            <li><strong>Para privacidad total:</strong> Ollama local con Llama 3.2</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+let allModels = [];
+let currentMode = 'nvidia';
+
+// Cargar estado actual
+async function loadAIStatus() {
+    try {
+        const response = await fetch('/api/ai/status');
+        const status = await response.json();
+        
+        document.getElementById('status-content').innerHTML = `
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <i class="fa-solid fa-${status.enabled ? 'check-circle' : 'exclamation-circle'}" 
+                   style="color: ${status.enabled ? 'var(--success)' : 'var(--warning)'}; font-size: 2rem;"></i>
+                <div>
+                    <strong>${status.enabled ? 'IA Habilitada' : 'IA No Configurada'}</strong>
+                    <p style="margin: 0.5rem 0 0 0; color: var(--text-light);">${status.message}</p>
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        document.getElementById('status-content').innerHTML = 
+            '<p style="color: var(--error);">Error al cargar el estado: ' + error.message + '</p>';
+    }
+}
+
+// Cargar modelos disponibles
+async function loadModels() {
+    try {
+        const response = await fetch('/api/ai/models');
+        const data = await response.json();
+        
+        allModels = data.models || [];
+        currentMode = data.ai_mode || 'nvidia';
+        const currentModel = data.current_model || '';
+        
+        document.getElementById('ai-mode').value = currentMode;
+        updateModelOptions(currentModel);
+    } catch (error) {
+        console.error('Error al cargar modelos:', error);
+    }
+}
+
+// Actualizar opciones de modelos según el modo
+function updateModelOptions(selectedModel = '') {
+    const mode = document.getElementById('ai-mode').value;
+    const modelSelect = document.getElementById('ai-model');
+    
+    modelSelect.innerHTML = '';
+    
+    const filteredModels = allModels.filter(m => {
+        if (mode === 'ollama') {
+            return m.provider === 'Ollama';
+        }
+        return m.provider === 'NVIDIA';
+    });
+    
+    filteredModels.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model.id;
+        option.textContent = model.name;
+        if (selectedModel && model.id === selectedModel) {
+            option.selected = true;
+        }
+        modelSelect.appendChild(option);
+    });
+    
+    if (filteredModels.length > 0 && !selectedModel) {
+        modelSelect.value = filteredModels[0].id;
+    }
+}
+
+// Guardar configuración
+document.getElementById('model-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const model = document.getElementById('ai-model').value;
+    const aiMode = document.getElementById('ai-mode').value;
+    const messageDiv = document.getElementById('save-message');
+    
+    messageDiv.innerHTML = '<p>Cargando...</p>';
+    
+    try {
+        const response = await fetch('/api/ai/set-model', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ model, ai_mode: aiMode }),
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+            messageDiv.innerHTML = `
+                <div class="success-message">
+                    <i class="fa-solid fa-check-circle"></i>
+                    ${result.message}
+                </div>
+            `;
+            loadAIStatus();
+        } else {
+            messageDiv.innerHTML = `
+                <div class="error-message">
+                    <i class="fa-solid fa-exclamation-circle"></i>
+                    Error: ${result.detail || 'Error desconocido'}
+                </div>
+            `;
+        }
+    } catch (error) {
+        messageDiv.innerHTML = `
+            <div class="error-message">
+                <i class="fa-solid fa-exclamation-circle"></i>
+                Error: ${error.message}
+            </div>
+        `;
+    }
+});
+
+// Inicializar
+loadAIStatus();
+loadModels();
+</script>
+{% endblock %}
