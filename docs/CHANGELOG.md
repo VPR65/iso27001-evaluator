@@ -5,35 +5,56 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 
 ---
 
-## [v1.4.1] - 2026-03-26
+## [v1.5.0] - 2026-03-26
 
-### Agregado
-- **Panel Admin - Evaluaciones** - Mejoras en la tabla de gestion:
-  - Columna "% Avance" con barra de progreso visual (colores segun nivel)
-  - Formato "X/Y" en columna de respuestas
-  - Boton verde "play" para retomar/reanudar evaluaciones
-  - Calculo automatico de porcentaje basado en total de controles
+### Agregado - Sprint 1: Módulo de Evaluación Avanzada
 
-### Corregido
-- **Documentacion** - Eliminadas todas las referencias obsoletas a SQLite
-  - Actualizado a PostgreSQL/Neon.tech en todos los docs
-  - Arquitectura 100% PostgreSQL
+#### Carga Múltiple de Evidencias
+- Input de archivos múltiple con atributo `multiple`
+- Drag & drop para subir archivos
+- Vista previa de archivos seleccionados antes de subir
+- Grid responsive de archivos con iconos por tipo (PDF, DOCX, XLSX, PNG, JPG)
+- Eliminación individual de archivos con confirmación
+- Contador de archivos y tamaño total
 
-### Corregido
-- **Eliminacion de clientes/usuarios/evaluaciones** - Cambiado de modal a formularios inline con confirmacion via prompt()
-  - Resuelve error "405 Method Not Allowed" que ocurria con los modales
-  - Confirmacion de password obligatoria antes de eliminar
+#### Historial de Cambios (Audit Trail)
+- Endpoint GET `/evaluate/{id}/control/{ctrl}/history` para ver auditoría
+- Modal de visualización de historial con fecha, usuario y acción
+- Log de auditoría mejorado: muestra cambios de madurez (antes -> después)
+- Auditoría de cambios en notas y justificaciones
+- Diseño timeline con colores por acción
 
-### Corregido
-- **ISO 27001:2022 Controles** - Separacion en 4 grupos segun normativa actualizada:
-  - Controles Organizacionales (A.5): 37 controles
-  - Controles de Personas (A.6): 8 controles
-  - Controles Físicos (A.7): 14 controles
-  - Controles Tecnológicos (A.8): 34 controles
-  - Total: 93 controles (ISO/IEC 27001:2022)
+#### Plantillas de Respuestas Predefinidas
+- Modelo `ResponseTemplate` con categorías (general, compliance, evidence, na)
+- 5 plantillas precargadas:
+  - Política documentada disponible
+  - Evidencia parcial - En implementación
+  - Sin evidencia documentada
+  - Control no aplica - Justificación requerida
+  - Cumplimiento total verificado
+- Selector de plantillas en formulario de evaluación
+- Autocompletado de madurez, notas y justificación
+- Endpoints: `/templates` (listar), `/templates/new` (crear), `/templates/{id}/delete`
+- Gestión de plantillas por superadmin
+
+### Modificado
+- **docs/ROADMAP.md** - Agregadas funcionalidades 3.1, 3.2, 3.3 como completadas
+- **docs/CHANGELOG.md** - Esta entrada
+- **app/models.py** - Agregado ResponseTemplate y relación User.templates
+
+### Técnico
+- `app/routes/templates.py` - Nuevo módulo de gestión de plantillas
+- `app/routes/evaluate.py` - Agregado endpoint de historial
+- `app/templates/evaluate/control.html` - Selector de plantillas + modal de historial
+- `app/seed.py` - Inicialización de plantillas en seed
 
 ### Tests
-- **70 tests automatizados** - Suite completa pasando
+- **70 tests automatizados** - Todos pasando
+- Nuevos tests manuales para carga múltiple, historial y plantillas
+
+---
+
+## [v1.4.1] - 2026-03-26
 
 ---
 
