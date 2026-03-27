@@ -136,6 +136,10 @@ class User(SQLModel, table=True):
     sessions: list["Session"] = Relationship(
         back_populates="user", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
     )
+    templates: list["ResponseTemplate"] = Relationship(
+        back_populates="creator",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    )
 
 
 # === SESSION ===
@@ -426,6 +430,30 @@ class SprintTask(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     backlog_item: Optional[BacklogItem] = Relationship(back_populates="tasks")
+
+
+# === RESPONSE TEMPLATE (Plantillas de Respuestas) ===
+class ResponseTemplate(SQLModel, table=True):
+    __tablename__ = "response_templates"
+
+    id: Optional[str] = Field(
+        default_factory=lambda: str(uuid.uuid4()), primary_key=True
+    )
+    name: str  # Nombre descriptivo: "Política documentada", "Sin evidencia"
+    control_code: Optional[str] = None  # Código de control específico (opcional)
+    norma_code: Optional[str] = None  # Norma asociada (ISO27001, ITIL4, etc.)
+    maturity: int = 0  # Nivel de madurez sugerido
+    justification: Optional[str] = None  # Justificación predefinida
+    notes: str = ""  # Notas/respuesta estándar
+    is_na: bool = False  # Si es para marcar como N/A
+    category: str = "general"  # general, compliance, evidence, na
+    created_by: str = Field(foreign_key="users.id")
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: Optional[datetime] = None
+
+    creator: Optional[User] = Relationship(
+        back_populates="templates", sa_relationship_kwargs={"lazy": "joined"}
+    )
 
 
 # === AUDIT LOG ===

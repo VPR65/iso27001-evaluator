@@ -75,7 +75,7 @@ from app.routes import (
     import_export,
 )
 from app.routes import documents, rfcs, sprints, admin, biblioteca
-from app.routes import ai_routes
+from app.routes import ai_routes, templates
 
 app.include_router(auth.router)
 app.include_router(dashboard.router)
@@ -91,6 +91,7 @@ app.include_router(rfcs.router)
 app.include_router(sprints.router)
 app.include_router(admin.router)
 app.include_router(ai_routes.router)
+app.include_router(templates.router)
 
 
 if __name__ == "__main__":

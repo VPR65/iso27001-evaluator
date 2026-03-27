@@ -9,6 +9,7 @@ from app.models import (
     AuditLog,
     User,
     UserRole,
+    ResponseTemplate,
 )
 from app.auth import get_current_user, require_no_vista_solo
 from app.database import engine
@@ -62,29 +63,33 @@ def evaluate_control(request: Request, evaluation_id: str, control_id: str):
             files = session.exec(
                 select(EvidenceFile).where(EvidenceFile.response_id == resp.id)
             ).all()
-        all_controls = session.exec(
-            select(ControlDefinition).order_by(ControlDefinition.code)
-        ).all()
-        ctrl_ids = [c.id for c in all_controls]
-        current_idx = ctrl_ids.index(control_id) if control_id in ctrl_ids else 0
-        prev_ctrl = ctrl_ids[current_idx - 1] if current_idx > 0 else None
-        next_ctrl = (
-            ctrl_ids[current_idx + 1] if current_idx < len(ctrl_ids) - 1 else None
-        )
+    all_controls = session.exec(
+        select(ControlDefinition).order_by(ControlDefinition.code)
+    ).all()
+    ctrl_ids = [c.id for c in all_controls]
+    current_idx = ctrl_ids.index(control_id) if control_id in ctrl_ids else 0
+    prev_ctrl = ctrl_ids[current_idx - 1] if current_idx > 0 else None
+    next_ctrl = ctrl_ids[current_idx + 1] if current_idx < len(ctrl_ids) - 1 else None
 
-        return render(
-            request,
-            "evaluate/control.html",
-            evaluation=evaluation,
-            ctrl=ctrl,
-            response=resp,
-            files=files,
-            maturity_levels=MATURITY_LEVELS,
-            prev_ctrl=prev_ctrl,
-            next_ctrl=next_ctrl,
-            current_idx=current_idx + 1,
-            total=len(ctrl_ids),
-        )
+    # Obtener plantillas disponibles
+    templates = session.exec(
+        select(ResponseTemplate).order_by(ResponseTemplate.name)
+    ).all()
+
+    return render(
+        request,
+        "evaluate/control.html",
+        evaluation=evaluation,
+        ctrl=ctrl,
+        templates=templates,
+        response=resp,
+        files=files,
+        maturity_levels=MATURITY_LEVELS,
+        prev_ctrl=prev_ctrl,
+        next_ctrl=next_ctrl,
+        current_idx=current_idx + 1,
+        total=len(ctrl_ids),
+    )
 
 
 @router.post("/control/{control_id}/save")

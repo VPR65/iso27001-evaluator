@@ -25,6 +25,7 @@
 </div>
 
 <script>
+// Historial
 function openHistory(event) {
     event.preventDefault();
     const modal = document.getElementById('history-modal');
@@ -45,6 +46,53 @@ function openHistory(event) {
 function closeHistory() {
     document.getElementById('history-modal').style.display = 'none';
 }
+
+// Aplicar plantilla
+function applyTemplate(templateId) {
+    if (!templateId) return;
+    
+    const select = document.getElementById('template-select');
+    const option = select.options[select.selectedIndex];
+    
+    if (!option) return;
+    
+    const maturity = option.getAttribute('data-maturity');
+    const notes = option.getAttribute('data-notes');
+    const justification = option.getAttribute('data-justification');
+    const isNa = option.getAttribute('data-is-na') === 'true';
+    
+    // Aplicar valores
+    const maturityRadio = document.querySelector(`input[name="maturity"][value="${maturity}"]`);
+    if (maturityRadio) {
+        maturityRadio.checked = true;
+        maturityRadio.dispatchEvent(new Event('change'));
+    }
+    
+    if (notes) {
+        document.getElementById('notes').value = notes;
+    }
+    
+    if (justification) {
+        document.getElementById('justification').value = justification;
+    }
+    
+    if (isNa) {
+        const naRadio = document.querySelector('input[name="maturity"][value="0"]');
+        if (naRadio) {
+            naRadio.checked = true;
+            naRadio.dispatchEvent(new Event('change'));
+        }
+    }
+    
+    // Limpiar selector
+    select.value = '';
+    
+    // Feedback visual
+    select.parentElement.parentElement.style.borderColor = '#10b981';
+    setTimeout(() => {
+        select.parentElement.parentElement.style.borderColor = '#e5e7eb';
+    }, 1000);
+}
 </script>
 
 <div class="control-info">
@@ -53,10 +101,35 @@ function closeHistory() {
 </div>
 
 <div class="eval-form">
-    <form method="post" action="/evaluate/{{ evaluation.id }}/control/{{ ctrl.id }}/save">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-        <fieldset>
-            <legend>Nivel de Madurez (0-5)</legend>
+<!-- Selector de Plantillas -->
+<div class="template-selector" style="margin-bottom:1.5rem;padding:1rem;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;">
+    <label style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+        <i class="fa-solid fa-file-template" style="color:#3b82f6;"></i>
+        <strong>Aplicar plantilla de respuesta:</strong>
+    </label>
+    <div style="display:flex;gap:0.5rem;align-items:center;">
+        <select id="template-select" style="flex:1;" onchange="applyTemplate(this.value)">
+            <option value="">-- Seleccionar plantilla --</option>
+            {% for t in templates %}
+            <option value="{{ t.id }}" 
+                    data-maturity="{{ t.maturity }}" 
+                    data-notes="{{ t.notes|replace('"', '&quot;') }}" 
+                    data-justification="{{ t.justification|default('', true)|replace('"', '&quot;') }}"
+                    data-is-na="{{ t.is_na }}">
+                {{ t.name }} ({{ t.category }})
+            </option>
+            {% endfor %}
+        </select>
+        <a href="/templates/new" class="btn btn-sm btn-outline" target="_blank">
+            <i class="fa-solid fa-plus"></i> Nueva
+        </a>
+    </div>
+</div>
+
+<form method="post" action="/evaluate/{{ evaluation.id }}/control/{{ ctrl.id }}/save">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <fieldset>
+        <legend>Nivel de Madurez (0-5)</legend>
             {% for level, (name, desc) in maturity_levels.items() %}
             <label class="maturity-option {% if response and response.maturity == level %}selected{% endif %}">
                 <input type="radio" name="maturity" value="{{ level }}" {% if response and response.maturity == level %}checked{% endif %}>

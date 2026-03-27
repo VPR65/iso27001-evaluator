@@ -812,6 +812,19 @@ def seed_data():
         if existing_norms:
             print("Seed ya realizado, verificando controles faltantes...")
 
+            # Inicializar plantillas de respuesta si no existen
+            try:
+                from app.routes.templates import init_templates
+
+                superadmin = session.exec(
+                    select(User).where(User.email == "admin@iso27001.local")
+                ).first()
+                if superadmin:
+                    init_templates(session, superadmin.id)
+                    print(" Plantillas de respuesta inicializadas correctamente.")
+            except Exception as e:
+                print(f" Error al inicializar plantillas: {e}")
+
             # Check and add ITIL4 controls if missing (added after initial seed)
             itil4_norma = session.exec(
                 select(Norma).where(Norma.code == "ITIL4")
