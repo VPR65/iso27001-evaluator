@@ -132,6 +132,11 @@ class User(SQLModel, table=True):
     is_active: bool = Field(default=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
+    # 2FA fields
+    two_factor_enabled: bool = Field(default=False)
+    two_factor_secret: Optional[str] = None  # Secret key for TOTP
+    two_factor_verified: bool = Field(default=False)
+
     client: Optional[Client] = Relationship(back_populates="users")
     sessions: list["Session"] = Relationship(
         back_populates="user", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
