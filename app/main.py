@@ -75,7 +75,14 @@ from app.routes import (
     import_export,
 )
 from app.routes import documents, rfcs, sprints, admin, biblioteca
-from app.routes import ai_routes, templates, reports, comparison, export_excel
+from app.routes import (
+    ai_routes,
+    templates,
+    reports,
+    comparison,
+    export_excel,
+    audit_logs,
+)
 from app.routes import auth_2fa
 
 app.include_router(auth.router)
@@ -97,6 +104,7 @@ app.include_router(reports.router)
 app.include_router(comparison.router)
 app.include_router(export_excel.router)
 app.include_router(auth_2fa.router)
+app.include_router(audit_logs.router)
 
 
 if __name__ == "__main__":
