@@ -21,19 +21,22 @@ El sistema sigue esta jerarquía de disponibilidad:
 ### Estado 🟢: IA Local (Ollama)
 
 **Condiciones:**
-- Ollama instalado y ejecutándose en `localhost:11434`
-- Modelo configurado: `llama3.2` (por defecto)
+- Ollama v0.18.0+ instalado y ejecutándose en `localhost:11434`
+- Modelo configurado: `llama3.1:latest` (por defecto)
+- Modelos disponibles: qwen3.5:0.8b, phi3:mini, phi:latest, llama3.1:latest, qwen2:7b
 
 **Indicadores:**
 - Icono: 🟢
 - Mensaje: "IA Local Activa"
 - Privacidad: "100% local - Datos no salen"
+- Modelo: llama3.1:latest (8.0B Q4_K_M)
 
 **Ventajas:**
 - ✅ Privacidad total
 - ✅ Sin dependencia de internet
 - ✅ Ideal para auditorías in-situ
 - ✅ Cumplimiento ISO 27001 estricto
+- ✅ 5 modelos listos para usar
 
 ---
 
@@ -148,29 +151,52 @@ class AIService:
 # Modo de IA
 AI_MODE=ollama  # o 'nvidia'
 
-# Configuración Ollama
+# Configuración Ollama (Actualizado)
 AI_LOCAL_URL=http://localhost:11434
-AI_LOCAL_MODEL=llama3.2
+AI_LOCAL_MODEL=llama3.1:latest
 
-# Configuración NVIDIA (opcional)
+# Modelos disponibles en tu entorno:
+# - qwen3.5:0.8b (873MB Q8_0)
+# - phi3:mini (3.8B Q4_0)
+# - phi:latest (3B Q4_0)
+# - llama3.1:latest (8.0B Q4_K_M) ← Default
+# - qwen2:7b (7.6B Q4_0)
+
+# Configuración NVIDIA (opcional - fallback)
 NVIDIA_API_KEY=tu_api_key_aqui
 AI_MODEL=meta/llama-3.1-70b-instruct
 ```
 
-### Comandos Útiles
+### Comandos Útiles (Windows)
 
 ```bash
-# Iniciar Ollama
-ollama serve
+# Verificar instalación
+ollama --version
+# Tu versión: 0.18.0
+
+# Iniciar Ollama (PowerShell)
+Start-Process 'C:\Users\vpalma\AppData\Local\Programs\Ollama\ollama.exe' -ArgumentList 'serve' -WindowStyle Hidden
+
+# Iniciar Ollama (CMD)
+start "" "C:\Users\vpalma\AppData\Local\Programs\Ollama\ollama.exe" serve
 
 # Verificar estado
 ollama list
 
-# Probar conexión
-curl http://localhost:11434/api/tags
+# Probar conexión (PowerShell)
+Invoke-WebRequest -Uri 'http://localhost:11434/api/tags' -UseBasicParsing
 
-# Descargar modelo
-ollama pull llama3.2
+# Ver modelos
+ollama list
+
+# Descargar modelo adicional
+ollama pull llama3.1
+
+# Detener Ollama (PowerShell)
+Get-Process ollama -ErrorAction SilentlyContinue | Stop-Process -Force
+
+# Detener Ollama (CMD)
+taskkill /F /IM ollama.exe
 ```
 
 ---
@@ -179,17 +205,18 @@ ollama pull llama3.2
 
 ### Tiempos de Respuesta (promedio)
 
-| Proveedor | Tiempo Respuesta | Privacidad |
-|-----------|-----------------|------------|
-| Ollama Local | 2-10 segundos | 100% local |
-| NVIDIA NIM | 1-3 segundos | ⚠️ Externo |
-| Sin IA | N/A (manual) | 100% local |
+| Proveedor | Tiempo Respuesta | Privacidad | Modelos Disponibles |
+|-----------|-----------------|------------|---------------------|
+| Ollama Local | 2-10 segundos | 100% local | qwen3.5:0.8b, phi3:mini, phi:latest, llama3.1:latest, qwen2:7b |
+| NVIDIA NIM | 1-3 segundos | ⚠️ Externo | Llama 3.1 70B, Mistral Large, etc. |
+| Sin IA | N/A (manual) | 100% local | - |
 
 ### Frecuencia de Monitoreo
 
 - **Polling:** Cada 5 segundos
 - **Cache:** 5 segundos (evita llamadas excesivas)
 - **Impacto:** Mínimo (< 1% CPU)
+- **Tu entorno:** Ollama v0.18.0 en localhost:11434
 
 ---
 
@@ -198,20 +225,27 @@ ollama pull llama3.2
 ### Problema: "Ollama no disponible" constantemente
 
 **Causas:**
-1. Ollama no está instalado
-2. Ollama no está ejecutándose
-3. Puerto 11434 bloqueado
+1. Ollama no está instalado (tu versión: 0.18.0)
+2. Ollama no está ejecutándose en segundo plano
+3. Puerto 11434 bloqueado por firewall
 
 **Solución:**
-```bash
+```powershell
 # Verificar instalación
 ollama --version
+# Debería mostrar: ollama version is 0.18.0
 
-# Iniciar Ollama
-ollama serve
+# Iniciar Ollama (PowerShell - recomendado)
+Start-Process 'C:\Users\vpalma\AppData\Local\Programs\Ollama\ollama.exe' -ArgumentList 'serve' -WindowStyle Hidden
+
+# Iniciar Ollama (CMD)
+start "" "C:\Users\vpalma\AppData\Local\Programs\Ollama\ollama.exe" serve
 
 # Verificar puerto
-netstat -an | grep 11434
+netstat -an | findstr 11434
+
+# Verificar proceso
+Get-Process ollama -ErrorAction SilentlyContinue
 ```
 
 ---
@@ -243,17 +277,21 @@ netstat -an | grep 11434
 
 ### Para Auditores
 
-1. ✅ Iniciar Ollama antes de auditoría
+1. ✅ Iniciar Ollama antes de auditoría: `ollama serve` o PowerShell
 2. ✅ Verificar indicador 🟢 antes de empezar
-3. ✅ Tener backup de NVIDIA API key
-4. ✅ Documentar incidencias de IA
+3. ✅ Verificar modelos: `ollama list` (tienes 5 modelos)
+4. ✅ Tener backup de NVIDIA API key (fallback)
+5. ✅ Documentar incidencias de IA
+6. ✅ Usar modelo predeterminado: llama3.1:latest
 
 ### Para Administradores
 
-1. ✅ Monitorear logs de Ollama
-2. ✅ Actualizar modelos periódicamente
-3. ✅ Verificar espacio en disco
-4. ✅ Backup de configuración de IA
+1. ✅ Monitorear logs de Ollama (v0.18.0)
+2. ✅ Actualizar modelos periódicamente: `ollama pull <modelo>`
+3. ✅ Verificar espacio en disco (~15GB para tus 5 modelos)
+4. ✅ Backup de configuración de IA (.env)
+5. ✅ Mantener Ollama actualizado (actual: 0.18.0)
+6. ✅ Configurar inicio automático en Windows
 
 ---
 

@@ -10,23 +10,39 @@ El sistema tiene 3 estados posibles:
 
 ### 🟢 Estado 1: IA Local Activa (Ollama)
 
-**Indicador:** "🟢 IA Local Activa - llama3.2"
+**Indicador:** "🟢 IA Local Activa - llama3.1:latest"
 
 **Características:**
 - ✅ 100% local - los datos no salen de tu equipo
 - ✅ Privacidad total
 - ✅ Ideal para auditorías in-situ
 - ✅ Sin dependencia de internet
+- ✅ Modelos disponibles: qwen3.5:0.8b, phi3:mini, phi:latest, llama3.1:latest, qwen2:7b
 
 **Requisitos:**
-- Ollama instalado y ejecutándose
+- Ollama instalado (v0.18.0 o superior)
+- Ollama ejecutándose en segundo plano
 - Comando: `ollama serve`
 
 **Uso:**
-1. Inicia Ollama: `ollama serve`
-2. Abre la aplicación
-3. El sistema detecta automáticamente Ollama
-4. Usa las funciones de IA normalmente
+1. Verifica Ollama: `ollama --version`
+2. Inicia Ollama: `ollama serve` (o usa PowerShell: `Get-Process ollama`)
+3. Abre la aplicación
+4. El sistema detecta automáticamente Ollama en `http://localhost:11434`
+5. Usa las funciones de IA normalmente
+
+**Modelos Instalados Actualización:**
+```bash
+# Ver modelos disponibles
+ollama list
+
+# Modelos actuales:
+# - qwen3.5:0.8b (873MB)
+# - phi3:mini (3.8B)
+# - phi:latest (3B)
+# - llama3.1:latest (8.0B)
+# - qwen2:7b (7.6B)
+```
 
 ---
 
@@ -144,11 +160,18 @@ El sistema tiene 3 estados posibles:
 
 ## 🛠️ Comandos Útiles
 
-### Ollama
+### Ollama (Windows)
 
 ```bash
-# Iniciar Ollama
-ollama serve
+# Verificar instalación y versión
+ollama --version
+# Salida típica: ollama version is 0.18.0
+
+# Iniciar Ollama en segundo plano (PowerShell)
+Start-Process 'C:\Users\vpalma\AppData\Local\Programs\Ollama\ollama.exe' -ArgumentList 'serve' -WindowStyle Hidden
+
+# Iniciar Ollama en segundo plano (CMD)
+start "" "C:\Users\vpalma\AppData\Local\Programs\Ollama\ollama.exe" serve
 
 # Verificar estado
 ollama list
@@ -156,24 +179,44 @@ ollama list
 # Ver modelos instalados
 ollama list
 
-# Descargar modelo
-ollama pull llama3.2
+# Descargar modelo nuevo
+ollama pull llama3.1
 
-# Ver logs
+# Ver logs de Ollama
 ollama --debug
 
-# Detener Ollama
+# Detener Ollama (PowerShell)
+Get-Process ollama -ErrorAction SilentlyContinue | Stop-Process -Force
+
+# Detener Ollama (CMD)
 taskkill /F /IM ollama.exe
 ```
 
 ### Verificación de Estado
 
 ```bash
-# Verificar si Ollama responde
-curl http://localhost:11434/api/tags
+# PowerShell - Verificar si Ollama responde
+Invoke-WebRequest -Uri 'http://localhost:11434/api/tags' -UseBasicParsing | Select-Object -ExpandProperty Content
 
-# Ver modelos disponibles
-curl http://localhost:11434/api/tags
+# CMD/PowerShell - Verificar proceso Ollama
+Get-Process ollama -ErrorAction SilentlyContinue
+
+# CMD - Verificar puerto
+netstat -an | findstr 11434
+```
+
+### Comandos Específicos para tu Entorno
+
+```bash
+# Tu versión actual: 0.18.0
+ollama --version
+
+# Tus modelos instalados:
+# qwen3.5:0.8b, phi3:mini, phi:latest, llama3.1:latest, qwen2:7b
+ollama list
+
+# Tu URL de conexión: http://localhost:11434
+# Tu modelo configurado: llama3.1:latest
 ```
 
 ---
