@@ -1,27 +1,143 @@
-version: "3.9"
+# ISO 27001 & ITIL Evaluator - Docker Compose
+# Despliegue completo: App + PostgreSQL + Ollama (IA Local)
+#
+# Uso:
+#   docker-compose up -d                    # Iniciar todos los servicios
+#   docker-compose up -d --profile ollama   # Iniciar con IA local
+#   docker-compose down                     # Detener todos los servicios
+#   docker-compose logs -f                  # Ver logs en tiempo real
+#   docker-compose ps                       # Ver estado de servicios
+#
+# Variables de ambiente requeridas (.env):
+#   - SECRET_KEY (generar aleatoria para producción)
+#   - NVIDIA_API_KEY (opcional, para fallback a NVIDIA NIM)
+
+version: '3.8'
 
 services:
-  app:
-    build: .
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./iso27001.db:/app/iso27001.db
-      - ./uploads:/app/uploads
-      - ./backups:/app/backups
-    environment:
-      - SECRET_KEY=change-this-in-production
-      - DATABASE_URL=sqlite:///./iso27001.db
+  # ============================================
+  # Base de Datos: PostgreSQL
+  # ============================================
+  db:
+    image: postgres:15-alpine
+    container_name: iso27001-db
     restart: unless-stopped
-
-  backup:
-    image: python:3.12-slim
+    environment:
+      POSTGRES_USER: ${DB_USER:-iso27001}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-iso27001_secure_password}
+      POSTGRES_DB: iso27001
     volumes:
-      - ./backups:/app/backups
-      - ./iso27001.db:/app/iso27001.db
-      - ./uploads:/app/uploads
-    working_dir: /app
-    entrypoint: ["python", "scripts/backup.py"]
-    command: ["auto"]
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-iso27001} -d iso27001"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - iso27001-network
+
+  # ============================================
+  # IA Local: Ollama (Perfil Opcional)
+  # ============================================
+  ollama:
+    image: ollama/ollama:latest
+    container_name: iso27001-ollama
+    restart: unless-stopped
+    volumes:
+      - ollama_models:/root/.ollama
+      - ./scripts/ollama_init.sh:/init.sh:ro
+    ports:
+      - "${OLLAMA_PORT:-11434}:11434"
+    environment:
+      - OLLAMA_MODELS=/root/.ollama/models
+    command: >
+      sh -c '/init.sh && ollama serve'
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:11434/api/tags || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - iso27001-network
+    profiles:
+      - ollama  # Solo se inicia si se especifica el perfil: --profile ollama
+
+  # ============================================
+  # Aplicación: ISO 27001 Evaluator
+  # ============================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: iso27001-app
+    restart: unless-stopped
+    environment:
+      # Database
+      DATABASE_URL: postgresql://${DB_USER:-iso27001}:${DB_PASSWORD:-iso27001_secure_password}@db:5432/iso27001
+      
+      # AI Configuration
+      AI_MODE: ${AI_MODE:-ollama}
+      AI_MODEL: ${AI_MODEL:-meta/llama-3.1-70b-instruct}
+      AI_LOCAL_URL: http://ollama:11434
+      AI_LOCAL_MODEL: ${AI_LOCAL_MODEL:-llama3.1:latest}
+      
+      # NVIDIA API (opcional, fallback)
+      NVIDIA_API_KEY: ${NVIDIA_API_KEY:-}
+      
+      # Security
+      SECRET_KEY: ${SECRET_KEY}
+      SESSION_EXPIRE_HOURS: ${SESSION_EXPIRE_HOURS:-8}
+      
+      # Uploads
+      UPLOAD_DIR: /app/uploads
+      MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-10}
+      BACKUP_DIR: /app/backups
+      
+      # Environment
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+    volumes:
+      - app_uploads:/app/uploads
+      - app_backups:/app/backups
+    ports:
+      - "${APP_PORT:-8000}:8000"
     depends_on:
-      - app
+      db:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+        required: false
+    networks:
+      - iso27001-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# ============================================
+# Volúmenes Persistentes
+# ============================================
+volumes:
+  postgres_data:
+    driver: local
+    name: iso27001_postgres_data
+  ollama_models:
+    driver: local
+    name: iso27001_ollama_models
+  app_uploads:
+    driver: local
+    name: iso27001_uploads
+  app_backups:
+    driver: local
+    name: iso27001_backups
+
+# ============================================
+# Red
+# ============================================
+networks:
+  iso27001-network:
+    driver: bridge
+    name: iso27001_network
