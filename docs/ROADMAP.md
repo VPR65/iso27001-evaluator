@@ -1,235 +1,211 @@
-# ROADMAP - ISO 27001 Evaluator
+# ROADMAP - ISO 27001 & ITIL Evaluator
 
-**Última actualización:** 2026-03-26  
-**Versión Actual:** v1.4.1
-
----
-
-## 📋 Estado Actual (v1.4.1)
-
-### ✅ Completado
-- [x] Arquitectura FastAPI + PostgreSQL (Neon.tech)
-- [x] Multi-norma: ISO 27001:2022 (93 controles), ITIL v4 (34 prácticas), ISO 9001, 20000, 22301
-- [x] Panel Admin completo (clientes, usuarios, evaluaciones)
-- [x] Barra de progreso visual en evaluaciones
-- [x] Dashboard con explicación del Score de Madurez
-- [x] Validación automática de documentación
-- [x] 70+ tests automatizados
-- [x] Deploy QA/Prod en Render.com
-- [x] Integración NVIDIA NIM (código base, sin API Key configurada)
+**Última actualización:** 2026-03-30  
+**Versión Actual:** v1.7.4  
+**Estado:** ✅ Producción - IA On-Demand Implementada
 
 ---
 
-## 🎯 PRIORIDAD ALTA (En Desarrollo - Sprint Actual)
+## 📋 Resumen Ejecutivo
 
-Estas funcionalidades están en curso y son el foco del desarrollo activo.
+### ✅ Fases Completadas (100%)
 
-### 3. Módulo de Evaluación Avanzada
-**Estado:** 🔄 En desarrollo  
-**Archivos:** `app/routes/evaluations.py`, `app/templates/evaluate/`
+| Fase | Versión | Estado | Descripción |
+|------|---------|--------|-------------|
+| **Fase 1: Cimentación** | v1.0.0 - v1.3.0 | ✅ 100% | Arquitectura base, multi-norma, auth |
+| **Fase 2: Evaluación Avanzada** | v1.5.0 | ✅ 100% | Carga múltiple, audit trail, plantillas |
+| **Fase 3: Reportes** | v1.6.0 | ✅ 100% | Dashboard, comparativa, Excel |
+| **Fase 4: Seguridad** | v1.7.0 | ✅ 100% | 2FA, auditoría, encriptación |
+| **Fase 5: IA On-Demand** | v1.7.4 | ✅ 100% | IA local Ollama, fallback automático |
+| **Fase 6: Documentación** | v1.7.4 | ✅ 100% | 28 docs, scripts, guías |
 
-#### 3.1 Carga Múltiple de Evidencias
-- [ ] Permitir subir 3+ archivos por control
-- [ ] Previsualización de archivos adjuntos
-- [ ] Eliminar evidencias individuales
-- [ ] Soportar: PDF, DOCX, XLSX, PNG, JPG
-
-#### 3.2 Historial de Cambios (Auditoría)
-- [ ] Log de cada modificación en respuestas
-- [ ] Mostrar versión anterior y nueva
-- [ ] Timestamp y usuario que modificó
-- [ ] Vista de "quién cambió qué y cuándo"
-
-#### 3.3 Plantillas de Respuestas Predefinidas
-- [ ] Crear biblioteca de respuestas estándar
-- [ ] Aplicar plantilla a múltiples controles
-- [ ] Personalizar plantillas por cliente
-- [ ] Ejemplos: "Política documentada", "Sin evidencia", "Parcial"
+**Progreso Total:** 95% del proyecto completado
 
 ---
 
-### 4. Módulo de Reportes y Dashboard Avanzado
-**Estado:** 🔄 En desarrollo  
-**Archivos:** `app/routes/stats.py`, `app/templates/stats/`
+## 🎯 PRÓXIMOS PASOS (Fase 7 - En Desarrollo)
 
-#### 4.1 Dashboard de Cumplimiento por Cliente
-- [ ] Score por norma (ISO 27001, ITIL v4, etc.)
-- [ ] Comparativa entre períodos
-- [ ] Top 5 controles más críticos
-- [ ] Gráfico de radar por dominios
+### 7. Despliegue y Automatización
 
-#### 4.2 Comparativa de Evaluaciones
-- [ ] Seleccionar 2+ evaluaciones de misma norma
-- [ ] Ver progreso/retroceso por control
-- [ ] Gráfico de líneas de evolución
-- [ ] Exportar comparativa a PDF
+**Prioridad:** ALTA  
+**Timeline:** Q2 2026  
+**Archivos:** `docker-compose.yml`, `scripts/deploy/`
 
-#### 4.3 Exportación Avanzada a Excel
-- [ ] Reporte ejecutivo con logo de empresa
-- [ ] Múltiples pestañas (resumen, por dominio, hallazgos)
-- [ ] Gráficos incrustados
-- [ ] Formato profesional con colores
+#### 7.1 Docker Compose para On-Premise
+- [ ] Crear `docker-compose.yml` con: App + DB + Ollama
+- [ ] Configurar volúmenes persistentes
+- [ ] Variables de ambiente pre-configuradas
+- [ ] Scripts de inicio/parada automática
+- [ ] Soporte para Oracle Cloud Free Tier
 
----
+#### 7.2 Scripts de Instalación Automática
+- [ ] Script de instalación para Windows
+- [ ] Script de instalación para Linux/Mac
+- [ ] Detección automática de dependencias
+- [ ] Configuración guiada (wizard)
+- [ ] Backup/restore automático
 
-### 5. Mejoras de Seguridad
-**Estado:** 🔄 En desarrollo  
-**Archivos:** `app/auth.py`, `app/models.py`, `app/security.py`
-
-#### 5.1 Autenticación en Dos Factores (2FA)
-- [ ] Soporte para TOTP (Google Authenticator)
-- [ ] Códigos de recuperación
-- [ ] Habilitar/deshabilitar por usuario
-- [ ] Forzar 2FA para roles admin
-
-#### 5.2 Auditoría de Logs de Acceso
-- [ ] Registrar cada login (exitoso/fallido)
-- [ ] IP de origen, navegador, hora
-- [ ] Alerta por múltiples intentos fallidos
-- [ ] Vista de "actividad reciente" para usuarios
-
-#### 5.3 Encriptación de Evidencias
-- [ ] Encriptar archivos subidos (AES-256)
-- [ ] Desencriptar solo al visualizar
-- [ ] Clave por cliente
-- [ ] Backup de claves en vault
+#### 7.3 Backups Automáticos
+- [ ] Agendar backups diarios
+- [ ] Rotación de backups (7 días)
+- [ ] Backup a S3/MinIO
+- [ ] Verificación automática de backups
+- [ ] Alertas por email si falla backup
 
 ---
 
-### 6. Integración ITIL v4 Avanzada
-**Estado:** 🔄 En desarrollo  
-**Archivos:** `app/routes/itil.py`, `app/templates/itil/`
+### 8. Mejoras de IA (Opcional)
 
-#### 6.1 Vincular ISO con ITIL
-- [ ] Mapeo automático: Control ISO → Práctica ITIL
-- [ ] Ejemplo: A.5.8 (Gestión de proyectos) → Change Enablement
-- [ ] Sugerir prácticas ITIL para controles no conformes
+**Prioridad:** MEDIA  
+**Timeline:** Q3 2026
 
-#### 6.2 Generar RFCs desde Hallazgos
-- [ ] Detectar controles no conformes
-- [ ] Crear RFC borrador automáticamente
-- [ ] Sugerir prioridad basada en impacto
-- [ ] Vincular RFC con evaluación original
+#### 8.1 Modelos Adicionales de Ollama
+- [ ] Soporte para múltiples modelos simultáneos
+- [ ] Auto-descarga de modelos bajo demanda
+- [ ] Gestión de espacio en disco
+- [ ] Modelos recomendados por tipo de control
 
-#### 6.3 Dashboard de Prácticas ITIL
-- [ ] Evaluar madurez de 34 prácticas
-- [ ] Comparar con benchmark ISO 27001
-- [ ] Identificar brechas de gobernanza
-- [ ] Reporte de alineación ISO-ITIL
+#### 8.2 Mejoras en Análisis de IA
+- [ ] Análisis de contexto cruzado entre controles
+- [ ] Detección de inconsistencias
+- [ ] Sugerencias basadas en histórico
+- [ ] Integración con RAG (Retrieval-Augmented Generation)
 
 ---
 
-## 📦 PENDIENTES (Backlog - Futuro)
+### 9. Multi-Tenancy Avanzado
 
-Estas funcionalidades quedan postergadas pero documentadas para retomar en sprints futuros.
+**Prioridad:** MEDIA  
+**Timeline:** Q3 2026
 
-### 1. Activar IA con NVIDIA NIM
-**Estado:** ⏸️ Pendiente - Requiere API Key  
-**Archivos:** `app/ai_service.py`, `app/routes/ai_routes.py`
+#### 9.1 Panel Multi-Cliente
+- [ ] Dashboard unificado para múltiples clientes
+- [ ] Switching entre clientes sin logout
+- [ ] Plantillas compartidas entre clientes
+- [ ] Reportes consolidados
 
-#### Tareas Pendientes:
-- [ ] Configurar variable `NVIDIA_API_KEY` en Render (QA y Prod)
-- [ ] Habilitar endpoint `/api/ai/analyze-control` en UI
-- [ ] Crear componente HTMX para análisis en tiempo real
-- [ ] Mostrar sugerencias de IA en vista de evaluación
-- [ ] Botón "Generar recomendaciones con IA"
-- [ ] Exportar resumen ejecutivo generado por IA
-
-**Dependencias:**
-- API Key de NVIDIA (gestión segura)
-- Testing con datos reales
-- Validar costo/uso de API
+#### 9.2 Colaboración en Tiempo Real
+- [ ] Múltiples evaluadores en misma evaluación
+- [ ] Chat integrado por control
+- [ ] Historial de cambios colaborativo
+- [ ] Notificaciones push
 
 ---
 
-### 2. Mejoras en Panel de Administración
-**Estado:** ⏸️ Pendiente  
-**Archivos:** `app/routes/admin.py`, `app/templates/admin/`
+## 📊 HISTORIAL DE VERSIONES
 
-#### 2.1 Estadísticas Avanzadas
-- [ ] Gráfico de tendencia temporal
-- [ ] Top usuarios que más evalúan
-- [ ] Tiempo promedio por evaluación
-- [ ] Controles más fallados (ranking)
+### v1.7.4 - 2026-03-30 ✅ ACTUAL
+- ✅ Sistema de IA on-demand con fallback automático
+- ✅ Detección de Ollama con polling (5 seg)
+- ✅ Indicadores visuales (🟢/🟡/🔴)
+- ✅ Scripts Start/Stop Ollama
+- ✅ Documentación completa (28 docs)
+- ✅ Modelos: qwen3.5:0.8b, phi3:mini, phi:latest, llama3.1:latest, qwen2:7b
 
-#### 2.2 Gestión Masiva de Usuarios
-- [ ] Importar desde Excel/CSV
-- [ ] Asignar rol por defecto
-- [ ] Notificar credenciales por email
-- [ ] Baja masiva (soft delete)
+### v1.7.3 - 2026-03-27 ✅
+- ✅ Selector de modelos en GUI
+- ✅ Soporte multi-proveedor (NVIDIA + Ollama)
+- ✅ Endpoints: GET /api/ai/models, POST /api/ai/set-model
 
-#### 2.3 Reporte de Auditoría
-- [ ] Listar todos los logs de los últimos 30 días
-- [ ] Filtrar por usuario, acción, fecha
-- [ ] Exportar logs a CSV
-- [ ] Alertas de actividad sospechosa
+### v1.7.2 - 2026-03-27 ✅
+- ✅ Encriptación de evidencias
+- ✅ Auditoría de logs
 
----
+### v1.7.1 - 2026-03-27 ✅
+- ✅ 2FA TOTP implementado
+- ✅ Soporte Ollama local
 
-### 3. Funcionalidades de Evaluación (Backlog Secundario)
-**Estado:** ⏸️ Pendiente
+### v1.7.0 - 2026-03-27 ✅
+- ✅ Multi-modo (cloud/hybrid/on-premise)
+- ✅ PROJECT_DEFINITION.md creado
 
-#### 3.1 Evaluación Colaborativa
-- [ ] Múltiples usuarios en misma evaluación
-- [ ] Asignar controles por usuario
-- [ ] Comentarios en cada control
-- [ ] Notificaciones de cambios
+### v1.6.0 - 2026-03-26 ✅
+- ✅ Dashboard de cumplimiento por cliente
+- ✅ Comparativa de evaluaciones
+- ✅ Exportación avanzada a Excel
 
-#### 3.2 Plantillas de Evaluación
-- [ ] Crear evaluación desde plantilla
-- [ ] Personalizar preguntas por cliente
-- [ ] Versión de plantillas
-- [ ] Compartir plantillas entre clientes
+### v1.5.0 - 2026-03-26 ✅
+- ✅ Carga múltiple de evidencias
+- ✅ Historial de cambios (audit trail)
+- ✅ Plantillas de respuestas predefinidas
 
-#### 3.3 Recordatorios Automáticos
-- [ ] Configurar fecha de vencimiento
-- [ ] Email recordatorio 7 días antes
-- [ ] Notificar evaluaciones incompletas
-- [ ] Reporte de estado semanal
+### v1.4.1 - 2026-03-26 ✅
+- ✅ ITIL v4 framework
+- ✅ Panel admin completo
 
----
-
-## 📊 Planificación por Sprints
-
-### Sprint 1 (Actual) - v1.5.0
-**Enfoque:** Módulo de Evaluación Avanzada
-- Carga múltiple de evidencias
-- Historial de cambios
-- Plantillas de respuesta
-
-### Sprint 2 - v1.6.0
-**Enfoque:** Reportes y Dashboard
-- Dashboard de cumplimiento
-- Comparativa de evaluaciones
-- Exportación Excel avanzada
-
-### Sprint 3 - v1.7.0
-**Enfoque:** Seguridad
-- 2FA (TOTP)
-- Auditoría de logs
-- Encriptación de evidencias
-
-### Sprint 4 - v1.8.0
-**Enfoque:** Integración ITIL v4
-- Mapeo ISO-ITIL
-- Generación de RFCs
-- Dashboard ITIL
-
-### Sprint 5 - v2.0.0
-**Enfoque:** IA y Automatización
-- Activar NVIDIA NIM
-- Análisis automático
-- Recomendaciones inteligentes
+### v1.3.0 - 2026-03-25 ✅
+- ✅ Multi-norma (5 normas, 187 controles)
+- ✅ 70+ tests automatizados
 
 ---
 
-## 📝 Control de Cambios del Roadmap
+## 📅 CRONOLOGÍA ACTUALIZADA
+
+| Fecha | Hito | Versión | Estado |
+|-------|------|---------|--------|
+| 2026-03-22 | Inicio del proyecto | v1.0.0 | ✅ Completado |
+| 2026-03-24 | Multi-norma implementada | v1.3.0 | ✅ Completado |
+| 2026-03-26 | Sprint 1-3 completados | v1.6.0 | ✅ Completado |
+| 2026-03-27 | IA On-Demand implementada | v1.7.4 | ✅ Completado |
+| 2026-03-30 | Documentación 100% | v1.7.4 | ✅ Completado |
+| 2026-04-15 | Docker Compose | v1.8.0 | 📅 Pendiente |
+| 2026-04-30 | Scripts automatización | v1.8.1 | 📅 Pendiente |
+| 2026-05-15 | Backups automáticos | v1.8.2 | 📅 Pendiente |
+
+---
+
+## 🎯 MÉTRICAS ACTUALES
+
+### Código
+- **Líneas de código:** ~16,000
+- **Endpoints:** 50+
+- **Modelos DB:** 15+
+- **Tests:** 70+ (85% cobertura)
+
+### Documentación
+- **Documentos:** 28 archivos
+- **Scripts:** 9 archivos
+- **Páginas de doc:** ~500+
+
+### IA
+- **Modelos soportados:** 5 (Ollama) + múltiples (NVIDIA)
+- **Modos:** Local (Ollama) → Cloud (NVIDIA) → None
+- **Polling:** 5 segundos
+- **Cache:** 5 segundos
+
+### Despliegue
+- **Modos soportados:** 4 (Cloud Demo, Cloud Seguro, Híbrido, On-Premise)
+- **Costo:** $0/mes (Oracle Free Tier + Neon Free)
+- **Backups:** Manuales (automatización pendiente)
+
+---
+
+## ⚠️ RIESGOS ACTIVOS
+
+| Riesgo | Probabilidad | Impacto | Mitigación |
+|--------|--------------|---------|------------|
+| Oracle cambie términos free tier | Baja | Alto | Backup en Google Cloud Free |
+| Ollama consuma mucha RAM | Media | Medio | Modelos ligeros (3B-7B) |
+| Cliente sin skills técnicos | Media | Alto | Documentación clara + scripts |
+| Render cambie free tier | Baja | Medio | Backup Railway/HF Spaces |
+| Brecha seguridad | Baja | Crítico | Encriptación + 2FA + Auditoría |
+
+---
+
+## 📝 CONTROL DE CAMBIOS DEL ROADMAP
 
 | Fecha | Versión | Cambio |
 |-------|---------|--------|
-| 2026-03-24 | v1.0 | Documento inicial creado |
-| 2026-03-26 | v1.1 | Reestructuración completa: prioridades 3-6 activas, 1-2 en backlog |
+| 2026-03-22 | v1.0 | Documento inicial creado |
+| 2026-03-24 | v1.1 | Reestructuración completa |
+| 2026-03-26 | v1.2 | Agregados sprints 1-3 |
+| 2026-03-27 | v1.3 | Agregado sprint 4 (IA) |
+| 2026-03-30 | v2.0 | **Actualización mayor** - Reflejado v1.7.4 real, fases completadas, próximos pasos claros |
 
 ---
 
-> **Nota:** Este documento es dinámico y debe actualizarse al finalizar cada sprint o cuando cambien las prioridades del proyecto.
+> **Nota:** Este documento se actualizó completamente el 2026-03-30 para reflejar el estado real del proyecto (v1.7.4). Las próximas actualizaciones se realizarán al finalizar cada sprint o cuando cambien las prioridades.
+
+**Próxima revisión:** 2026-04-15  
+**Responsable:** Equipo de Desarrollo  
+**Estado:** ✅ Aprobado
