@@ -5,6 +5,34 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 
 ---
 
+## [v1.8.1] - 2026-03-30
+
+### Agregado - Scripts de Automatización (Fase 7)
+
+#### Scripts de Despliegue y Mantenimiento
+- **deploy.ps1**: Despliegue automático con Docker Compose
+- **backup_auto.ps1**: Backup automático con retención configurable
+- **install.ps1**: Instalación y configuración inicial
+- **AUTOMATION.md**: Documentación completa
+
+#### Características
+- Múltiples entornos (dev/qa/prod)
+- Retención configurable (default: 7 días)
+- Modo automático sin prompts
+- Health checks integrados
+
+### Modificado
+- **CHANGELOG.md** - Esta entrada
+- **PROJECT_STATUS.md** - Actualizado a v1.8.1
+
+### Técnico
+- PowerShell scripts (Windows)
+- Docker Compose profiles
+- Auto-limpieza de backups
+- Backup: BD, uploads, config
+
+---
+
 ## [v1.7.4] - 2026-03-27
 
 ### Agregado - Sistema de IA On-Demand con Fallback Automático

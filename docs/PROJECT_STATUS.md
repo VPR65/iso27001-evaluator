@@ -1,7 +1,7 @@
 # 📊 ESTADO DEL PROYECTO - ISO 27001 & ITIL Evaluator
 
-**Fecha:** 27 de Marzo de 2026
-**Versión Actual:** v1.7.4
+**Fecha:** 30 de Marzo de 2026
+**Versión Actual:** v1.8.1
 **Último Backup:** `backups/backup_full_20260327_193032.zip`
 
 ---
@@ -173,7 +173,7 @@ El sistema soporta 4 modos de operación:
 
 ## 🔄 Control de Cambios Recientes
 
-### v1.7.4 (2026-03-27) - NUEVO
+### v1.8.1 (2026-03-27) - NUEVO
 - ✅ Sistema de IA on-demand con fallback automático
 - ✅ Detección automática de Ollama y NVIDIA
 - ✅ Indicadores visuales en sidebar (🟢/🟡/🔴)
@@ -224,3 +224,4 @@ El sistema soporta 4 modos de operación:
 ---
 
 **Fin del Documento**
+
