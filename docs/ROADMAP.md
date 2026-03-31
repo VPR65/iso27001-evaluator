@@ -1,8 +1,8 @@
 # ROADMAP - ISO 27001 & ITIL Evaluator
 
-**Última actualización:** 2026-03-30
-**Versión Actual:** v1.8.3
-**Estado:** ✅ Producción - Monitoreo y Alertas Implementados
+**Última actualización:** 2026-03-31
+**Versión Actual:** v2.0.0
+**Estado:** ✅ Producción - Release Ready
 
 ---
 
@@ -20,8 +20,24 @@
 | **Fase 6: Documentación** | v1.7.4 | ✅ 100% | 28 docs, scripts, guías |
 | **Fase 7: Despliegue y Automatización** | v1.8.1 | ✅ 100% | Docker, scripts deploy, auto-backups |
 | **Fase 8: Monitoreo y Alertas** | v1.8.3 | ✅ 100% | Monitor sistema, alertas, health checks |
+| **Fase 9: UI/UX y Accesibilidad** | v1.8.4 | ✅ 100% | WCAG 2.1, skip links, focus states |
 
-**Progreso Total:** 98% del proyecto completado
+**Progreso Total:** 99% del proyecto completado
+
+---
+
+## 🎯 ENTORNOS ACTIVOS
+
+| Entorno | URL | Estado | Modo |
+|---------|-----|--------|------|
+| **Desarrollo** | http://localhost:8000 | ✅ Activo | A: Todo Local |
+| **QA (Render)** | https://iso27001-qa.onrender.com | ✅ Activo | C: Todo Nube |
+| **Prod (Render)** | https://iso27001-prod.onrender.com | ⚠️ Inactivo | C: Todo Nube |
+
+**Modes de Despliegue:**
+- Modo A: Todo Local (On-Premise) - Ver `docs/DEPLOYMENT_MODES.md`
+- Modo B: Mixto/Híbrido (Oracle Cloud)
+- Modo C: Todo Nube (Render + Neon)
 
 ---
 

@@ -5,6 +5,33 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 
 ---
 
+## [v2.0.0] - 2026-03-31
+
+### Release - Production Ready
+
+#### Estados de Entornos
+- ✅ Desarrollo (local): http://localhost:8000
+- ✅ QA (Render): https://iso27001-qa.onrender.com
+- ⚠️ Prod (Render): https://iso27001-prod.onrender.com (requiere activación)
+
+#### Modos de Despliegue Documentados
+- Modo A: Todo Local (On-Premise) - Ver `docs/DEPLOYMENT_MODES.md`
+- Modo B: Mixto/Híbrido (Oracle Cloud)
+- Modo C: Todo Nube (Render + Neon)
+
+#### Documentación Actualizada
+- `docs/DEPLOYMENT_MODES.md` - Nueva documentación de modos
+- `docs/PLATFORMS_MANUAL.md` - Estados de entornos
+- `docs/DEPLOYMENT_AND_TESTING.md` - Versión actualizada a v2.0.0
+- `docs/ROADMAP.md` - Estados de entornos
+
+#### Cambios Técnicos
+- QA reactivado en Render.com
+- functional_test.py corregido para Windows
+- Documentación sincronizada
+
+---
+
 ## [v1.8.4] - 2026-03-30
 
 ### Mejorado - UI/UX y Accesibilidad (Fase 9)

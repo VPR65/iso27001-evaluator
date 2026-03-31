@@ -89,9 +89,9 @@ git status
 
 | Entorno | URL | Estado | Rama Git | Base de Datos | Notas |
 |---------|-----|--------|----------|--------------|-------|
-| Produccion | `https://iso27001-prod.onrender.com` | Activo | `production` | Neon PostgreSQL | Prod real |
+| Produccion | `https://iso27001-prod.onrender.com` | Inactivo | `production` | Neon PostgreSQL | Prod real - requiere activación |
 | QA/Pruebas | `https://iso27001-qa.onrender.com` | Activo | `main` | Neon PostgreSQL | Testing |
-| Desarrollo local | `http://localhost:8000` | Activo | - | Neon PostgreSQL (local) | Tu PC con DB local opcional |
+| Desarrollo local | `http://localhost:8000` | Activo | - | SQLite/Neon PostgreSQL | Tu PC con DB local opcional |
 
 ---
 

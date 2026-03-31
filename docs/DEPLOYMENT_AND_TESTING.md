@@ -38,12 +38,12 @@
 
 ### 2.1 Credenciales de Aplicacion
 
-| Entorno | URL | Usuario | Password | Rol |
-|---------|-----|---------|----------|-----|
-| Desarrollo | http://localhost:8000 | admin@iso27001.local | admin123 | SUPERADMIN |
-| Desarrollo | http://localhost:8000 | admin@demo.local | demo123 | ADMIN_CLIENTE |
-| QA | https://iso27001-qa.onrender.com | admin@iso27001.local | admin123 | SUPERADMIN |
-| Produccion | https://iso27001-prod.onrender.com | admin@iso27001.local | admin123 | SUPERADMIN |
+| Entorno | URL | Usuario | Password | Rol | Estado |
+|---------|-----|---------|----------|-----|--------|
+| Desarrollo | http://localhost:8000 | admin@iso27001.local | admin123 | SUPERADMIN | ✅ Activo |
+| Desarrollo | http://localhost:8000 | admin@demo.local | demo123 | ADMIN_CLIENTE | ✅ Activo |
+| QA | https://iso27001-qa.onrender.com | admin@iso27001.local | admin123 | SUPERADMIN | ✅ Activo |
+| Produccion | https://iso27001-prod.onrender.com | admin@iso27001.local | admin123 | SUPERADMIN | ⚠️ Inactivo |
 
 ### 2.2 Cuentas de Servicios
 
@@ -337,13 +337,30 @@ git push origin production    # para Prod
 
 ## 9. VERSION ACTUAL
 
-**Version del codigo:** v1.1.2
+**Version del codigo:** v2.0.0 (2026-03-31)
 
 **Ultimos cambios:**
-- AuditLog en todos los POST handlers
-- Fix admin user creation (requiere cliente y rol)
-- Fix evaluation detail view
-- Fix document publish endpoint
+- Sistema de Monitoreo y Alertas (Fase 8)
+- Mejoras de UI/UX y Accesibilidad WCAG 2.1 (Fase 9)
+- Backups automáticos con rotación
+- Docker Compose para On-Premise
+- Tags: v2.0.0
+
+**Estados de entornos:**
+| Entorno | URL | Estado |
+|---------|-----|--------|
+| Desarrollo | http://localhost:8000 | ✅ Activo |
+| QA (Render) | https://iso27001-qa.onrender.com | ✅ Activo |
+| Prod (Render) | https://iso27001-prod.onrender.com | ⚠️ Inactivo |
+
+---
+
+## 10. MODOS DE DESPLIEGUE
+
+Consultar documento `docs/DEPLOYMENT_MODES.md` para información detallada de:
+- Modo A: Todo Local (On-Premise)
+- Modo B: Mixto/Híbrido (Oracle Cloud)
+- Modo C: Todo Nube (Render + Neon)
 
 ---
 

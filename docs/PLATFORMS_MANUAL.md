@@ -167,11 +167,11 @@ URL: `/admin/debug/audit-logs`
 
 ### 6.1 Aplicacion
 
-| Entorno | URL | Usuario | Password |
-|---------|-----|---------|----------|
-| Desarrollo | http://localhost:8000 | admin@iso27001.local | admin123 |
-| QA | https://iso27001-qa.onrender.com | admin@iso27001.local | admin123 |
-| Produccion | https://iso27001-prod.onrender.com | admin@iso27001.local | admin123 |
+| Entorno | URL | Usuario | Password | Estado |
+|---------|-----|---------|----------|--------|
+| Desarrollo | http://localhost:8000 | admin@iso27001.local | admin123 | ✅ Activo |
+| QA | https://iso27001-qa.onrender.com | admin@iso27001.local | admin123 | ✅ Activo |
+| Produccion | https://iso27001-prod.onrender.com | admin@iso27001.local | admin123 | ⚠️ Inactivo |
 
 ### 6.2 Plataformas
 
