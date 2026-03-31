@@ -355,124 +355,13 @@ async def delete_evaluation(request: Request, eval_id: str):
             content={"success": False, "error": f"Error interno: {str(e)}"},
         )
 
-    form_data = await request.form()
-    csrf_token = form_data.get("csrf_token")
-    if not csrf_token or not verify_csrf_token(csrf_token):
-        return JSONResponse(
-            status_code=403, content={"success": False, "error": "Token CSRF invalido"}
-        )
-
-    confirm_password = form_data.get("confirm_password", "")
-    if not confirm_password:
-        return JSONResponse(
-            status_code=400,
-            content={"success": False, "error": "Debe confirmar con su password"},
-        )
-
-    from app.auth import verify_password
-
-    if not verify_password(confirm_password, user.password_hash):
-        return JSONResponse(
-            status_code=400,
-            content={"success": False, "error": "Password incorrecto"},
-        )
-
-    with Session(engine) as session:
-        from app.models import ControlResponse
-
-        evaluation = session.get(Evaluation, eval_id)
-        if not evaluation:
-            return JSONResponse(
-                status_code=404,
-                content={"success": False, "error": "Evaluacion no encontrada"},
-            )
-
-        eval_name = evaluation.name
-
-        session.query(ControlResponse).where(
-            ControlResponse.evaluation_id == eval_id
-        ).delete(synchronize_session=False)
-        session.delete(evaluation)
-
-        session.add(
-            AuditLog(
-                user_id=user.id,
-                action="EVALUATION_DELETED",
-                entity_type="evaluation",
-                entity_id=eval_id,
-                details=f"Evaluacion eliminada: {eval_name}",
-            )
-        )
-
-        session.commit()
-
-    return JSONResponse(
-        status_code=200,
-        content={"success": True, "message": "Evaluación eliminada correctamente"},
-    )
-
 
 @router.get("/evaluations/{eval_id}/delete")
 async def delete_evaluation_get(request: Request, eval_id: str):
-    """Handle GET requests to delete - redirect back with error"""
+    """Handle GET requests to delete - return 405 Method Not Allowed"""
     from fastapi import HTTPException
 
-    return HTTPException(status_code=405, detail="Method not allowed. Use POST.")
-
-    form_data = await request.form()
-    csrf_token = form_data.get("csrf_token")
-    if not csrf_token or not verify_csrf_token(csrf_token):
-        return JSONResponse(
-            status_code=403, content={"success": False, "error": "Token CSRF invalido"}
-        )
-
-    confirm_password = form_data.get("confirm_password", "")
-    if not confirm_password:
-        return JSONResponse(
-            status_code=400,
-            content={"success": False, "error": "Debe confirmar con su password"},
-        )
-
-    from app.auth import verify_password
-
-    if not verify_password(confirm_password, user.password_hash):
-        return JSONResponse(
-            status_code=400,
-            content={"success": False, "error": "Password incorrecto"},
-        )
-
-    with Session(engine) as session:
-        from app.models import ControlResponse
-
-        evaluation = session.get(Evaluation, eval_id)
-        if not evaluation:
-            return JSONResponse(
-                status_code=404,
-                content={"success": False, "error": "Evaluacion no encontrada"},
-            )
-
-        eval_name = evaluation.name
-
-        session.query(ControlResponse).where(
-            ControlResponse.evaluation_id == eval_id
-        ).delete(synchronize_session=False)
-        session.delete(evaluation)
-
-        session.add(
-            AuditLog(
-                user_id=user.id,
-                action="EVALUATION_DELETED",
-                entity_type="evaluation",
-                entity_id=eval_id,
-                details=f"Evaluacion eliminada: {eval_name}",
-            )
-        )
-        session.commit()
-
-    return JSONResponse(
-        status_code=200,
-        content={"success": True, "message": "Evaluación eliminada correctamente"},
-    )
+    raise HTTPException(status_code=405, detail="Method not allowed. Use POST.")
 
 
 @router.post("/users/{user_id}/delete")
