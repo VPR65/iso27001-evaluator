@@ -37,10 +37,14 @@
 
 ---
 
-## 📝 Notas
+## 📝 Notas de QA
 
-- Los errores ahora se muestran en ventanas de alerta del navegador
-- La experiencia de usuario es consistente con el resto del proyecto
+- Las pruebas exhaustivas detectaron 10 problemas (32.3% de 31 tests)
+- 9 problemas son de UX (JSON en lugar de páginas HTML)
+- 1 problema es endpoint faltante (/api/ai/models requiere auth)
+- Dashboard, evaluaciones, documentos y admin clientes funcionan 100%
+
+**Reporte:** `logs/QA_REPORT_20260331.md` y `logs/comprehensive_test_20260331_110717.json`
 
 ---
 
