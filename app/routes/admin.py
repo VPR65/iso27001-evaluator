@@ -311,19 +311,34 @@ def manage_evaluations(request: Request):
 @router.post("/evaluations/{eval_id}/delete")
 async def delete_evaluation(request: Request, eval_id: str):
     """Eliminar evaluacion - Version simplificada sin verification de password"""
+    import logging
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+    
+    logger.info(f"DELETE evaluation called with eval_id={eval_id}")
+    
     try:
         session_id = request.cookies.get("session_id")
+        logger.info(f"session_id: {session_id}")
+        
         user = get_current_user(session_id)
+        logger.info(f"user: {user}")
+        
         if not user or user.role != UserRole.SUPERADMIN:
+            logger.warning("User not authorized")
             return JSONResponse(
                 status_code=401,
                 content={"success": False, "error": "No tienes permisos"},
             )
 
+        logger.info("User authorized, proceeding with delete")
+        
         with Session(engine) as session:
             from app.models import ControlResponse
 
             evaluation = session.get(Evaluation, eval_id)
+            logger.info(f"evaluation found: {evaluation}")
+            
             if not evaluation:
                 return JSONResponse(
                     status_code=404,
@@ -331,6 +346,7 @@ async def delete_evaluation(request: Request, eval_id: str):
                 )
 
             eval_name = evaluation.name
+            logger.info(f"Deleting evaluation: {eval_name}")
 
             session.query(ControlResponse).where(
                 ControlResponse.evaluation_id == eval_id
@@ -348,12 +364,16 @@ async def delete_evaluation(request: Request, eval_id: str):
             )
 
             session.commit()
+            logger.info("Delete completed successfully")
 
         return JSONResponse(
             status_code=200,
             content={"success": True, "message": "Evaluacion eliminada correctamente"},
         )
     except Exception as e:
+        import traceback
+        logger.error(f"ERROR in delete: {str(e)}")
+        logger.error(traceback.format_exc())
         return JSONResponse(
             status_code=500,
             content={"success": False, "error": f"Error interno: {str(e)}"},
