@@ -105,7 +105,10 @@ async def create_client(request: Request):
         )
         session.commit()
 
-    return RedirectResponse(url="/admin/clients?created=1", status_code=302)
+    return JSONResponse(
+        status_code=200,
+        content={"success": True, "message": "Usuario eliminado correctamente"},
+    )
 
 
 @router.post("/clients/{client_id}/delete")
@@ -188,7 +191,10 @@ async def delete_client(request: Request, client_id: str):
         )
         session.commit()
 
-    return RedirectResponse(url="/admin/clients?deleted=1", status_code=302)
+    return JSONResponse(
+        status_code=200,
+        content={"success": True, "message": "Cliente eliminado correctamente"},
+    )
 
 
 @router.get("/evaluations", response_class=HTMLResponse)
@@ -322,7 +328,10 @@ async def delete_evaluation(request: Request, eval_id: str):
         )
         session.commit()
 
-    return RedirectResponse(url="/admin/evaluations?deleted=1", status_code=302)
+    return JSONResponse(
+        status_code=200,
+        content={"success": True, "message": "Evaluación eliminada correctamente"},
+    )
 
 
 @router.post("/users/{user_id}/delete")
