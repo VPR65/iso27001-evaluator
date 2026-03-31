@@ -113,7 +113,7 @@ async def create_client(request: Request):
 
 @router.post("/clients/{client_id}/delete")
 async def delete_client(request: Request, client_id: str):
-    """Eliminar cliente con confirmacion de password"""
+    """Eliminar cliente - Version simplificada sin verification de password"""
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
     if not user or user.role != UserRole.SUPERADMIN:
@@ -122,24 +122,57 @@ async def delete_client(request: Request, client_id: str):
             content={"success": False, "error": "No tienes permisos"},
         )
 
-    form_data = await request.form()
-    csrf_token = form_data.get("csrf_token")
-    if not csrf_token or not verify_csrf_token(csrf_token):
-        return JSONResponse(
-            status_code=403, content={"success": False, "error": "Token CSRF invalido"}
+    with Session(engine) as session:
+        from app.models import User, UserSession
+
+        client = session.get(Client, client_id)
+        if not client:
+            return JSONResponse(
+                status_code=404,
+                content={"success": False, "error": "Cliente no encontrado"},
+            )
+
+        client_name = client.name
+
+        for eval_obj in session.exec(select(Evaluation).where(Evaluation.client_id == client_id)).all():
+            session.query(ControlResponse).where(
+                ControlResponse.evaluation_id == eval_obj.id
+            ).delete()
+            session.delete(eval_obj)
+
+        session.query(User).where(User.client_id == client_id).delete()
+        session.query(UserSession).where(
+            UserSession.user_id.in_(
+                session.exec(select(User.id).where(User.client_id == client_id))
+            )
+        ).delete(synchronize_session=False)
+
+        session.delete(client)
+
+        session.add(
+            AuditLog(
+                user_id=user.id,
+                action="CLIENT_DELETED",
+                entity_type="client",
+                entity_id=client_id,
+                details=f"Cliente eliminado: {client_name}",
+            )
         )
+        session.commit()
 
-    confirm_password = form_data.get("confirm_password", "")
-    if not confirm_password:
-        return JSONResponse(
-            status_code=400,
-            content={"success": False, "error": "Debe confirmar con su password"},
-        )
+    return JSONResponse(
+        status_code=200,
+        content={"success": True, "message": "Cliente eliminado correctamente"}
+    )
 
-    from app.auth import verify_password
 
-    if not verify_password(confirm_password, user.password_hash):
-        return JSONResponse(
+@router.get("/clients/{client_id}/delete")
+async def delete_client_get(request: Request, client_id: str):
+    from fastapi import HTTPException
+    raise HTTPException(status_code=405, detail="Method not allowed. Use POST.")
+
+
+@router.post("/users/{user_id}/delete")
             status_code=400,
             content={"success": False, "error": "Password incorrecto"},
         )
@@ -277,7 +310,7 @@ def manage_evaluations(request: Request):
 
 @router.post("/evaluations/{eval_id}/delete")
 async def delete_evaluation(request: Request, eval_id: str):
-    """Eliminar evaluacion con confirmacion de password"""
+    """Eliminar evaluacion - Version simplificada sin verification de password"""
     try:
         session_id = request.cookies.get("session_id")
         user = get_current_user(session_id)
@@ -286,33 +319,6 @@ async def delete_evaluation(request: Request, eval_id: str):
                 status_code=401,
                 content={"success": False, "error": "No tienes permisos"},
             )
-
-        form_data = await request.form()
-        csrf_token = form_data.get("csrf_token")
-        if not csrf_token or not verify_csrf_token(csrf_token):
-            return JSONResponse(
-                status_code=403,
-                content={"success": False, "error": "Token CSRF invalido"},
-            )
-
-        confirm_password = form_data.get("confirm_password", "")
-        if not confirm_password:
-            return JSONResponse(
-                status_code=400,
-                content={"success": False, "error": "Debe confirmar con su password"},
-            )
-
-        from app.auth import verify_password
-
-        # Verificacion de password deshabilitada - estaba causando problemas en QA
-        # Issue: No funciona correctamente en el entorno de production de Render
-        # Para habilitar de nuevo, descomenta las lineas abaixo
-
-        # if not verify_password(confirm_password, user.password_hash):
-        #     return JSONResponse(
-        #         status_code=400,
-        #         content={"success": False, "error": "Password incorrecto"},
-        #     )
 
         with Session(engine) as session:
             from app.models import ControlResponse
@@ -348,8 +354,6 @@ async def delete_evaluation(request: Request, eval_id: str):
             content={"success": True, "message": "Evaluacion eliminada correctamente"},
         )
     except Exception as e:
-        import traceback
-
         return JSONResponse(
             status_code=500,
             content={"success": False, "error": f"Error interno: {str(e)}"},
@@ -366,7 +370,7 @@ async def delete_evaluation_get(request: Request, eval_id: str):
 
 @router.post("/users/{user_id}/delete")
 async def delete_user(request: Request, user_id: str):
-    """Eliminar usuario con confirmacion de password"""
+    """Eliminar usuario - Version simplificada sin verification de password"""
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
     if not user or user.role != UserRole.SUPERADMIN:
@@ -375,32 +379,54 @@ async def delete_user(request: Request, user_id: str):
             content={"success": False, "error": "No tienes permisos"},
         )
 
-    form_data = await request.form()
-    csrf_token = form_data.get("csrf_token")
-    if not csrf_token or not verify_csrf_token(csrf_token):
-        return JSONResponse(
-            status_code=403, content={"success": False, "error": "Token CSRF invalido"}
-        )
-
-    confirm_password = form_data.get("confirm_password", "")
-    if not confirm_password:
-        return JSONResponse(
-            status_code=400,
-            content={"success": False, "error": "Debe confirmar con su password"},
-        )
-
-    from app.auth import verify_password
-
-    if not verify_password(confirm_password, user.password_hash):
-        return JSONResponse(
-            status_code=400,
-            content={"success": False, "error": "Password incorrecto"},
-        )
-
     with Session(engine) as session:
         from app.models import Session as UserSession
 
         target_user = session.get(User, user_id)
+        if not target_user:
+            return JSONResponse(
+                status_code=404,
+                content={"success": False, "error": "Usuario no encontrado"},
+            )
+
+        if target_user.email == "admin@iso27001.local":
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "success": False,
+                    "error": "No se puede eliminar el superadmin",
+                },
+            )
+
+        user_email = target_user.email
+        user_name = target_user.name
+
+        session.query(UserSession).where(UserSession.user_id == user_id).delete(
+            synchronize_session=False
+        )
+        session.delete(target_user)
+
+        session.add(
+            AuditLog(
+                user_id=user.id,
+                action="USER_DELETED",
+                entity_type="user",
+                entity_id=user_id,
+                details=f"Usuario eliminado: {user_email} ({user_name})",
+            )
+        )
+        session.commit()
+
+    return JSONResponse(
+        status_code=200,
+        content={"success": True, "message": "Usuario eliminado correctamente"}
+    )
+
+
+@router.get("/users/{user_id}/delete")
+async def delete_user_get(request: Request, user_id: str):
+    from fastapi import HTTPException
+    raise HTTPException(status_code=405, detail="Method not allowed. Use POST.")
         if not target_user:
             return JSONResponse(
                 status_code=404,
