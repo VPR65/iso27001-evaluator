@@ -96,14 +96,38 @@
 </div>
 
 <script>
-function confirmDeleteEval(evalId, evalName, responseCount) {
+async function confirmDeleteEval(evalId, evalName, responseCount) {
     const message = `¿Está seguro de eliminar la evaluación?\n\nNombre: ${evalName}\nRespuestas: ${responseCount}\n\nEsta acción no se puede deshacer.`;
     
     const password = prompt(message + '\n\nIngrese su password para confirmar:');
     
-    if (password) {
-        document.getElementById('pwd_eval_' + evalId).value = password;
-        document.querySelector(`form[action="/admin/evaluations/${evalId}/delete"]`).submit();
+    if (!password) return;
+    
+    // Obtener CSRF token
+    const form = document.querySelector(`form[action="/admin/evaluations/${evalId}/delete"]`);
+    const csrfToken = form.querySelector('input[name="csrf_token"]').value;
+    
+    try {
+        const response = await fetch(`/admin/evaluations/${evalId}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `csrf_token=${encodeURIComponent(csrfToken)}&confirm_password=${encodeURIComponent(password)}`
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Eliminación exitosa - recargar página
+            alert('Evaluación eliminada correctamente');
+            window.location.href = '/admin/evaluations?deleted=1';
+        } else {
+            // Mostrar error con diseño del proyecto
+            alert('ERROR: ' + data.error);
+        }
+    } catch (error) {
+        alert('Error de conexión: ' + error.message);
     }
 }
 

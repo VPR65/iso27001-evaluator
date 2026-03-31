@@ -133,15 +133,34 @@ function closeCreateModal() {
 }
 
 function confirmDelete(clientId, clientName, userCount, evalCount) {
-    pendingDeleteClientId = clientId;
     const message = `¿Está seguro de eliminar el cliente "${clientName}"?\n\nEsta acción eliminará:\n- ${userCount} usuario(s)\n- ${evalCount} evaluación(es)\n\nEsta acción no se puede deshacer.`;
     
     const password = prompt(message + '\n\nIngrese su password para confirmar:');
     
-    if (password) {
-        document.getElementById('pwd_' + clientId).value = password;
-        document.querySelector(`form[action="/admin/clients/${clientId}/delete"]`).submit();
-    }
+    if (!password) return;
+    
+    const form = document.querySelector(`form[action="/admin/clients/${clientId}/delete"]`);
+    const csrfToken = form.querySelector('input[name="csrf_token"]').value;
+    
+    fetch(`/admin/clients/${clientId}/delete`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `csrf_token=${encodeURIComponent(csrfToken)}&confirm_password=${encodeURIComponent(password)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Cliente eliminado correctamente');
+            window.location.href = '/admin/clients?deleted=1';
+        } else {
+            alert('ERROR: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('Error de conexión: ' + error.message);
+    });
 }
 
 function closeDeleteModal() {

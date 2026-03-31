@@ -111,14 +111,35 @@
 </div>
 
 <script>
-function confirmDeleteUser(userId, userName, userEmail) {
+async function confirmDeleteUser(userId, userName, userEmail) {
     const message = `¿Está seguro de eliminar al usuario?\n\nNombre: ${userName}\nEmail: ${userEmail}\n\nEsta acción no se puede deshacer.`;
     
     const password = prompt(message + '\n\nIngrese su password para confirmar:');
     
-    if (password) {
-        document.getElementById('pwd_user_' + userId).value = password;
-        document.querySelector(`form[action="/admin/users/${userId}/delete"]`).submit();
+    if (!password) return;
+    
+    const form = document.querySelector(`form[action="/admin/users/${userId}/delete"]`);
+    const csrfToken = form.querySelector('input[name="csrf_token"]').value;
+    
+    try {
+        const response = await fetch(`/admin/users/${userId}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `csrf_token=${encodeURIComponent(csrfToken)}&confirm_password=${encodeURIComponent(password)}`
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('Usuario eliminado correctamente');
+            window.location.href = '/admin/all-users?deleted=1';
+        } else {
+            alert('ERROR: ' + data.error);
+        }
+    } catch (error) {
+        alert('Error de conexión: ' + error.message);
     }
 }
 
