@@ -2,7 +2,13 @@
 # Uso: python scripts/qa_test.py
 
 import sys
+from pathlib import Path
 from datetime import datetime
+
+# Agregar el path base para imports si no esta presente
+BASE_DIR = Path(__file__).resolve().parent.parent
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
 
 
 def print_header(text):

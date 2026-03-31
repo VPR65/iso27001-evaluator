@@ -14,11 +14,14 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    {% if user %}
-    <button class="mobile-menu-btn" onclick="toggleSidebar()" style="display:none">
-        <i class="fa-solid fa-bars"></i>
-    </button>
-    <div class="app-layout">
+<!-- Skip link para accesibilidad (WCAG) -->
+<a href="#main-content" class="skip-link">Saltar al contenido principal</a>
+
+{% if user %}
+<button class="mobile-menu-btn" onclick="toggleSidebar()" style="display:none" aria-label="Menu">
+<i class="fa-solid fa-bars"></i>
+</button>
+<div class="app-layout">
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="brand">
@@ -30,56 +33,56 @@
                 </button>
             </div>
 
-            <nav class="sidebar-nav">
-                <a href="/dashboard" class="nav-item {% if request.url.path == '/dashboard' %}active{% endif %}">
-                    <i class="fa-solid fa-chart-line"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="/evaluations" class="nav-item {% if '/evaluations' in request.url.path %}active{% endif %}">
-                    <i class="fa-solid fa-clipboard-check"></i>
-                    <span>Evaluaciones</span>
-                </a>
-                <a href="/documents" class="nav-item {% if '/documents' in request.url.path %}active{% endif %}">
-                    <i class="fa-solid fa-file-lines"></i>
-                    <span>Documentos</span>
-                </a>
-                <a href="/biblioteca" class="nav-item {% if '/biblioteca' in request.url.path %}active{% endif %}">
-                    <i class="fa-solid fa-book"></i>
-                    <span>Biblioteca</span>
-                </a>
-                <a href="/rfcs" class="nav-item {% if '/rfcs' in request.url.path %}active{% endif %}">
-                    <i class="fa-solid fa-code-branch"></i>
-                    <span>RFCs</span>
-                </a>
-                <a href="/sprints" class="nav-item {% if '/sprints' in request.url.path %}active{% endif %}">
-                    <i class="fa-solid fa-layer-group"></i>
-                    <span>Sprints</span>
-                </a>
+<nav class="sidebar-nav" role="navigation" aria-label="Menu principal">
+<a href="/dashboard" class="nav-item {% if request.url.path == '/dashboard' %}active{% endif %}">
+<i class="fa-solid fa-chart-line" aria-hidden="true"></i>
+<span>Dashboard</span>
+</a>
+<a href="/evaluations" class="nav-item {% if '/evaluations' in request.url.path %}active{% endif %}">
+<i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>
+<span>Evaluaciones</span>
+</a>
+<a href="/documents" class="nav-item {% if '/documents' in request.url.path %}active{% endif %}">
+<i class="fa-solid fa-file-lines" aria-hidden="true"></i>
+<span>Documentos</span>
+</a>
+<a href="/biblioteca" class="nav-item {% if '/biblioteca' in request.url.path %}active{% endif %}">
+<i class="fa-solid fa-book" aria-hidden="true"></i>
+<span>Biblioteca</span>
+</a>
+<a href="/rfcs" class="nav-item {% if '/rfcs' in request.url.path %}active{% endif %}">
+<i class="fa-solid fa-code-branch" aria-hidden="true"></i>
+<span>RFCs</span>
+</a>
+<a href="/sprints" class="nav-item {% if '/sprints' in request.url.path %}active{% endif %}">
+<i class="fa-solid fa-layer-group" aria-hidden="true"></i>
+<span>Sprints</span>
+</a>
 {% if user.role.value == 'superadmin' %}
 <div class="nav-divider"></div>
 <a href="/admin/clients" class="nav-item {% if '/admin/clients' in request.url.path %}active{% endif %}">
-<i class="fa-solid fa-building"></i>
+<i class="fa-solid fa-building" aria-hidden="true"></i>
 <span>Clientes</span>
 </a>
 <a href="/admin/evaluations" class="nav-item {% if '/admin/evaluations' in request.url.path %}active{% endif %}">
-<i class="fa-solid fa-clipboard-check"></i>
+<i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>
 <span>Evaluaciones</span>
 </a>
 <a href="/admin/all-users" class="nav-item {% if '/admin/all-users' in request.url.path %}active{% endif %}">
-<i class="fa-solid fa-users"></i>
+<i class="fa-solid fa-users" aria-hidden="true"></i>
 <span>Usuarios</span>
 </a>
 <a href="/admin/ai-config" class="nav-item {% if '/admin/ai-config' in request.url.path %}active{% endif %}">
-<i class="fa-solid fa-robot"></i>
+<i class="fa-solid fa-robot" aria-hidden="true"></i>
 <span>Configuración IA</span>
 </a>
 {% endif %}
-                <div class="nav-divider"></div>
-                <a href="/import-export/import" class="nav-item {% if '/import' in request.url.path %}active{% endif %}">
-                    <i class="fa-solid fa-file-import"></i>
-                    <span>Importar</span>
-                </a>
-            </nav>
+<div class="nav-divider"></div>
+<a href="/import-export/import" class="nav-item {% if '/import' in request.url.path %}active{% endif %}">
+<i class="fa-solid fa-file-import" aria-hidden="true"></i>
+<span>Importar</span>
+</a>
+</nav>
 
             <div class="sidebar-footer">
                 <div class="user-card">
@@ -114,9 +117,9 @@
                 </div>
             </header>
 
-            <main class="content">
-                {% block content %}{% endblock %}
-            </main>
+<main class="content" id="main-content">
+{% block content %}{% endblock %}
+</main>
         </div>
     </div>
     {% else %}

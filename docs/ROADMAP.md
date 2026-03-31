@@ -1,8 +1,8 @@
 # ROADMAP - ISO 27001 & ITIL Evaluator
 
-**Última actualización:** 2026-03-30  
-**Versión Actual:** v1.7.4  
-**Estado:** ✅ Producción - IA On-Demand Implementada
+**Última actualización:** 2026-03-30
+**Versión Actual:** v1.8.3
+**Estado:** ✅ Producción - Monitoreo y Alertas Implementados
 
 ---
 
@@ -18,8 +18,10 @@
 | **Fase 4: Seguridad** | v1.7.0 | ✅ 100% | 2FA, auditoría, encriptación |
 | **Fase 5: IA On-Demand** | v1.7.4 | ✅ 100% | IA local Ollama, fallback automático |
 | **Fase 6: Documentación** | v1.7.4 | ✅ 100% | 28 docs, scripts, guías |
+| **Fase 7: Despliegue y Automatización** | v1.8.1 | ✅ 100% | Docker, scripts deploy, auto-backups |
+| **Fase 8: Monitoreo y Alertas** | v1.8.3 | ✅ 100% | Monitor sistema, alertas, health checks |
 
-**Progreso Total:** 95% del proyecto completado
+**Progreso Total:** 98% del proyecto completado
 
 ---
 

@@ -1,8 +1,8 @@
 # 📊 ESTADO DEL PROYECTO - ISO 27001 & ITIL Evaluator
 
 **Fecha:** 30 de Marzo de 2026
-**Versión Actual:** v1.8.1
-**Último Backup:** `backups/backup_full_20260327_193032.zip`
+**Versión Actual:** v1.8.4
+**Último Backup:** `backups/auto/backup_20260330_191715.zip`
 
 ---
 
@@ -13,10 +13,13 @@
 - **Fase 2: Evaluación Avanzada** - ✅ 100% COMPLETADO
 - **Fase 3: Reportes y Dashboard** - ✅ 100% COMPLETADO
 - **Fase 4: Seguridad** - ✅ 100% COMPLETADO
-- **Fase 5: IA Soberana** - 🔄 80% COMPLETADO
+- **Fase 5: IA Soberana** - ✅ 100% COMPLETADO
 - **Fase 6: Documentación** - ✅ 100% COMPLETADO
+- **Fase 7: Despliegue y Automatización** - ✅ 100% COMPLETADO
+- **Fase 8: Monitoreo y Alertas** - ✅ 100% COMPLETADO
+- **Fase 9: UI/UX y Accesibilidad** - ✅ 100% COMPLETADO
 
-**Progreso Total:** 95% del proyecto completo
+**Progreso Total:** 99% del proyecto completo
 
 ---
 
@@ -163,15 +166,31 @@ El sistema soporta 4 modos de operación:
 - [x] Documentación completa
 - [x] Backup realizado
 - [x] Variables de ambiente documentadas
+- [x] Monitoreo activo (scripts/monitor.py)
+- [x] Alertas configuradas (scripts/alert_manager.py)
 - [ ] Oracle Cloud configurado
 - [ ] Firewall configurado
-- [ ] Monitoreo activo
-- [ ] Alertas configuradas
 - [ ] Runbook de incidentes
 
 ---
 
 ## 🔄 Control de Cambios Recientes
+
+### v1.8.4 (2026-03-30) - NUEVO
+- ✅ Mejoras de UI/UX y Accesibilidad (Fase 9)
+- ✅ Skip link para navegación rápida
+- ✅ Focus states visibles (WCAG 2.1)
+- ✅ Aria-labels en iconos del sidebar
+- ✅ Transiciones suaves y hover effects
+- ✅ Documentación: UI_IMPROVEMENTS.md
+
+### v1.8.3 (2026-03-30) - NUEVO
+- ✅ Sistema de Monitoreo y Alertas (Fase 8)
+- ✅ monitor.py: Uptime, disco, backups, BD, Ollama, app health
+- ✅ alert_manager.py: Gestión de alertas con historial
+- ✅ Documentación: MONITORING.md
+- ✅ Logs: logs/monitor.log, logs/alerts.log, logs/alerts_history.json
+- ✅ Comandos: status, history, clear, check
 
 ### v1.8.1 (2026-03-27) - NUEVO
 - ✅ Sistema de IA on-demand con fallback automático
@@ -217,9 +236,9 @@ El sistema soporta 4 modos de operación:
 - `ROADMAP.md` - Cronograma
 
 **Backup Disponible:**
-- Path: `backups/backup_full_20260327_193032.zip`
-- Fecha: 2026-03-27 19:30:32
-- Tipo: Full backup (DB + uploads)
+- Path: `backups/auto/backup_20260330_191715.zip`
+- Fecha: 2026-03-30 19:17:15
+- Tipo: Full backup (DB + uploads + config)
 
 ---
 

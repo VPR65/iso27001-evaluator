@@ -5,6 +5,85 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 
 ---
 
+## [v1.8.4] - 2026-03-30
+
+### Mejorado - UI/UX y Accesibilidad (Fase 9)
+
+#### Accesibilidad (WCAG 2.1)
+- **Skip link**: Enlace para saltar al contenido principal
+- **Focus states**: Contorno visible en navegación por teclado
+- **Aria-labels**: Iconos del sidebar etiquetados correctamente
+- **Role navigation**: Sidebar con roles ARIA para screen readers
+
+#### Mejoras de UX
+- **Transiciones suaves**: Animaciones fluidas en hover y focus
+- **Hover effects**: KPI cards y nav items con micro-interacciones
+- **Mejor contraste**: Ajustes de color en sidebar
+- **Mobile-ready**: Botón de menú móvil preparado
+
+#### Cambios Técnicos
+- `app/templates/base.html`: Skip link, aria-labels, id="main-content"
+- `app/static/css/style.css`: Nuevas reglas de accesibilidad y animaciones
+- `docs/UI_IMPROVEMENTS.md`: Documentación completa de mejoras
+
+### Modificado
+- **CHANGELOG.md** - Esta entrada
+- **PROJECT_STATUS.md** - Actualizado a v1.8.4
+- **docs/UI_IMPROVEMENTS.md** - Nueva documentación
+
+### Técnico
+- WCAG 2.1 Level A compliance (básico)
+- Navegación por teclado mejorada
+- Transiciones CSS con cubic-bezier
+- Sin cambios de funcionalidad
+
+---
+
+## [v1.8.3] - 2026-03-30
+
+### Agregado - Sistema de Monitoreo y Alertas (Fase 8)
+
+#### Scripts de Monitoreo
+- **monitor.py**: Monitoreo completo del sistema (uptime, disco, backups, BD, Ollama, app)
+- **alert_manager.py**: Gestión de alertas con historial y resolución
+- **MONITORING.md**: Documentación completa del sistema
+
+#### Características de Monitoreo
+- **Uptime**: Tiempo de actividad del sistema
+- **Espacio en disco**: Con umbral de alerta (90%)
+- **Backups**: Conteo y verificación de últimos backups
+- **Base de datos**: Verificación de conexión
+- **Ollama**: Disponibilidad del servicio de IA local
+- **Aplicación**: Health check del endpoint `/health`
+
+#### Sistema de Alertas
+- **Niveles**: INFO, WARNING, CRITICAL
+- **Tipos**: SYSTEM, BACKUP, DATABASE, SECURITY, APPLICATION, DISK_SPACE, SERVICE
+- **Historial**: Persistencia en JSON
+- **Gestión**: Reconocimiento y resolución de alertas
+
+#### Comandos Disponibles
+```bash
+python scripts/monitor.py           # Ver estado completo
+python scripts/alert_manager.py     # Verificar y mostrar alertas
+python scripts/alert_manager.py status   # Resumen de alertas
+python scripts/alert_manager.py history  # Historial completo
+python scripts/alert_manager.py clear    # Limpiar alertas antiguas
+```
+
+### Modificado
+- **scripts/**: Agregados monitor.py y alert_manager.py
+- **docs/**: Agregado MONITORING.md
+- **logs/**: Nuevos logs de monitoreo y alertas
+
+### Técnico
+- Monitoreo en tiempo real
+- Alertas persistentes en JSON
+- Logs separados por componente
+- Integración con sistema de backups
+
+---
+
 ## [v1.8.1] - 2026-03-30
 
 ### Agregado - Scripts de Automatización (Fase 7)

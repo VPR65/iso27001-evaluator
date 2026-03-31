@@ -1,0 +1,43 @@
+{
+  "timestamp": "2026-03-30T19:28:32.854869",
+  "uptime": {
+    "status": "OK",
+    "uptime_seconds": 0,
+    "uptime_formatted": "0:00:00",
+    "start_time": "2026-03-30T19:28:32.854869"
+  },
+  "disk_space": {
+    "status": "OK",
+    "total_gb": 416.88,
+    "used_gb": 315.92,
+    "free_gb": 100.96,
+    "percent_used": 75.78,
+    "threshold_percent": 90.0
+  },
+  "backups": {
+    "status": "OK",
+    "total_backups": 14,
+    "latest_backup": {
+      "name": "backup_20260330_191715.zip",
+      "created": "2026-03-30T19:17:15.575341",
+      "size_mb": 0.2
+    },
+    "backups_last_24h": 1,
+    "backups_last_7d": 6
+  },
+  "database": {
+    "status": "OK",
+    "connection": "success"
+  },
+  "ollama": {
+    "status": "WARNING",
+    "available": false,
+    "message": "Ollama no disponible"
+  },
+  "app_health": {
+    "status": "WARNING",
+    "message": "App no responde en puerto 8000"
+  },
+  "alerts": [],
+  "overall_status": "OK"
+}
