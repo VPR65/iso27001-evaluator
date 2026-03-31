@@ -310,74 +310,48 @@ def manage_evaluations(request: Request):
 
 @router.post("/evaluations/{eval_id}/delete")
 async def delete_evaluation(request: Request, eval_id: str):
-    """Eliminar evaluacion - Version simplificada sin verification de password"""
-    import logging
-    logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger(__name__)
-    
-    logger.info(f"DELETE evaluation called with eval_id={eval_id}")
-    
-    try:
-        session_id = request.cookies.get("session_id")
-        logger.info(f"session_id: {session_id}")
-        
-        user = get_current_user(session_id)
-        logger.info(f"user: {user}")
-        
-        if not user or user.role != UserRole.SUPERADMIN:
-            logger.warning("User not authorized")
+    """Eliminar evaluacion"""
+    session_id = request.cookies.get("session_id")
+    user = get_current_user(session_id)
+    if not user or user.role != UserRole.SUPERADMIN:
+        return JSONResponse(
+            status_code=401,
+            content={"success": False, "error": "No tienes permisos"},
+        )
+
+    with Session(engine) as session:
+        evaluation = session.get(Evaluation, eval_id)
+        if not evaluation:
             return JSONResponse(
-                status_code=401,
-                content={"success": False, "error": "No tienes permisos"},
+                status_code=404,
+                content={"success": False, "error": "Evaluacion no encontrada"},
             )
 
-        logger.info("User authorized, proceeding with delete")
+        eval_name = evaluation.name
+
+        # Delete responses first
+        session.query(ControlResponse).filter(
+            ControlResponse.evaluation_id == eval_id
+        ).delete(synchronize_session=False)
         
-        with Session(engine) as session:
-            from app.models import ControlResponse
+        # Delete evaluation
+        session.delete(evaluation)
 
-            evaluation = session.get(Evaluation, eval_id)
-            logger.info(f"evaluation found: {evaluation}")
-            
-            if not evaluation:
-                return JSONResponse(
-                    status_code=404,
-                    content={"success": False, "error": "Evaluacion no encontrada"},
-                )
+        # Log
+        session.add(AuditLog(
+            user_id=user.id,
+            action="EVALUATION_DELETED",
+            entity_type="evaluation",
+            entity_id=eval_id,
+            details=f"Evaluacion eliminada: {eval_name}",
+        ))
 
-            eval_name = evaluation.name
-            logger.info(f"Deleting evaluation: {eval_name}")
+        session.commit()
 
-            session.query(ControlResponse).where(
-                ControlResponse.evaluation_id == eval_id
-            ).delete(synchronize_session=False)
-            session.delete(evaluation)
-
-            session.add(
-                AuditLog(
-                    user_id=user.id,
-                    action="EVALUATION_DELETED",
-                    entity_type="evaluation",
-                    entity_id=eval_id,
-                    details=f"Evaluacion eliminada: {eval_name}",
-                )
-            )
-
-            session.commit()
-            logger.info("Delete completed successfully")
-
-        return JSONResponse(
-            status_code=200,
-            content={"success": True, "message": "Evaluacion eliminada correctamente"},
-        )
-    except Exception as e:
-        import traceback
-        logger.error(f"ERROR in delete: {str(e)}")
-        logger.error(traceback.format_exc())
-        return JSONResponse(
-            status_code=500,
-            content={"success": False, "error": f"Error interno: {str(e)}"},
-        )
+    return JSONResponse(
+        status_code=200,
+        content={"success": True, "message": "Evaluacion eliminada correctamente"},
+    )
 
 
 @router.get("/evaluations/{eval_id}/delete")
