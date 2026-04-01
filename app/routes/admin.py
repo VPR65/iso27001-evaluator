@@ -211,10 +211,18 @@ async def delete_evaluation(request: Request, eval_id: str):
 
         with Session(engine) as session:
             from app.models import ControlResponse, EvidenceFile
+            from sqlmodel import select
 
-            evaluation = session.get(Evaluation, eval_id)
+            # Usar SELECT en lugar de session.get()
+            statement = select(Evaluation).where(Evaluation.id == eval_id)
+            evaluation = session.exec(statement).first()
 
-            print(f"[DELETE] Evaluacion encontrada: {evaluation}")
+            print(f"[DELETE] Evaluacion encontrada con SELECT: {evaluation}")
+
+            if not evaluation:
+                # Intentar con session.get() como backup
+                evaluation = session.get(Evaluation, eval_id)
+                print(f"[DELETE] Evaluacion con get(): {evaluation}")
 
             if not evaluation:
                 return JSONResponse(
