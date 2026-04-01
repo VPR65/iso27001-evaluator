@@ -209,22 +209,15 @@ async def delete_evaluation(request: Request, eval_id: str):
 
         print(f"[DELETE] Autenticacion OK, buscando evaluacion: {eval_id}")
 
-        from sqlmodel import Session as SqlSession
+        from sqlmodel import Session as SqlSession, select
 
         with SqlSession(engine) as session:
-            from app.models import ControlResponse, EvidenceFile
-            from sqlmodel import select
+            # Buscar la evaluacion
+            evaluation = session.exec(
+                select(Evaluation).where(Evaluation.id == eval_id)
+            ).first()
 
-            # Usar SELECT en lugar de session.get()
-            statement = select(Evaluation).where(Evaluation.id == eval_id)
-            evaluation = session.exec(statement).first()
-
-            print(f"[DELETE] Evaluacion encontrada con SELECT: {evaluation}")
-
-            if not evaluation:
-                # Intentar con session.get() como backup
-                evaluation = session.get(Evaluation, eval_id)
-                print(f"[DELETE] Evaluacion con get(): {evaluation}")
+            print(f"[DELETE] Evaluacion: {evaluation}")
 
             if not evaluation:
                 return JSONResponse(
@@ -233,52 +226,32 @@ async def delete_evaluation(request: Request, eval_id: str):
                 )
 
             eval_name = evaluation.name
-            eval_client_id = evaluation.client_id
-            print(f"[DELETE] Nombre: {eval_name}, Client: {eval_client_id}")
+            print(f"[DELETE] Nombre: {eval_name}")
 
-            # Obtener los IDs de las respuestas primero
-            response_ids = (
-                [r.id for r in evaluation.responses] if evaluation.responses else []
-            )
-            print(f"[DELETE] Respuestas a eliminar: {len(response_ids)}")
-
-            # Eliminar primero los archivos de evidencia
-            if response_ids:
-                deleted_evidence = (
-                    session.query(EvidenceFile)
-                    .filter(EvidenceFile.response_id.in_(response_ids))
-                    .delete(synchronize_session=False)
-                )
-                print(f"[DELETE] Eliminados {deleted_evidence} archivos de evidencia")
-
-                # Eliminar las respuestas
-                deleted_responses = (
-                    session.query(ControlResponse)
-                    .filter(ControlResponse.evaluation_id == eval_id)
-                    .delete(synchronize_session=False)
-                )
-                print(f"[DELETE] Eliminadas {deleted_responses} respuestas")
-            else:
-                deleted_responses = 0
-
-            # Delete evaluation
+            # Eliminar la evaluacion directamente (las respuestas se eliminan via cascade)
             session.delete(evaluation)
-            print(f"[DELETE] Evaluacion marcada para eliminar")
+            session.commit()
+
+            print(f"[DELETE] Eliminado exitosamente")
 
             # Log
+            from app.models import AuditLog as DB_AuditLog
+
             session.add(
-                AuditLog(
+                DB_AuditLog(
                     user_id=user.id,
                     action="EVALUATION_DELETED",
                     entity_type="evaluation",
                     entity_id=eval_id,
-                    details=f"Evaluacion eliminada: {eval_name} ({deleted_responses} respuestas)",
+                    details=f"Evaluacion eliminada: {eval_name}",
                 )
             )
-            print(f"[DELETE] Audit log agregado")
-
             session.commit()
-            print(f"[DELETE] Commit exitoso")
+
+        return JSONResponse(
+            status_code=200,
+            content={"success": True, "message": "Evaluacion eliminada correctamente"},
+        )
 
         return JSONResponse(
             status_code=200,
