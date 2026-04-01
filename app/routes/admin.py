@@ -255,11 +255,12 @@ async def delete_evaluation(request: Request, eval_id: str):
     except Exception as e:
         import traceback
 
+        error_detail = traceback.format_exc()
         logger.error(f"Error en delete evaluation: {type(e).__name__}: {str(e)}")
-        logger.error(traceback.format_exc())
+        logger.error(error_detail)
         return JSONResponse(
             status_code=500,
-            content={"success": False, "error": f"Error: {type(e).__name__}"},
+            content={"success": False, "error": f"Error: {type(e).__name__}: {str(e)}"},
         )
 
         form_data = await request.form()
