@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from app.models import User, UserRole, AuditLog, Client
-from app.auth import get_current_user, hash_password
+from app.auth import get_current_user, hash_password, verify_password
 from app.database import engine
 from app.templates_core import render
 from app.security import verify_csrf_token
@@ -186,6 +186,21 @@ async def delete_evaluation(request: Request, eval_id: str):
             content={"success": False, "error": "No tienes permisos"},
         )
 
+    form_data = await request.form()
+    confirm_password = form_data.get("confirm_password", "")
+
+    if not confirm_password:
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "error": "Debe confirmar con su password"},
+        )
+
+    if not verify_password(confirm_password, user.password_hash):
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "error": "Password incorrecto"},
+        )
+
     with Session(engine) as session:
         from app.models import ControlResponse
 
@@ -199,9 +214,11 @@ async def delete_evaluation(request: Request, eval_id: str):
         eval_name = evaluation.name
 
         # Delete responses first
-        session.query(ControlResponse).filter(
-            ControlResponse.evaluation_id == eval_id
-        ).delete(synchronize_session=False)
+        deleted_responses = (
+            session.query(ControlResponse)
+            .filter(ControlResponse.evaluation_id == eval_id)
+            .delete(synchronize_session=False)
+        )
 
         # Delete evaluation
         session.delete(evaluation)
@@ -213,7 +230,7 @@ async def delete_evaluation(request: Request, eval_id: str):
                 action="EVALUATION_DELETED",
                 entity_type="evaluation",
                 entity_id=eval_id,
-                details=f"Evaluacion eliminada: {eval_name}",
+                details=f"Evaluacion eliminada: {eval_name} ({deleted_responses} respuestas)",
             )
         )
 
