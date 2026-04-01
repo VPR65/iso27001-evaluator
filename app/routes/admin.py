@@ -207,6 +207,8 @@ async def delete_evaluation(request: Request, eval_id: str):
 
     # USAR EL ENFOQUE EXACTO DEL DEBUG ENDPOINT QUE FUNCIONA
     from app.models import ControlResponse, Evaluation
+    
+    with Session(engine) as session:
 
     with Session(engine) as session:
         # Primero borrar las respuestas
