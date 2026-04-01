@@ -178,19 +178,89 @@ async def delete_client_get(request: Request, client_id: str):
 @router.post("/evaluations/{eval_id}/delete")
 async def delete_evaluation(request: Request, eval_id: str):
     """Eliminar evaluacion"""
-    try:
-        print(f"[DELETE] Iniciando delete de evaluacion: {eval_id}")
+    import logging
 
+    logger = logging.getLogger(__name__)
+
+    try:
         session_id = request.cookies.get("session_id")
         user = get_current_user(session_id)
-
-        print(f"[DELETE] User: {user}")
 
         if not user or user.role != UserRole.SUPERADMIN:
             return JSONResponse(
                 status_code=401,
                 content={"success": False, "error": "No tienes permisos"},
             )
+
+        form_data = await request.form()
+        confirm_password = form_data.get("confirm_password", "")
+
+        if not confirm_password:
+            return JSONResponse(
+                status_code=400,
+                content={"success": False, "error": "Debe confirmar con su password"},
+            )
+
+        if not verify_password(confirm_password, user.password_hash):
+            return JSONResponse(
+                status_code=400,
+                content={"success": False, "error": "Password incorrecto"},
+            )
+
+        from sqlmodel import Session as SqlSession, select
+        from sqlalchemy import text
+
+        with SqlSession(engine) as session:
+            # Primero verificar que existe
+            evaluation = session.exec(
+                select(Evaluation).where(Evaluation.id == eval_id)
+            ).first()
+
+            if not evaluation:
+                return JSONResponse(
+                    status_code=404,
+                    content={"success": False, "error": "Evaluacion no encontrada"},
+                )
+
+            eval_name = evaluation.name
+
+            # Eliminar respuestas primero (manera explícita, no rely on cascade)
+            session.exec(
+                text("DELETE FROM control_responses WHERE evaluation_id = :eval_id"),
+                {"eval_id": eval_id},
+            )
+
+            # Eliminar evaluación
+            session.delete(evaluation)
+            session.commit()
+
+            # Log
+            from app.models import AuditLog as DB_AuditLog
+
+            session.add(
+                DB_AuditLog(
+                    user_id=user.id,
+                    action="EVALUATION_DELETED",
+                    entity_type="evaluation",
+                    entity_id=eval_id,
+                    details=f"Evaluacion eliminada: {eval_name}",
+                )
+            )
+            session.commit()
+
+        return JSONResponse(
+            status_code=200,
+            content={"success": True, "message": "Evaluacion eliminada correctamente"},
+        )
+    except Exception as e:
+        import traceback
+
+        logger.error(f"Error en delete evaluation: {type(e).__name__}: {str(e)}")
+        logger.error(traceback.format_exc())
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": f"Error: {type(e).__name__}"},
+        )
 
         form_data = await request.form()
         confirm_password = form_data.get("confirm_password", "")
