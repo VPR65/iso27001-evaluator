@@ -826,23 +826,27 @@ def seed_data():
                 print(f" Error al inicializar plantillas: {e}")
 
             # Check and add ITIL4 controls if missing (added after initial seed)
-            itil4_norma = session.exec(
-                select(Norma).where(Norma.code == "ITIL4")
-            ).first()
-            if itil4_norma:
-                itil_controls = session.exec(
-                    select(ControlDefinition).where(
-                        ControlDefinition.norma_id == itil4_norma.id
-                    )
+            try:
+                itil4_norma = session.exec(
+                    select(Norma).where(Norma.code == "ITIL4")
                 ).first()
-                if not itil_controls:
-                    itil4_controls = _get_itil4_controls()
-                    for ctrl in itil4_controls:
-                        ctrl["norma_id"] = itil4_norma.id
-                        session.add(ControlDefinition(**ctrl))
-                    print(f"  Agregados {len(itil4_controls)} controles ITIL v4")
-                    session.commit()
-                    print("  Controles ITIL v4 agregados correctamente.")
+                if itil4_norma:
+                    itil_controls = session.exec(
+                        select(ControlDefinition).where(
+                            ControlDefinition.norma_id == itil4_norma.id
+                        )
+                    ).first()
+                    if not itil_controls:
+                        itil4_controls = _get_itil4_controls()
+                        for ctrl in itil4_controls:
+                            ctrl["norma_id"] = itil4_norma.id
+                            session.add(ControlDefinition(**ctrl))
+                        print(f"  Agregados {len(itil4_controls)} controles ITIL v4")
+                        session.commit()
+                        print("  Controles ITIL v4 agregados correctamente.")
+            except Exception as e:
+                print(f"  Error al procesar ITIL4: {e}")
+                session.rollback()
 
             existing_superadmin = session.exec(
                 select(User).where(User.email == "admin@iso27001.local")
@@ -1451,18 +1455,22 @@ def seed_data():
             },
         ]
 
-        itil4_norma = session.exec(select(Norma).where(Norma.code == "ITIL4")).first()
-        if itil4_norma:
-            itil_controls = session.exec(
-                select(ControlDefinition).where(
-                    ControlDefinition.norma_id == itil4_norma.id
-                )
-            ).first()
-            if not itil_controls:
-                for ctrl in itil4_controls:
-                    ctrl["norma_id"] = itil4_norma.id
-                    session.add(ControlDefinition(**ctrl))
-                print(f"  Agregados {len(itil4_controls)} controles ITIL v4")
+            itil4_norma = session.exec(select(Norma).where(Norma.code == "ITIL4")).first()
+            if itil4_norma:
+                try:
+                    itil_controls = session.exec(
+                        select(ControlDefinition).where(
+                            ControlDefinition.norma_id == itil4_norma.id
+                        )
+                    ).first()
+                    if not itil_controls:
+                        for ctrl in itil4_controls:
+                            ctrl["norma_id"] = itil4_norma.id
+                            session.add(ControlDefinition(**ctrl))
+                        print(f"  Agregados {len(itil4_controls)} controles ITIL v4")
+                except Exception as e:
+                    print(f"  Error ITIL4: {e}")
+                    session.rollback()
 
         existing_client = session.exec(
             select(Client).where(Client.name == "Cliente Demo")
