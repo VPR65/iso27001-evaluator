@@ -209,7 +209,9 @@ async def delete_evaluation(request: Request, eval_id: str):
 
         print(f"[DELETE] Autenticacion OK, buscando evaluacion: {eval_id}")
 
-        with Session(engine) as session:
+        from sqlmodel import Session as SqlSession
+
+        with SqlSession(engine) as session:
             from app.models import ControlResponse, EvidenceFile
             from sqlmodel import select
 
