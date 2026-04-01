@@ -178,8 +178,7 @@ async def delete_client_get(request: Request, client_id: str):
 
 @router.post("/evaluations/{eval_id}/delete")
 async def delete_evaluation(request: Request, eval_id: str):
-    """Eliminar evaluacion - delegar al endpoint de evaluations que ya funciona"""
-    from fastapi import HTTPException
+    """Eliminar evaluacion"""
     from app.security import verify_csrf_token
 
     session_id = request.cookies.get("session_id")
@@ -206,14 +205,24 @@ async def delete_evaluation(request: Request, eval_id: str):
             content={"success": False, "error": "Password incorrecto"},
         )
 
-    # Delegar al endpoint de /evaluations que ya funciona - hacer redirect interno
-    from fastapi import APIRouter
-    from app.routes.evaluations import router as eval_router
+    # USAR EL ENFOQUE EXACTO DEL DEBUG ENDPOINT QUE FUNCIONA
+    from app.models import ControlResponse, Evaluation
 
-    # Buscar y ejecutar el endpoint de delete de evaluations
-    from app.routes import evaluations
+    with Session(engine) as session:
+        # Primero borrar las respuestas
+        session.query(ControlResponse).filter(
+            ControlResponse.evaluation_id == eval_id
+        ).delete()
 
-    return await evaluations.delete_evaluation(request, eval_id)
+        # Luego borrar la evaluacion
+        session.query(Evaluation).filter(Evaluation.id == eval_id).delete()
+
+        session.commit()
+
+        return JSONResponse(
+            status_code=200,
+            content={"success": True, "message": "Evaluacion eliminada correctamente"},
+        )
 
     form_data = await request.form()
     confirm_password = form_data.get("confirm_password", "")
