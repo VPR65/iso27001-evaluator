@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
-from app.models import User, UserRole, AuditLog, Client
+from app.models import User, UserRole, AuditLog, Client, Evaluation
 from app.auth import get_current_user, hash_password, verify_password
 from app.database import engine
 from app.templates_core import render
@@ -179,8 +179,6 @@ async def delete_client_get(request: Request, client_id: str):
 @router.post("/evaluations/{eval_id}/delete")
 async def delete_evaluation(request: Request, eval_id: str):
     """Eliminar evaluacion"""
-    from app.security import verify_csrf_token
-
     session_id = request.cookies.get("session_id")
     user = get_current_user(session_id)
 
@@ -205,167 +203,18 @@ async def delete_evaluation(request: Request, eval_id: str):
             content={"success": False, "error": "Password incorrecto"},
         )
 
-    # USAR EL ENFOQUE EXACTO DEL DEBUG ENDPOINT QUE FUNCIONA
-    from app.models import ControlResponse, Evaluation
-    
     with Session(engine) as session:
+        from app.models import ControlResponse
 
-    with Session(engine) as session:
-        # Primero borrar las respuestas
         session.query(ControlResponse).filter(
             ControlResponse.evaluation_id == eval_id
         ).delete()
-
-        # Luego borrar la evaluacion
         session.query(Evaluation).filter(Evaluation.id == eval_id).delete()
-
         session.commit()
 
         return JSONResponse(
             status_code=200,
             content={"success": True, "message": "Evaluacion eliminada correctamente"},
-        )
-
-    form_data = await request.form()
-    confirm_password = form_data.get("confirm_password", "")
-
-    if not confirm_password:
-        return JSONResponse(
-            status_code=400,
-            content={"success": False, "error": "Debe confirmar con su password"},
-        )
-
-    if not verify_password(confirm_password, user.password_hash):
-        return JSONResponse(
-            status_code=400,
-            content={"success": False, "error": "Password incorrecto"},
-        )
-
-    # VERIFICAR QUE EXISTE ANTES DE HACER CUALQUIER COSA
-    from app.models import Evaluation
-    from app.database import engine
-    from sqlmodel import Session
-
-    with Session(engine) as session:
-        evaluation = session.get(Evaluation, eval_id)
-        if not evaluation:
-            return JSONResponse(
-                status_code=404,
-                content={"success": False, "error": "Evaluacion no encontrada"},
-            )
-
-        eval_name = evaluation.name
-
-        # HACER EL DELETE EXACTAMENTE COMO evaluations.py - SIN AUDIT LOG PRIMERO
-        session.delete(evaluation)
-        session.commit()
-
-        # Log DESPUES del commit exitoso
-        session.add(
-            AuditLog(
-                user_id=user.id,
-                action="EVALUATION_DELETED",
-                entity_type="evaluation",
-                entity_id=eval_id,
-                details=f"Evaluacion eliminada: {eval_name}",
-            )
-        )
-        session.commit()
-
-        return JSONResponse(
-            status_code=200,
-            content={"success": True, "message": "Evaluacion eliminada correctamente"},
-        )
-
-    form_data = await request.form()
-    csrf_token = form_data.get("csrf_token")
-    confirm_password = form_data.get("confirm_password", "")
-
-    if not confirm_password:
-        return JSONResponse(
-            status_code=400,
-            content={"success": False, "error": "Debe confirmar con su password"},
-        )
-
-    if not verify_password(confirm_password, user.password_hash):
-        return JSONResponse(
-            status_code=400,
-            content={"success": False, "error": "Password incorrecto"},
-        )
-
-    # Usar el mismo codigo que evaluations.py - hacer el delete directamente
-    from app.models import Evaluation
-    from app.database import engine
-    from sqlmodel import Session
-
-    with Session(engine) as session:
-        evaluation = session.get(Evaluation, eval_id)
-        if evaluation:
-            eval_name = evaluation.name
-            session.delete(evaluation)
-            session.add(
-                AuditLog(
-                    user_id=user.id,
-                    action="EVALUATION_DELETED",
-                    entity_type="evaluation",
-                    entity_id=eval_id,
-                    details=f"Evaluacion eliminada: {eval_name}",
-                )
-            )
-            session.commit()
-            return JSONResponse(
-                status_code=200,
-                content={
-                    "success": True,
-                    "message": "Evaluacion eliminada correctamente",
-                },
-            )
-        return JSONResponse(
-            status_code=404,
-            content={"success": False, "error": "Evaluacion no encontrada"},
-        )
-
-    form_data = await request.form()
-    csrf_token = form_data.get("csrf_token")
-    confirm_password = form_data.get("confirm_password", "")
-
-    if not confirm_password:
-        return JSONResponse(
-            status_code=400,
-            content={"success": False, "error": "Debe confirmar con su password"},
-        )
-
-    if not verify_password(confirm_password, user.password_hash):
-        return JSONResponse(
-            status_code=400,
-            content={"success": False, "error": "Password incorrecto"},
-        )
-
-    with Session(engine) as session:
-        evaluation = session.get(Evaluation, eval_id)
-        if evaluation:
-            eval_name = evaluation.name
-            session.delete(evaluation)
-            session.add(
-                AuditLog(
-                    user_id=user.id,
-                    action="EVALUATION_DELETED",
-                    entity_type="evaluation",
-                    entity_id=eval_id,
-                    details=f"Evaluacion eliminada: {eval_name}",
-                )
-            )
-            session.commit()
-            return JSONResponse(
-                status_code=200,
-                content={
-                    "success": True,
-                    "message": "Evaluacion eliminada correctamente",
-                },
-            )
-        return JSONResponse(
-            status_code=404,
-            content={"success": False, "error": "Evaluacion no encontrada"},
         )
 
 
