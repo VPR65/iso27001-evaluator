@@ -210,7 +210,7 @@ async def delete_evaluation(request: Request, eval_id: str):
         print(f"[DELETE] Autenticacion OK, buscando evaluacion: {eval_id}")
 
         with Session(engine) as session:
-            from app.models import ControlResponse
+            from app.models import ControlResponse, EvidenceFile
 
             evaluation = session.get(Evaluation, eval_id)
 
@@ -226,14 +226,30 @@ async def delete_evaluation(request: Request, eval_id: str):
             eval_client_id = evaluation.client_id
             print(f"[DELETE] Nombre: {eval_name}, Client: {eval_client_id}")
 
-            # Delete responses first
-            deleted_responses = (
-                session.query(ControlResponse)
-                .filter(ControlResponse.evaluation_id == eval_id)
-                .delete(synchronize_session=False)
+            # Obtener los IDs de las respuestas primero
+            response_ids = (
+                [r.id for r in evaluation.responses] if evaluation.responses else []
             )
+            print(f"[DELETE] Respuestas a eliminar: {len(response_ids)}")
 
-            print(f"[DELETE] Eliminadas {deleted_responses} respuestas")
+            # Eliminar primero los archivos de evidencia
+            if response_ids:
+                deleted_evidence = (
+                    session.query(EvidenceFile)
+                    .filter(EvidenceFile.response_id.in_(response_ids))
+                    .delete(synchronize_session=False)
+                )
+                print(f"[DELETE] Eliminados {deleted_evidence} archivos de evidencia")
+
+                # Eliminar las respuestas
+                deleted_responses = (
+                    session.query(ControlResponse)
+                    .filter(ControlResponse.evaluation_id == eval_id)
+                    .delete(synchronize_session=False)
+                )
+                print(f"[DELETE] Eliminadas {deleted_responses} respuestas")
+            else:
+                deleted_responses = 0
 
             # Delete evaluation
             session.delete(evaluation)
