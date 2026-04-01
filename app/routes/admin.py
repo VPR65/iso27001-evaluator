@@ -178,44 +178,12 @@ async def delete_client_get(request: Request, client_id: str):
 
 @router.post("/evaluations/{eval_id}/delete")
 async def delete_evaluation(request: Request, eval_id: str):
-    """Eliminar evaluacion"""
-    session_id = request.cookies.get("session_id")
-    user = get_current_user(session_id)
+    """Eliminar evaluacion - delegar al endpoint de evaluations que funciona"""
+    from fastapi import HTTPException
+    from fastapi.responses import RedirectResponse
 
-    if not user or user.role != UserRole.SUPERADMIN:
-        return JSONResponse(
-            status_code=401,
-            content={"success": False, "error": "No tienes permisos"},
-        )
-
-    form_data = await request.form()
-    confirm_password = form_data.get("confirm_password", "")
-
-    if not confirm_password:
-        return JSONResponse(
-            status_code=400,
-            content={"success": False, "error": "Debe confirmar con su password"},
-        )
-
-    if not verify_password(confirm_password, user.password_hash):
-        return JSONResponse(
-            status_code=400,
-            content={"success": False, "error": "Password incorrecto"},
-        )
-
-    with Session(engine) as session:
-        from app.models import ControlResponse, Evaluation
-
-        session.query(ControlResponse).filter(
-            ControlResponse.evaluation_id == eval_id
-        ).delete()
-        session.query(Evaluation).filter(Evaluation.id == eval_id).delete()
-        session.commit()
-
-        return JSONResponse(
-            status_code=200,
-            content={"success": True, "message": "Evaluacion eliminada correctamente"},
-        )
+    # Delegar al endpoint /evaluations/{id}/delete
+    return RedirectResponse(url=f"/evaluations/{eval_id}/delete", status_code=307)
 
 
 @router.get("/evaluations/{eval_id}/delete")
