@@ -22,9 +22,10 @@ import os
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production")
 
+# Version actualizada para forzar deploy
 app = FastAPI(
     title="ISO 27001 Evaluator",
-    version="1.1.2",
+    version="1.1.3",
     description="Sistema web para evaluar el cumplimiento de seguridad bajo ISO 27001:2022",
     docs_url="/docs",
     redoc_url="/redoc",
@@ -44,8 +45,12 @@ if uploads_path.exists():
 
 @app.on_event("startup")
 def on_startup():
-    create_db_and_tables()
-    seed_data()
+    try:
+        create_db_and_tables()
+        seed_data()
+    except Exception as e:
+        print(f"WARNING: seed_data failed: {e}")
+        print("Continuing without seed data...")
 
 
 @app.get("/health")
