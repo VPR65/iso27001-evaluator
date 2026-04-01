@@ -179,13 +179,97 @@ async def delete_client_get(request: Request, client_id: str):
 async def delete_evaluation(request: Request, eval_id: str):
     """Eliminar evaluacion"""
     try:
+        print(f"[DELETE] Iniciando delete de evaluacion: {eval_id}")
+
         session_id = request.cookies.get("session_id")
         user = get_current_user(session_id)
+
+        print(f"[DELETE] User: {user}")
+
         if not user or user.role != UserRole.SUPERADMIN:
             return JSONResponse(
                 status_code=401,
                 content={"success": False, "error": "No tienes permisos"},
             )
+
+        form_data = await request.form()
+        confirm_password = form_data.get("confirm_password", "")
+
+        if not confirm_password:
+            return JSONResponse(
+                status_code=400,
+                content={"success": False, "error": "Debe confirmar con su password"},
+            )
+
+        if not verify_password(confirm_password, user.password_hash):
+            return JSONResponse(
+                status_code=400,
+                content={"success": False, "error": "Password incorrecto"},
+            )
+
+        print(f"[DELETE] Autenticacion OK, buscando evaluacion: {eval_id}")
+
+        with Session(engine) as session:
+            from app.models import ControlResponse
+
+            evaluation = session.get(Evaluation, eval_id)
+
+            print(f"[DELETE] Evaluacion encontrada: {evaluation}")
+
+            if not evaluation:
+                return JSONResponse(
+                    status_code=404,
+                    content={"success": False, "error": "Evaluacion no encontrada"},
+                )
+
+            eval_name = evaluation.name
+            eval_client_id = evaluation.client_id
+            print(f"[DELETE] Nombre: {eval_name}, Client: {eval_client_id}")
+
+            # Delete responses first
+            deleted_responses = (
+                session.query(ControlResponse)
+                .filter(ControlResponse.evaluation_id == eval_id)
+                .delete(synchronize_session=False)
+            )
+
+            print(f"[DELETE] Eliminadas {deleted_responses} respuestas")
+
+            # Delete evaluation
+            session.delete(evaluation)
+            print(f"[DELETE] Evaluacion marcada para eliminar")
+
+            # Log
+            session.add(
+                AuditLog(
+                    user_id=user.id,
+                    action="EVALUATION_DELETED",
+                    entity_type="evaluation",
+                    entity_id=eval_id,
+                    details=f"Evaluacion eliminada: {eval_name} ({deleted_responses} respuestas)",
+                )
+            )
+            print(f"[DELETE] Audit log agregado")
+
+            session.commit()
+            print(f"[DELETE] Commit exitoso")
+
+        return JSONResponse(
+            status_code=200,
+            content={"success": True, "message": "Evaluacion eliminada correctamente"},
+        )
+    except Exception as e:
+        import traceback
+
+        print(f"[DELETE] ERROR: {str(e)}")
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": f"Error interno: {type(e).__name__}: {str(e)}",
+            },
+        )
 
         form_data = await request.form()
         confirm_password = form_data.get("confirm_password", "")
