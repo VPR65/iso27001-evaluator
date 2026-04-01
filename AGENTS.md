@@ -1,5 +1,8 @@
 # AGENTS.md — Convenciones de Desarrollo
 
+> **Nota:** Este proyecto hereda skills globales desde `C:\Users\vpalma\.opencode\skills\`. 
+> Verificar que las instrucciones de los skills 00-05 se apliquen automáticamente.
+
 ## Ramas Git
 
 - `main`: Produccion (solo merge desde release)

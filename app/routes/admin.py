@@ -134,71 +134,9 @@ async def delete_client(request: Request, client_id: str):
 
         client_name = client.name
 
-        for eval_obj in session.exec(select(Evaluation).where(Evaluation.client_id == client_id)).all():
-            session.query(ControlResponse).where(
-                ControlResponse.evaluation_id == eval_obj.id
-            ).delete()
-            session.delete(eval_obj)
-
-        session.query(User).where(User.client_id == client_id).delete()
-        session.query(UserSession).where(
-            UserSession.user_id.in_(
-                session.exec(select(User.id).where(User.client_id == client_id))
-            )
-        ).delete(synchronize_session=False)
-
-        session.delete(client)
-
-        session.add(
-            AuditLog(
-                user_id=user.id,
-                action="CLIENT_DELETED",
-                entity_type="client",
-                entity_id=client_id,
-                details=f"Cliente eliminado: {client_name}",
-            )
-        )
-        session.commit()
-
-    return JSONResponse(
-        status_code=200,
-        content={"success": True, "message": "Cliente eliminado correctamente"}
-    )
-
-
-@router.get("/clients/{client_id}/delete")
-async def delete_client_get(request: Request, client_id: str):
-    from fastapi import HTTPException
-    raise HTTPException(status_code=405, detail="Method not allowed. Use POST.")
-
-
-@router.post("/users/{user_id}/delete")
-            status_code=400,
-            content={"success": False, "error": "Password incorrecto"},
-        )
-
-    with Session(engine) as session:
-        from app.models import Evaluation, ControlResponse, User, Session as UserSession
-
-        client = session.get(Client, client_id)
-        if not client:
-            return JSONResponse(
-                status_code=404,
-                content={"success": False, "error": "Cliente no encontrado"},
-            )
-
-        client_name = client.name
-
-        evals = session.exec(
+        for eval_obj in session.exec(
             select(Evaluation).where(Evaluation.client_id == client_id)
-        ).all()
-
-        for eval_obj in evals:
-            session.exec(
-                select(ControlResponse).where(
-                    ControlResponse.evaluation_id == eval_obj.id
-                )
-            )
+        ).all():
             session.query(ControlResponse).where(
                 ControlResponse.evaluation_id == eval_obj.id
             ).delete()
@@ -232,80 +170,9 @@ async def delete_client_get(request: Request, client_id: str):
 
 @router.get("/clients/{client_id}/delete")
 async def delete_client_get(request: Request, client_id: str):
-    """Handle GET requests to delete client - redirect back with error"""
     from fastapi import HTTPException
 
-    return HTTPException(status_code=405, detail="Method not allowed. Use POST.")
-
-
-@router.get("/evaluations", response_class=HTMLResponse)
-def manage_evaluations(request: Request):
-    """Panel de administracion de evaluaciones"""
-    session_id = request.cookies.get("session_id")
-    user = get_current_user(session_id)
-    if not user:
-        return RedirectResponse(url="/login")
-    if user.role != UserRole.SUPERADMIN:
-        return RedirectResponse(url="/dashboard")
-
-    show_deleted = request.query_params.get("deleted") == "1"
-
-    with Session(engine) as session:
-        from app.models import (
-            Evaluation,
-            Client,
-            Norma,
-            ControlResponse,
-            ControlDefinition,
-        )
-
-        evaluations = session.exec(
-            select(Evaluation).order_by(desc(Evaluation.created_at))
-        ).all()
-
-        evals_data = []
-        for eval_obj in evaluations:
-            client = (
-                session.get(Client, eval_obj.client_id) if eval_obj.client_id else None
-            )
-            norma = session.get(Norma, eval_obj.norma_id) if eval_obj.norma_id else None
-
-            response_count = session.exec(
-                select(func.count(ControlResponse.id)).where(
-                    ControlResponse.evaluation_id == eval_obj.id
-                )
-            ).one()
-
-            total_controls = 0
-            progress_percent = 0
-            if norma:
-                total_controls = session.exec(
-                    select(func.count(ControlDefinition.id)).where(
-                        ControlDefinition.norma_id == norma.id
-                    )
-                ).one()
-                if total_controls > 0:
-                    progress_percent = min(
-                        100, round((response_count / total_controls) * 100, 1)
-                    )
-
-            evals_data.append(
-                {
-                    "evaluation": eval_obj,
-                    "client": client,
-                    "norma": norma,
-                    "response_count": response_count,
-                    "total_controls": total_controls,
-                    "progress_percent": progress_percent,
-                }
-            )
-
-    return render(
-        request,
-        "admin/evaluations.html",
-        evaluations=evals_data,
-        show_deleted=show_deleted,
-    )
+    raise HTTPException(status_code=405, detail="Method not allowed. Use POST.")
 
 
 @router.post("/evaluations/{eval_id}/delete")
@@ -320,6 +187,8 @@ async def delete_evaluation(request: Request, eval_id: str):
         )
 
     with Session(engine) as session:
+        from app.models import ControlResponse
+
         evaluation = session.get(Evaluation, eval_id)
         if not evaluation:
             return JSONResponse(
@@ -333,18 +202,20 @@ async def delete_evaluation(request: Request, eval_id: str):
         session.query(ControlResponse).filter(
             ControlResponse.evaluation_id == eval_id
         ).delete(synchronize_session=False)
-        
+
         # Delete evaluation
         session.delete(evaluation)
 
         # Log
-        session.add(AuditLog(
-            user_id=user.id,
-            action="EVALUATION_DELETED",
-            entity_type="evaluation",
-            entity_id=eval_id,
-            details=f"Evaluacion eliminada: {eval_name}",
-        ))
+        session.add(
+            AuditLog(
+                user_id=user.id,
+                action="EVALUATION_DELETED",
+                entity_type="evaluation",
+                entity_id=eval_id,
+                details=f"Evaluacion eliminada: {eval_name}",
+            )
+        )
 
         session.commit()
 
@@ -413,60 +284,15 @@ async def delete_user(request: Request, user_id: str):
 
     return JSONResponse(
         status_code=200,
-        content={"success": True, "message": "Usuario eliminado correctamente"}
-    )
-
-
-@router.get("/users/{user_id}/delete")
-async def delete_user_get(request: Request, user_id: str):
-    from fastapi import HTTPException
-    raise HTTPException(status_code=405, detail="Method not allowed. Use POST.")
-        if not target_user:
-            return JSONResponse(
-                status_code=404,
-                content={"success": False, "error": "Usuario no encontrado"},
-            )
-
-        if target_user.email == "admin@iso27001.local":
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "success": False,
-                    "error": "No se puede eliminar el superadmin",
-                },
-            )
-
-        user_email = target_user.email
-        user_name = target_user.name
-
-        session.query(UserSession).where(UserSession.user_id == user_id).delete(
-            synchronize_session=False
-        )
-        session.delete(target_user)
-
-        session.add(
-            AuditLog(
-                user_id=user.id,
-                action="USER_DELETED",
-                entity_type="user",
-                entity_id=user_id,
-                details=f"Usuario eliminado: {user_email} ({user_name})",
-            )
-        )
-        session.commit()
-
-    return JSONResponse(
-        status_code=200,
         content={"success": True, "message": "Usuario eliminado correctamente"},
     )
 
 
 @router.get("/users/{user_id}/delete")
 async def delete_user_get(request: Request, user_id: str):
-    """Handle GET requests to delete user - redirect back with error"""
     from fastapi import HTTPException
 
-    return HTTPException(status_code=405, detail="Method not allowed. Use POST.")
+    raise HTTPException(status_code=405, detail="Method not allowed. Use POST.")
 
 
 @router.get("/all-users", response_class=HTMLResponse)

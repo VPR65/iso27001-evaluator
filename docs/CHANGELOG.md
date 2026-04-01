@@ -5,6 +5,20 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 
 ---
 
+## [v2.0.1] - 2026-04-01
+
+### Fix - Delete Evaluation
+
+#### Bug Corregido
+- Corregido código corrupto en `app/routes/admin.py` (código duplicado mal estructurado)
+- Agregado import faltante `ControlResponse` en endpoint de delete de evaluaciones
+
+#### Cambios
+- `app/routes/admin.py`: Corregido delete_evaluation y eliminados endpoints duplicados
+- `AGENTS.md`: Referencia a skills globales
+
+---
+
 ## [v2.0.0] - 2026-03-31
 
 ### Release - Production Ready
