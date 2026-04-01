@@ -280,23 +280,46 @@ def run_all_tests(base_url, verbose=False):
         "POST",
         "/login",
         [200, 302, 303],
+        data={"email": "admin@iso27001.local", "password": "admin123"},
         check_ux=False,
     )
     suite.run_test(
-        "1.2 Login - Password incorrecto", "POST", "/login", [200, 400], check_ux=True
+        "1.2 Login - Password incorrecto",
+        "POST",
+        "/login",
+        [200, 400],
+        data={"email": "admin@iso27001.local", "password": "wrongpass"},
+        check_ux=True,
     )
     suite.run_test(
-        "1.3 Login - Email no registrado", "POST", "/login", [200, 400], check_ux=True
+        "1.3 Login - Email no registrado",
+        "POST",
+        "/login",
+        [200, 400],
+        data={"email": "noexiste@test.com", "password": "test123"},
+        check_ux=True,
     )
     suite.run_test(
-        "1.4 Login - Email vacío", "POST", "/login", [200, 400], check_ux=True
+        "1.4 Login - Email vacío",
+        "POST",
+        "/login",
+        [200, 400],
+        data={"email": "", "password": "test123"},
+        check_ux=True,
     )
     suite.run_test(
-        "1.5 Login - Password vacío", "POST", "/login", [200, 400], check_ux=True
+        "1.5 Login - Password vacío",
+        "POST",
+        "/login",
+        [200, 400],
+        data={"email": "admin@test.com", "password": ""},
+        check_ux=True,
     )
 
     # 1.6 - 1.10: Sesión y seguridad
-    suite.run_test("1.6 Logout", "POST", "/logout", [200, 302, 303])
+    suite.run_test(
+        "1.6 Logout", "POST", "/logout", [200, 302, 303], data={"csrf_token": "dummy"}
+    )
     suite.run_test(
         "1.7 Dashboard sin login", "GET", "/dashboard", [200, 302, 303], check_ux=False
     )
@@ -423,32 +446,29 @@ def run_all_tests(base_url, verbose=False):
     print_header("CATEGORÍA 9: OPERACIONES DELETE (CRÍTICO)")
 
     # Estas son las pruebas que detectan el bug de UX
+    # Sin login, espera 401 (sin permisos) o similar
     suite.run_test(
-        "9.1 Delete evaluation - Con password correcto",
+        "9.1 Delete evaluation - Sin login (esperado 401/403)",
         "POST",
         "/admin/evaluations/invalid-id-123/delete",
-        [200, 400, 404],
+        [200, 401, 403, 404],
+        data={"csrf_token": "test"},
         check_ux=True,
     )
     suite.run_test(
-        "9.2 Delete evaluation - Sin permisos",
-        "POST",
-        "/admin/evaluations/invalid-id-123/delete",
-        [200, 401, 403],
-        check_ux=True,
-    )
-    suite.run_test(
-        "9.3 Delete user - UX check",
+        "9.2 Delete user - Sin login (esperado 401/403)",
         "POST",
         "/admin/users/invalid-id-123/delete",
-        [200, 400, 404, 401, 403],
+        [200, 401, 403, 404],
+        data={"csrf_token": "test"},
         check_ux=True,
     )
     suite.run_test(
-        "9.4 Delete client - UX check",
+        "9.3 Delete client - Sin login (esperado 401/403)",
         "POST",
         "/admin/clients/invalid-id-123/delete",
-        [200, 400, 404, 401, 403],
+        [200, 401, 403, 404],
+        data={"csrf_token": "test"},
         check_ux=True,
     )
 
