@@ -178,7 +178,7 @@ async def delete_client_get(request: Request, client_id: str):
 
 @router.post("/evaluations/{eval_id}/delete")
 async def delete_evaluation(request: Request, eval_id: str):
-    """Eliminar evaluacion - delegar al endpoint de evaluations que funciona"""
+    """Eliminar evaluacion - delegar al endpoint de evaluations"""
     return RedirectResponse(url=f"/evaluations/{eval_id}/delete", status_code=307)
 
 
