@@ -204,7 +204,7 @@ async def delete_evaluation(request: Request, eval_id: str):
         )
 
     with Session(engine) as session:
-        from app.models import ControlResponse
+        from app.models import ControlResponse, Evaluation
 
         session.query(ControlResponse).filter(
             ControlResponse.evaluation_id == eval_id
