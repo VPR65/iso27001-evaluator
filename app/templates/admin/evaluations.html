@@ -68,7 +68,7 @@
                             <a href="/evaluations/{{ item.evaluation.id }}" class="btn-icon btn-success" title="Retomar evaluacion">
                                 <i class="fa-solid fa-play"></i>
                             </a>
-                            <form method="post" action="/admin/evaluations/{{ item.evaluation.id }}/delete" style="display:inline;">
+                            <form method="post" action="/evaluations/{{ item.evaluation.id }}/delete" style="display:inline;">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                                 <input type="hidden" name="confirm_password" id="pwd_eval_{{ item.evaluation.id }}">
                                 <button type="button" class="btn-icon btn-danger" 
@@ -104,11 +104,11 @@ async function confirmDeleteEval(evalId, evalName, responseCount) {
     if (!password) return;
     
     // Obtener CSRF token
-    const form = document.querySelector(`form[action="/admin/evaluations/${evalId}/delete"]`);
+    const form = document.querySelector(`form[action="/evaluations/${evalId}/delete"]`);
     const csrfToken = form.querySelector('input[name="csrf_token"]').value;
     
     try {
-        const response = await fetch(`/admin/evaluations/${evalId}/delete`, {
+        const response = await fetch(`/evaluations/${evalId}/delete`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
