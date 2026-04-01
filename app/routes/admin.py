@@ -6,6 +6,7 @@ from app.database import engine
 from app.templates_core import render
 from app.security import verify_csrf_token
 from sqlmodel import Session, select, func, desc
+from sqlalchemy import text
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -210,8 +211,8 @@ async def delete_evaluation(request: Request, eval_id: str):
         from sqlmodel import Session as SqlSession, select
         from sqlalchemy import text
 
-        with SqlSession(engine) as session:
-            # Primero verificar que existe
+        with Session(engine) as session:
+            # Buscar la evaluacion
             evaluation = session.exec(
                 select(Evaluation).where(Evaluation.id == eval_id)
             ).first()
@@ -224,7 +225,7 @@ async def delete_evaluation(request: Request, eval_id: str):
 
             eval_name = evaluation.name
 
-            # Eliminar respuestas primero (manera explícita, no rely on cascade)
+            # Eliminar respuestas primero
             session.exec(
                 text("DELETE FROM control_responses WHERE evaluation_id = :eval_id"),
                 {"eval_id": eval_id},
@@ -232,6 +233,18 @@ async def delete_evaluation(request: Request, eval_id: str):
 
             # Eliminar evaluación
             session.delete(evaluation)
+
+            # Log
+            session.add(
+                AuditLog(
+                    user_id=user.id,
+                    action="EVALUATION_DELETED",
+                    entity_type="evaluation",
+                    entity_id=eval_id,
+                    details=f"Evaluacion eliminada: {eval_name}",
+                )
+            )
+
             session.commit()
 
             # Log
