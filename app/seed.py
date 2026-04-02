@@ -1455,22 +1455,22 @@ def seed_data():
             },
         ]
 
-            itil4_norma = session.exec(select(Norma).where(Norma.code == "ITIL4")).first()
-            if itil4_norma:
-                try:
-                    itil_controls = session.exec(
-                        select(ControlDefinition).where(
-                            ControlDefinition.norma_id == itil4_norma.id
-                        )
-                    ).first()
-                    if not itil_controls:
-                        for ctrl in itil4_controls:
-                            ctrl["norma_id"] = itil4_norma.id
-                            session.add(ControlDefinition(**ctrl))
-                        print(f"  Agregados {len(itil4_controls)} controles ITIL v4")
-                except Exception as e:
-                    print(f"  Error ITIL4: {e}")
-                    session.rollback()
+        itil4_norma = session.exec(select(Norma).where(Norma.code == "ITIL4")).first()
+        if itil4_norma:
+            try:
+                itil_controls = session.exec(
+                    select(ControlDefinition).where(
+                        ControlDefinition.norma_id == itil4_norma.id
+                    )
+                ).first()
+                if not itil_controls:
+                    for ctrl in itil4_controls:
+                        ctrl["norma_id"] = itil4_norma.id
+                        session.add(ControlDefinition(**ctrl))
+                    print(f"  Agregados {len(itil4_controls)} controles ITIL v4")
+            except Exception as e:
+                print(f"  Error ITIL4: {e}")
+                session.rollback()
 
         existing_client = session.exec(
             select(Client).where(Client.name == "Cliente Demo")
